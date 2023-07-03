@@ -2,6 +2,10 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+"""
+A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabled servers. Programmed by Sam Lerman.
+"""
+
 import inspect
 import os
 import re
@@ -80,6 +84,8 @@ def mass_deploy():
     if isinstance(sweep.hyperparams, str):
         sweep.hyperparams = [sweep.hyperparams]
 
+    print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
+
     for i, hyperparams in enumerate(sweep.pop('hyperparams')):
         print(f'Set: {i + 1},', hyperparams)
         sbatch_deploy(hyperparams, sweep)
@@ -113,9 +119,9 @@ def launch_remote(server, username, password, sweep):
             ssh.sendline(f'git pull origin {sweep.branch}')
             ssh.prompt()
             print(ssh.before.decode("utf-8"))
-    # Send command-line commands first
     if isinstance(sweep.commands, str):
-        sweep.commands = [sweep.commands]
+        sweep.commands = [sweep.commands]  # Commands can be string or list
+    # Send command-line commands first
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
@@ -125,7 +131,13 @@ def launch_remote(server, username, password, sweep):
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
     ssh.sendline('tributaries ' + cmd)
     ssh.prompt()
-    print(ssh.before.decode("utf-8"))
+    prompt = ssh.before.decode("utf-8")
+    assert 'Deploying' in str(prompt), 'Could not launch tributaries on remote server. ' \
+                                       'Make sure you have installed tributaries ' \
+                                       '(pip install tributaries) on your remote server and/or ' \
+                                       'included commands for activating a tributaries-installed ' \
+                                       'Python environment in your remote config.'
+    print(prompt)
 
 
 def decorate(server, sweep=None, plot=False, checkpoints=False):
@@ -150,10 +162,12 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     args = {key: value for key, value in args.items() if key not in
             ['sweep', 'plot', 'plot_sweep', 'checkpoints', 'checkpoints_sweep', 'github']}
 
-    if '/' in sweep:  # TODO This kind of dynamic pathfinding should be part of minihydra
+    # TODO This kind of dynamic pathfinding should be part of minihydra
+    if '/' in sweep:
         root, sweep = sweep.rsplit('/', 1)
-        root = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1]) + '/' + root
-        os.chdir(root)
+        if not os.path.exists(root):
+            root = os.getcwd() + '/' + root
+        os.chdir(root)  # Makes server-relative paths possible
 
     sweep = instantiate(sweep + '.my_sweep')
     config = server(**args)

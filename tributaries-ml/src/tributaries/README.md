@@ -26,10 +26,10 @@ if __name__ == '__main__':
 
 This is a fully standalone, runnable script.
 
-That method must return the ```server```, ```username```, ```password```, any additional ```func``` that needs to be run (e.g. [connecting to a VPN]()), and a ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```.
+That method must return the ```server```, ```username```, ```password```, any additional ```func``` that needs to be run (e.g. [connecting to a VPN](VPN.py)), and a ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```.
 
 Optionally:
-- A ```commands``` list of any extra environment-setup commands you may need to pass to the remote server command-line and deploy config such as [activating a conda environment for example]().
+- A ```commands``` list or string of any extra environment-setup commands you may need to pass to the remote server command-line and deploy config such as [activating a conda environment for example](Examples/Servers/XuLab.py#L8).
 - Any additional ```sbatch``` string text you'd like to add to the deploy config.
 
 [You may use one of the blueprint server files provided.](Examples/Servers)
@@ -51,9 +51,9 @@ my_sweep.app = 'name_of_my_app'
 
 You can also pass in the sweep file path via command line with the ```sweep=path.to.my.sweep``` flag. The command-line flag will override the decorator flag; therefore the decorator flag is optional if the command-line flag is present.
 
-That's it. Running it will launch the corresponding sweep experiments on your remote server. Add the ```plot=true``` or ```plot_sweep=path.to.my.sweep``` flag to instead download plots back down to your local machine.
+That's it. Running it will launch the corresponding sweep experiments on your remote server. Add the ```plot=true``` flag to instead download plots back down to your local machine.
 
-Add ```checkpoints=true``` or ```checkpoints_sweep=path.to.my.sweep``` to download checkpoints.
+Add ```checkpoints=true``` to download checkpoints.
 
 #### Launching
 
@@ -64,7 +64,7 @@ python MyServer.py sweep=path.to.my.sweep
 #### Plotting
 
 ```console
-python MyServer.py plot_sweep=path.to.my.sweep
+python MyServer.py sweep=path.to.my.sweep plot=true
 ```
 
 [//]: # (Note: these hyperparams are already fully part of [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;, together with the ```my_server=``` server-path flag for pointing to a server file, *e.g.*, ```ML my_server=MyServer.main``` can launch and plot the above directly from [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;! )

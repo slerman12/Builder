@@ -1,3 +1,7 @@
+# Copyright (c) AGI.__init__. All Rights Reserved.
+#
+# This source code is licensed under the MIT license found in the
+# MIT_LICENSE file in the root directory of this source tree.
 from ML.Hyperparams.minihydra import Args
 
 
@@ -14,7 +18,7 @@ my_sweep = Args(
     time='3-00:00:00',
     reservation_id=None,
     wandb_key=None,
-    pseudonym=None  # Naming protocol for SLURM tasks; can use minihydra interpolation syntax with UnifiedML args
+    pseudonym=None  # Naming protocol for SLURM tasks; can apply minihydra interpolation syntax w/ UnifiedML args
 )
 
 my_plots = Args(
