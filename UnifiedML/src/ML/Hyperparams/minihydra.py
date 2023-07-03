@@ -21,7 +21,7 @@ import yaml
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
 # minihydra.yaml_search_paths.append(path)
-yaml_search_paths = [app, os.getcwd(), '', '/']  # List of paths  TODO Both '' and '/' needed?
+yaml_search_paths = [app, os.getcwd(), './', '/']  # List of paths
 
 for path in yaml_search_paths:
     if path not in sys.path:
@@ -31,7 +31,7 @@ added_modules = {}
 
 
 # Something like this  TODO Support /__init__.py files
-def instantiate(args, **kwargs):  # TODO Allow regular system paths + .Module, perhaps _target_: -> Path:
+def instantiate(args, **kwargs):  # TODO Allow regular system paths and relative
     if args is None:
         return
 

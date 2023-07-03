@@ -126,11 +126,19 @@ def launch_remote(server, username, password, sweep):
     print(ssh.before.decode("utf-8"))
 
 
-def decorate(server, sweep=None):
+def decorate(server, sweep=None, plot=False, checkpoints=False):
     args = just_args()
 
-    if sweep is None:
+    if 'sweep' in args:
         sweep = args.sweep
+
+    assert sweep is not None, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
+
+    if 'plot' in args:
+        plot = args.plot
+
+    if 'checkpoints' in args:
+        checkpoints = args.checkpoints
 
     # TODO Plotting
     # TODO Checkpoints
@@ -164,7 +172,7 @@ def decorate(server, sweep=None):
 
 
 # Decorator for defining servers
-def my_server(sweep=None):
+def my_server(sweep=None, plot=False, checkpoints=False):
     def decorator_func(server):
-        return partial(decorate, server, sweep)
+        return partial(decorate, server, sweep, plot, checkpoints)
     return decorator_func
