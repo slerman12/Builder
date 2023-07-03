@@ -8,7 +8,7 @@ def main(group_name=None, username='slerman', env=None):  # Can pass in special 
     server, password = 'bluehive.circ.rochester.edu', get_pass('bluehive')
 
     vpn = connect_vpn(username)  # Returns a func that connects to VPN when called
-    app_name_paths = {'XRDs': f"/scratch/{username}/XRDs"}  # Defines the name and location of apps
+    app_name_paths = {'XRDs': f"/scratch/{username}/XRDs/XRD.py"}  # Defines the name and location of apps
 
     conda = f'source /home/{username}/miniconda3/bin/activate'
     conda = ''.join([f'*"{gpu}"*)\n{conda} {env}\n;;\n'

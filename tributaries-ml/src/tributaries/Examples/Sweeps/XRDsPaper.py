@@ -20,7 +20,7 @@ my_sweep.hyperparams = [
 ]
 
 my_sweep.app = 'XRDs'
-my_sweep.branch = 'main'
+my_sweep.branch = 'Dev'
 
 # Plotting
 

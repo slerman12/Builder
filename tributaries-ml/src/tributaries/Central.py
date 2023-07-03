@@ -114,6 +114,8 @@ def launch_remote(server, username, password, sweep):
             ssh.prompt()
             print(ssh.before.decode("utf-8"))
     # Send command-line commands first
+    if isinstance(sweep.commands, str):
+        sweep.commands = [sweep.commands]
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
