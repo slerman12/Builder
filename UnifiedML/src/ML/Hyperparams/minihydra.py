@@ -58,8 +58,8 @@ def instantiate(args, **kwargs):  # TODO Allow regular system paths + .Module, p
         except AttributeError:
             pass
 
-    file = file.replace('.', '/').replace('//', '..').replace('.py', '')  # TODO: Can it search wrt absolute paths?
-    # file = file.replace('..', '$#').replace('.', '/').replace('$#', '..').replace('.py', '')  # TODO: Can it search wrt absolute paths?
+    # file = file.replace('.', '/').replace('.py', '')  # TODO: Can it search wrt absolute paths?
+    file = file.replace('..', '$#').replace('.', '/').replace('$#', '..').replace('.py', '')
     if module:
         module = module[0]
     else:
@@ -74,8 +74,8 @@ def instantiate(args, **kwargs):  # TODO Allow regular system paths + .Module, p
                 continue
 
             # Reuse cached imports
-            if file.replace('/', '.') + '_inst' in sys.modules:
-                return getattr(sys.modules[file.replace('/', '.') + '_inst'], module)(**args)
+            if file.replace('/', '.').replace('...', '..') + '_inst' in sys.modules:
+                return getattr(sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'], module)(**args)
 
             # Reuse cached imports
             for key, value in sys.modules.items():
@@ -88,8 +88,8 @@ def instantiate(args, **kwargs):  # TODO Allow regular system paths + .Module, p
                         continue
 
             # Import
-            package = importlib.import_module(file.replace('/', '.'))
-            sys.modules[file.replace('/', '.') + '_inst'] = package
+            package = importlib.import_module(file.replace('/', '.').replace('...', '..'))
+            sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'] = package
             module = getattr(package, module)
             return module(**args) if callable(module) else module
 

@@ -69,7 +69,7 @@ python MyServer.py plot_sweep=path.to.my.sweep
 
 [//]: # (Note: these hyperparams are already fully part of [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;, together with the ```my_server=``` server-path flag for pointing to a server file, *e.g.*, ```ML my_server=MyServer.main``` can launch and plot the above directly from [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;! )
 
-Note: Tributaries launching fully works for non-UnifiedML apps too.
+Note: Tributaries launching fully works for non-UnifiedML apps too. ```tributaries hyperparams='...' app='run.py'``` can be used as a general sbatch-script creator and SLURM launcher on your remote servers.
 
 One more thing: if your remote UnifiedML apps are [git-ssh enabled](https://docs.github.com/en/authentication/connecting-to-github-with-ssh), Tributaries will automatically try syncing with the latest branch via a git pull. You can disable automatic GitHub-syncing with the ```github=false``` flag. 
 

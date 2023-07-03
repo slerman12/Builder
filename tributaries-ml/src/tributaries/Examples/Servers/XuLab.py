@@ -1,7 +1,7 @@
 from tributaries import my_server
 
 
-@my_server(sweep='../Sweeps/XRDsPaper')
+@my_server('../Sweeps/XRDsPaper')
 def main():
     server, username, password = 'slurm', 'slerman', ''
     app_name_paths = {'XRDs': f"/home/cxu-serve/u1/{username}/XRDs"}  # Defines the name and location of apps

@@ -2,6 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import inspect
 import os
 import re
 import subprocess
@@ -138,6 +139,11 @@ def decorate(server, sweep=None):
 
     args = {key: value for key, value in args.items() if key not in
             ['sweep', 'plot', 'plot_sweep', 'checkpoints', 'checkpoints_sweep', 'github']}
+
+    if '/' in sweep:  # TODO This kind of dynamic pathfinding should be part of minihydra
+        root, sweep = sweep.rsplit('/', 1)
+        root = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1]) + '/' + root
+        os.chdir(root)
 
     sweep = instantiate(sweep + '.my_sweep')
     config = server(**args)
