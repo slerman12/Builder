@@ -16,14 +16,14 @@ from functools import partial
 import ast
 from pexpect import pxssh
 
-from ML import __file__ as path
+from ML import __file__
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate
 
 
 def sbatch_deploy(hyperparams, deploy_config):
     sys.argv = sys.argv[:1] + [hyperparams]
 
-    args = just_args(path.__file__.rsplit('/', 1)[0] + '/Hyperparams/args.yaml')
+    args = just_args(__file__.rsplit('/', 1)[0] + '/Hyperparams/args.yaml')
 
     os.makedirs(args.logger.path)
 
