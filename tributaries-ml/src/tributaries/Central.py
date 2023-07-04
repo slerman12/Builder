@@ -8,6 +8,7 @@ A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabl
 
 import os
 import re
+from inspect import signature
 from math import inf
 import shlex
 import subprocess
@@ -19,7 +20,8 @@ from pexpect import pxssh, spawn
 
 from ML import __file__, import_paths, Plot
 from ML.Utils import grammars
-from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar
+from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, \
+    recursive_update
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -168,6 +170,7 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
 
     experiments = set().union(*plots, checkpoints)
 
+    cwd = os.getcwd()
     os.makedirs('./Benchmarking', exist_ok=True)
     os.chdir('./Benchmarking')
 
@@ -175,26 +178,32 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     print(f'SFTP\'ing: {", ".join(experiments)}')
     print('\nConnecting to remote server', end=" ")
     p = spawn(f'sftp {username}@{server}')
-    p.expect('Password: ', timeout=None)
-    p.sendline(password)
-    p.expect('sftp> ', timeout=None)
+    if password:
+        p.expect('Password: ', timeout=None)
+        p.sendline(password)
+        p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
     p.sendline(f"lcd {os.getcwd()}")
     p.expect('sftp> ', timeout=None)
-    p.sendline(f"cd {os.path.dirname(sweep.app_name_paths[sweep.app])}")
+    path = sweep.app_name_paths[sweep.app]
+    p.sendline(f"cd {os.path.dirname(path) if '.py' in path else path}")
     p.expect('sftp> ', timeout=None)
     if plots:
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
             p.sendline(f"get -r ./Benchmarking/{experiment.replace('.*', '*')}")  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
+    p.sendline(f"ls")  # Re-sync
+    p.expect('sftp> ', timeout=None)
     if checkpoints:
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
             p.sendline(f"get -r ./Checkpoints/{experiment.replace('.*', '*')}")  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
+    p.sendline(f"ls")  # Re-sync
+    p.expect('sftp> ', timeout=None)
     print()
-    os.chdir(os.getcwd())
+    os.chdir(cwd)
 
 
 def paint(plots, name=''):
@@ -205,12 +214,12 @@ def paint(plots, name=''):
 
             Plot.plot(path=f"./Benchmarking/{name}/{'_'.join(plot_experiments).strip('.')}/Plots/",
                       plot_experiments=plot_experiments if len(plot_experiments) else None,
-                      plot_agents=plots.agents if len(plots.agents) else None,
-                      plot_suites=plots.suites if len(plots.suites) else None,
-                      plot_tasks=plots.tasks if len(plots.tasks) else None,
-                      steps=plots.steps if plots.steps else inf,
-                      write_tabular=plots.write_tabular, plot_train=plot_train,
-                      title=plots.title, x_axis=plots.x_axis,
+                      plot_agents=plots.agents if 'agents' in plots and len(plots.agents) else None,
+                      plot_suites=plots.suites if 'suites' in plots and len(plots.suites) else None,
+                      plot_tasks=plots.tasks if 'tasks' in plots and len(plots.tasks) else None,
+                      steps=plots.steps if 'steps' in plots and plots.steps else inf,
+                      write_tabular=getattr(plots, 'write_tabular', False), plot_train=plot_train,
+                      title=getattr(plots, 'title', 'UnifiedML'), x_axis=getattr(plots, 'x_axis', 'Step'),
                       verbose=True
                       )
 
@@ -221,15 +230,19 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     if 'sweep' in args:
         sweep = args.sweep
 
-    assert sweep is not None, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
-
     if 'plot' in args:
         plot = args.plot
 
     if 'checkpoints' in args:
         checkpoints = args.checkpoints
 
+    if plot or checkpoints and sweep is None:
+        sweep = ''
+    else:
+        assert False, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
+
     github = getattr(args, 'github', True)
+    sftp = github = getattr(args, 'sftp', True)
 
     args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github']}
 
@@ -240,7 +253,9 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
             root = os.getcwd() + '/' + root
         os.chdir(root)  # Makes server-relative paths possible
 
-    sweep = instantiate(sweep + '.my_sweep')
+    path = sweep
+    sweep = instantiate(sweep + '.my_sweep') if sweep else Args(**args)
+    args = {key: args[key] for key in args.keys() & signature(server).parameters}
     config = server(**args)
 
     if len(config) == 5:
@@ -248,19 +263,23 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     else:
         server, username, password, func, app_name_paths, commands, sbatch = config
 
-    sweep.update({'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch,
-                  'github': github, 'username': username})
+    recursive_update(sweep, {'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch,
+                             'github': github, 'username': username})
 
     # Call func first
     if func is not None:
         func()
 
     if plot or checkpoints:
-        plots = instantiate(sweep + '.my_plots') if plot else None
-        checkpoints = instantiate(sweep + '.my_checkpoints') if checkpoints else None
-        download(server, username, password, sweep, plots, checkpoints)
+        plots = Args(plots=plot if isinstance(plot[0], (list, tuple)) else [plot]) if isinstance(plot, list) \
+            else instantiate(sweep + '.my_plots') if plot else None
+        checkpoints = Args(experiments=checkpoints) if isinstance(checkpoints, list) \
+            else instantiate(sweep + '.my_checkpoints') if checkpoints else None
+        if sftp:
+            download(server, username, password, sweep, plots, checkpoints)
         if plot:
-            name = sweep.replace('.py', '').replace('..', '#$').replace('.', '/').replace('#$', '..').rsplit('/', 1)[0]
+            name = 'Downloaded' if path is None \
+                else path.replace('.py', '').replace('..', '#$').replace('.', '/').replace('#$', '..').rsplit('/', 1)[0]
             paint(plots, name)
     else:
         launch_remote(server, username, password, sweep)
