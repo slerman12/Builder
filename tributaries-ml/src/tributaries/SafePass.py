@@ -10,9 +10,9 @@ from cryptography.fernet import Fernet
 from tributaries import __file__
 
 
-def get_pass(kind='pass'):
+def get_pass(kind='pass', reenter=False):
     # Get password, encrypt, and save for reuse -- locally only of course
-    if os.path.exists(f'{__file__.rsplit("/", 1)[0]}/{kind}'):
+    if os.path.exists(f'{__file__.rsplit("/", 1)[0]}/{kind}') and not reenter:
         with open(f'{__file__.rsplit("/", 1)[0]}/{kind}', 'r') as file:
             key, encoded = file.readlines()
             password = Fernet(key).decrypt(bytes(encoded, 'utf-8'))

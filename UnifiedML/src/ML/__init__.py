@@ -47,7 +47,7 @@ def launch(**args):
     for key, value in args.items():
         if isinstance(value, (str, bool)):
             if key not in command_line_args:
-                sys.argv.insert(-2, f'{key}={value}')  # For minihydra grammars in Utils  TODO Maybe just interpolate
+                sys.argv.append(f'{key}={value}')  # For minihydra grammars in Utils  TODO Maybe just interpolate
                 added.add(key)
 
     Utils.launch_args = {key: args[key] for key in args.keys() - command_line_args - added}
