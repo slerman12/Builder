@@ -17,7 +17,6 @@ import numpy as np
 
 import torch
 import torch.nn as nn
-import yaml
 from torch.optim import *
 from torch.optim.lr_scheduler import *
 
@@ -74,13 +73,17 @@ def parse(arg, key, func, resolve=lambda name: name):
     return arg
 
 
-# Format path names
-# e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
-minihydra.grammar.append(lambda arg: parse(arg, 'format', lambda name: name.split('.')[-1]))
+def grammars(grammar=minihydra.grammar):
+    # Format path names
+    # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
+    grammar.append(lambda arg: parse(arg, 'format', lambda name: name.split('.')[-1]))
 
-# A boolean "not" operation for config
-minihydra.grammar.append(lambda arg: parse(arg, 'not', lambda bool: str(not ast.literal_eval(bool)),
-                                           lambda name: ast.literal_eval(name)))
+    # A boolean "not" operation for config
+    grammar.append(lambda arg: parse(arg, 'not', lambda bool: str(not ast.literal_eval(bool)),
+                                     lambda name: ast.literal_eval(name)))
+
+
+grammars()
 
 
 # Saves model + args + selected attributes

@@ -15,7 +15,8 @@ from functools import partial
 import ast
 from pexpect import pxssh
 
-from ML import __file__, import_paths, Utils
+from ML import __file__, import_paths
+from ML.Utils import grammars
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args
 
 
@@ -89,14 +90,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
     import_paths(yaml_search_paths)  # TODO Not sure why this is needed explicitly
-
-    # Format path names
-    # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
-    grammar.append(lambda arg: Utils.parse(arg, 'format', lambda name: name.split('.')[-1]))
-
-    # A boolean "not" operation for config
-    grammar.append(lambda arg: Utils.parse(arg, 'not', lambda bool: str(not ast.literal_eval(bool)),
-                                           lambda name: ast.literal_eval(name)))
+    grammars(grammar)
 
     sweep = just_args()
 

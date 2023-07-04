@@ -56,7 +56,7 @@ class CNNEncoder(nn.Module):
             self.ema_decay = ema_decay
             self.ema = copy.deepcopy(self).requires_grad_(False).eval()
 
-    def forward(self, obs, *context, pool=True):
+    def forward(self, obs, *context, pool=True):  # TODO Shaping when missing channel dim?
         # Operate on non-batch dims, then restore
 
         dims = len(self.obs_shape)
