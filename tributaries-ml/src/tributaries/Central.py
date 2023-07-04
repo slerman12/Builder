@@ -27,6 +27,8 @@ def sbatch_deploy(hyperparams, deploy_config):
     os.makedirs(args.logger.path, exist_ok=True)
 
     from tributaries.Sweeps import my_sweep
+    my_sweep.update({'app_name_paths': None, 'commands': [], 'sbatch': ''})
+
     deploy_config.update({key: value for key, value in my_sweep.items() if key not in deploy_config})
 
     # Allow naming tasks with minihydra interpolation syntax
