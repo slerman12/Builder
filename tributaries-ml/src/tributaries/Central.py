@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-A simple port/mill on the rivers of your remote servers, for mass-deploying and plotting. Programmed by Sam Lerman.
+A simple port/mill on the rivers of your remote servers. Programmed by Sam Lerman.
 """
 
 import os
@@ -184,21 +184,21 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
         p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
     path = sweep.app_name_paths[sweep.app]
-    p.sendline(f"cd {os.path.dirname(path) if '.py' in path else path}")
+    p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
             p.sendline(f"get -r ./Benchmarking/{experiment.replace('.*', '*')}")  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
-    p.sendline(f"ls")  # Re-sync
+    p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
     if checkpoints:
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
-            p.sendline(f"get -r ./Checkpoints/{experiment.replace('.*', '*')}")  # Some regex compatibility
+            p.sendline(f'get -r ./Checkpoints/{experiment.replace(".*", "*")}')  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
-    p.sendline(f"ls")  # Re-sync
+    p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
     print()
     os.chdir(cwd)
