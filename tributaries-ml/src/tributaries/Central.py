@@ -15,14 +15,13 @@ from functools import partial
 import ast
 from pexpect import pxssh
 
-from ML import __file__, import_paths
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate
 
 
 def sbatch_deploy(hyperparams, deploy_config):
     sys.argv = sys.argv[:1] + [hyperparams]
 
-    args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
+    args = just_args('Hyperparams/args.yaml')
 
     os.makedirs(args.logger.path)
 
@@ -74,8 +73,6 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
-    import_paths()
-
     sweep = just_args()
 
     if 'hyperparams' not in sweep:
