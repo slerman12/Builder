@@ -18,8 +18,6 @@ from pexpect import pxssh
 from ML import __file__, import_paths
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, Args
 
-from tributaries import my_sweep
-
 
 def sbatch_deploy(hyperparams, deploy_config):
     sys.argv = sys.argv[:1] + [hyperparams]
@@ -28,6 +26,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     os.makedirs(args.logger.path, exist_ok=True)
 
+    from tributaries.Sweeps import my_sweep
     deploy_config.update({key: value for key, value in my_sweep.items() if key not in deploy_config})
 
     # Allow naming tasks with minihydra interpolation syntax
