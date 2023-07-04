@@ -8,6 +8,7 @@ A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabl
 
 import os
 import re
+import shlex
 import subprocess
 import sys
 from functools import partial
@@ -21,7 +22,7 @@ from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_s
 
 
 def sbatch_deploy(hyperparams, deploy_config):
-    sys.argv = sys.argv[:1] + [hyperparams]
+    sys.argv = sys.argv[:1] + shlex.split(hyperparams)
 
     args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
 
