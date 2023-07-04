@@ -6,7 +6,6 @@
 A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabled servers. Programmed by Sam Lerman.
 """
 
-import inspect
 import os
 import re
 import subprocess
@@ -16,7 +15,7 @@ from functools import partial
 import ast
 from pexpect import pxssh
 
-from ML import __file__
+from ML import __file__, import_paths
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate
 
 
@@ -75,6 +74,8 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
+    import_paths()
+
     sweep = just_args()
 
     if 'hyperparams' not in sweep:
