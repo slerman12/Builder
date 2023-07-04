@@ -11,7 +11,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from World.Dataset import load_dataset, worker_init_fn, compute_stats
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class Classify:

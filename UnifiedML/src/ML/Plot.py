@@ -22,7 +22,7 @@ from matplotlib import ticker, dates, lines
 from matplotlib.ticker import FuncFormatter, PercentFormatter
 import seaborn as sns
 
-from Hyperparams.minihydra import get_args, grammar
+from minihydra import get_args, grammar
 import Utils
 
 

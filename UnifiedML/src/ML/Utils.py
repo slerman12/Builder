@@ -27,7 +27,7 @@ from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct acc
 from Blocks.Architectures import *  # For direct accessibility via command line
 
 from Hyperparams import minihydra
-from Hyperparams.minihydra import Args, open_yaml
+from minihydra import Args, open_yaml
 
 launch_args = {}
 

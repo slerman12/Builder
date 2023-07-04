@@ -16,7 +16,7 @@ from torch import as_tensor
 
 from torchvision.transforms.functional import resize
 
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class Atari:

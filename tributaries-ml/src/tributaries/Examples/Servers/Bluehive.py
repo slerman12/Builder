@@ -1,9 +1,11 @@
+# Tutorial: Add a default sweep, VPN login, custom command-line args, and custom sbatch code
+
 from tributaries.Central import my_server
 from tributaries.SafePass import get_pass
 from tributaries.VPN import connect_vpn
 
 
-@my_server('../Sweeps/XRDsPaper')
+@my_server('../Sweeps/XRDsPaper')  # Defines a default sweep
 def main(group_name=None, username='slerman', env=None):  # Can pass in special args by command line
     server, password = 'bluehive.circ.rochester.edu', get_pass('bluehive')
 
@@ -26,3 +28,9 @@ def main(group_name=None, username='slerman', env=None):  # Can pass in special 
 
 if __name__ == '__main__':
     main()
+
+
+# Run the default XRDsPaper sweep like this:
+#   $ python Bluehive.py
+# Plot it:
+#   $ python Bluehive.py plot=true

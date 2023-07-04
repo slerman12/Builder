@@ -20,7 +20,7 @@ import numpy as np
 import torch
 import torch.multiprocessing as mp
 
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class Memory:

@@ -12,7 +12,7 @@ from torch import as_tensor
 
 from torchvision.transforms.functional import resize, rgb_to_grayscale
 
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class SuperMario:

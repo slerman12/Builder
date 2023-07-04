@@ -21,7 +21,7 @@ def import_paths(yaml_search_paths=None):
     sys.path.append(UnifiedML)
 
     if yaml_search_paths is None:
-        from Hyperparams.minihydra import yaml_search_paths
+        from minihydra import yaml_search_paths
 
     if UnifiedML not in yaml_search_paths:
         yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to search path

@@ -10,7 +10,7 @@ from dm_env import StepType
 
 import numpy as np
 
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class DMC:

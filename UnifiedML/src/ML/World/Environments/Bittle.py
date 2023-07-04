@@ -10,7 +10,7 @@ from bleak import BleakScanner, BleakClient
 
 import numpy as np
 
-from Hyperparams.minihydra import Args
+from minihydra import Args
 
 
 class Bittle:

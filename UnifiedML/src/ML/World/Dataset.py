@@ -23,7 +23,7 @@ from tqdm import tqdm
 
 import Utils
 from World.Memory import Batch
-from Hyperparams.minihydra import instantiate, Args, added_modules, open_yaml
+from minihydra import instantiate, Args, added_modules, open_yaml
 
 
 # Returns a path to an existing Memory directory or an instantiated Pytorch Dataset

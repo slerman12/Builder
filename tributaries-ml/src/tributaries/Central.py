@@ -20,8 +20,7 @@ from pexpect import pxssh, spawn
 
 from ML import __file__, import_paths, Plot
 from ML.Utils import grammars
-from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, \
-    recursive_update
+from minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, recursive_update
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -183,7 +182,7 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
         p.sendline(password)
         p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
-    path = sweep.app_name_paths[sweep.app]
+    path = getattr(sweep.app_name_paths, sweep.app, '~/')
     p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
@@ -256,7 +255,9 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     args = {key: args[key] for key in args.keys() & signature(server).parameters}
     config = server(**args)
 
-    if len(config) == 5:
+    if len(config) == 3:
+        (server, username, password), func, app_name_paths, commands, sbatch = config, None, None, None, None
+    elif len(config) == 5:
         (server, username, password, func, app_name_paths), commands, sbatch = config, None, None
     else:
         server, username, password, func, app_name_paths, commands, sbatch = config
