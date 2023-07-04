@@ -8,15 +8,16 @@ A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabl
 
 import os
 import re
+from math import inf
 import shlex
 import subprocess
 import sys
 from functools import partial
 
 import ast
-from pexpect import pxssh
+from pexpect import pxssh, spawn
 
-from ML import __file__, import_paths
+from ML import __file__, import_paths, Plot
 from ML.Utils import grammars
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar
 
@@ -161,6 +162,59 @@ def launch_remote(server, username, password, sweep):
     print(prompt)
 
 
+def download(server, username, password, sweep, plots=None, checkpoints=None):
+    plots = [] if plots is None else plots.plots
+    checkpoints = [] if checkpoints is None else checkpoints.experiments
+
+    experiments = set().union(*plots, checkpoints)
+
+    os.makedirs('./Benchmarking', exist_ok=True)
+    os.chdir('./Benchmarking')
+
+    # SFTP
+    print(f'SFTP\'ing: {", ".join(experiments)}')
+    print('\nConnecting to remote server', end=" ")
+    p = spawn(f'sftp {username}@{server}')
+    p.expect('Password: ', timeout=None)
+    p.sendline(password)
+    p.expect('sftp> ', timeout=None)
+    print('- Connected! ✓\n')
+    p.sendline(f"lcd {os.getcwd()}")
+    p.expect('sftp> ', timeout=None)
+    p.sendline(f"cd {os.path.dirname(sweep.app_name_paths[sweep.app])}")
+    p.expect('sftp> ', timeout=None)
+    if plots:
+        for i, experiment in enumerate(experiments):
+            print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
+            p.sendline(f"get -r ./Benchmarking/{experiment.replace('.*', '*')}")  # Some regex compatibility
+            p.expect('sftp> ', timeout=None)
+    if checkpoints:
+        for i, experiment in enumerate(experiments):
+            print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
+            p.sendline(f"get -r ./Checkpoints/{experiment.replace('.*', '*')}")  # Some regex compatibility
+            p.expect('sftp> ', timeout=None)
+    print()
+    os.chdir(os.getcwd())
+
+
+def paint(plots, name=''):
+    for plot_train in [False, True]:
+        print(f'\n Plotting {"train" if plot_train else "eval"}...')
+
+        for plot_experiments in plots.plots:
+
+            Plot.plot(path=f"./Benchmarking/{name}/{'_'.join(plot_experiments).strip('.')}/Plots/",
+                      plot_experiments=plot_experiments if len(plot_experiments) else None,
+                      plot_agents=plots.agents if len(plots.agents) else None,
+                      plot_suites=plots.suites if len(plots.suites) else None,
+                      plot_tasks=plots.tasks if len(plots.tasks) else None,
+                      steps=plots.steps if plots.steps else inf,
+                      write_tabular=plots.write_tabular, plot_train=plot_train,
+                      title=plots.title, x_axis=plots.x_axis,
+                      verbose=True
+                      )
+
+
 def decorate(server, sweep=None, plot=False, checkpoints=False):
     args = just_args()
 
@@ -175,13 +229,9 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     if 'checkpoints' in args:
         checkpoints = args.checkpoints
 
-    # TODO Plotting
-    # TODO Checkpoints
-
     github = getattr(args, 'github', True)
 
-    args = {key: value for key, value in args.items() if key not in
-            ['sweep', 'plot', 'plot_sweep', 'checkpoints', 'checkpoints_sweep', 'github']}
+    args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github']}
 
     # TODO This kind of dynamic pathfinding should be part of minihydra
     if '/' in sweep:
@@ -205,7 +255,15 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     if func is not None:
         func()
 
-    launch_remote(server, username, password, sweep)
+    if plot or checkpoints:
+        plots = instantiate(sweep + '.my_plots') if plot else None
+        checkpoints = instantiate(sweep + '.my_checkpoints') if checkpoints else None
+        download(server, username, password, sweep, plots, checkpoints)
+        if plot:
+            name = sweep.replace('.py', '').replace('..', '#$').replace('.', '/').replace('#$', '..').rsplit('/', 1)[0]
+            paint(plots, name)
+    else:
+        launch_remote(server, username, password, sweep)
 
 
 # Decorator for defining servers

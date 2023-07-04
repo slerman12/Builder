@@ -32,3 +32,7 @@ my_plots = Args(
     agents=[],
     suites=[]
 )
+
+my_checkpoints = Args(
+    experiments=[],  # List of experiments (strings)
+)
