@@ -7,17 +7,19 @@ import os
 
 from cryptography.fernet import Fernet
 
+from tributaries import __file__
+
 
 def get_pass(kind='pass'):
     # Get password, encrypt, and save for reuse -- locally only of course
-    if os.path.exists(f'.{kind}'):
-        with open(f'.{kind}', 'r') as file:
+    if os.path.exists(f'{__file__.rsplit("/", 1)[0]}/{kind}'):
+        with open(f'{__file__.rsplit("/", 1)[0]}/{kind}', 'r') as file:
             key, encoded = file.readlines()
             password = Fernet(key).decrypt(bytes(encoded, 'utf-8'))
         password = password.decode()
     else:
         password, key = getpass.getpass(f'Enter {kind} pass:'), Fernet.generate_key()
         encoded = Fernet(key).encrypt(bytes(password, 'utf-8'))
-        with open(f'.{kind}', 'w') as file:
+        with open(f'{__file__.rsplit("/", 1)[0]}/{kind}', 'w') as file:
             file.writelines([key.decode('utf-8') + '\n', encoded.decode('utf-8')])
     return password

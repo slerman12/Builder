@@ -24,8 +24,6 @@ if __name__ == '__main__':
     main()
 ```
 
-This is a fully standalone, runnable script.
-
 That method must return the ```server```, ```username```, ```password```, any additional ```func``` that needs to be run (e.g. [connecting to a VPN](VPN.py)), and a ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```.
 
 Optionally:
@@ -51,7 +49,7 @@ my_sweep.app = 'name_of_my_app'
 
 You can also pass in the sweep file path via command line with the ```sweep=path.to.my.sweep``` flag. The command-line flag will override the decorator flag; therefore the decorator flag is optional if the command-line flag is present.
 
-That's it. Running it will launch the corresponding sweep experiments on your remote server. Add the ```plot=true``` flag to instead download plots back down to your local machine.
+That's it. Running it via ```python MyServer.py``` will launch the corresponding sweep experiments on your remote server. Add the ```plot=true``` flag to instead download plots back down to your local machine.
 
 Add ```checkpoints=true``` to download checkpoints.
 
