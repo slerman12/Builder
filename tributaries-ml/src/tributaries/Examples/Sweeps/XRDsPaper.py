@@ -19,7 +19,5 @@ my_sweep.branch = 'Dev'
 
 # Plotting
 
-# Lists of experiments to plot together
-my_plots.plots.append(['NPCNN'])
-
+my_plots.plots.append(['NPCNN'])  # Lists of experiments to plot together
 my_plots.title = 'Disjoint 50% RRUFF - NPCNN - Trained on synthetic + 50% RRUFF'

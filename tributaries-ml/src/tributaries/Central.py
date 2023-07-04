@@ -183,8 +183,6 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
         p.sendline(password)
         p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
-    p.sendline(f"lcd {os.getcwd()}")
-    p.expect('sftp> ', timeout=None)
     path = sweep.app_name_paths[sweep.app]
     p.sendline(f"cd {os.path.dirname(path) if '.py' in path else path}")
     p.expect('sftp> ', timeout=None)
@@ -236,9 +234,9 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     if 'checkpoints' in args:
         checkpoints = args.checkpoints
 
-    if plot or checkpoints and sweep is None:
+    if (plot or checkpoints) and sweep is None:
         sweep = ''
-    else:
+    elif sweep is None:
         assert False, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
 
     github = getattr(args, 'github', True)
@@ -272,14 +270,13 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
 
     if plot or checkpoints:
         plots = Args(plots=plot if isinstance(plot[0], (list, tuple)) else [plot]) if isinstance(plot, list) \
-            else instantiate(sweep + '.my_plots') if plot else None
+            else instantiate(path + '.my_plots') if plot else None
         checkpoints = Args(experiments=checkpoints) if isinstance(checkpoints, list) \
-            else instantiate(sweep + '.my_checkpoints') if checkpoints else None
+            else instantiate(path + '.my_checkpoints') if checkpoints else None
         if sftp:
             download(server, username, password, sweep, plots, checkpoints)
         if plot:
-            name = 'Downloaded' if path is None \
-                else path.replace('.py', '').replace('..', '#$').replace('.', '/').replace('#$', '..').rsplit('/', 1)[0]
+            name = path.replace('.', '/').rsplit('/', 1)[1] if path else 'Downloaded'
             paint(plots, name)
     else:
         launch_remote(server, username, password, sweep)
