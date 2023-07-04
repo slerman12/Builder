@@ -77,6 +77,9 @@ def sbatch_deploy(hyperparams, deploy_config):
 def mass_deploy():
     sweep = just_args()
 
+    if 'hyperparams' not in sweep:
+        sweep.hyperparams = ['']
+
     if isinstance(sweep.hyperparams, int):
         for key, value in sweep.items():
             sweep[key] = ast.literal_eval(value.to_bytes((value.bit_length() + 7) // 8, 'little').decode('utf-8'))
