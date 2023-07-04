@@ -90,8 +90,10 @@ def mass_deploy():
 
     if isinstance(sweep.hyperparams, int):
         for key, value in sweep.items():
-            print(value.to_bytes((value.bit_length() + 7) // 8, 'little').decode('utf-8'))
-            sweep[key] = ast.literal_eval(value.to_bytes((value.bit_length() + 7) // 8, 'little').decode('utf-8'))
+            try:
+                sweep[key] = ast.literal_eval(value.to_bytes((value.bit_length() + 7) // 8, 'little').decode('utf-8'))
+            except ValueError:
+                print(key)
 
     if isinstance(sweep.hyperparams, str):
         sweep.hyperparams = [sweep.hyperparams]
