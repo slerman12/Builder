@@ -13,11 +13,12 @@ import sys
 from functools import partial
 
 import ast
-
 from pexpect import pxssh
 
 from ML import __file__, import_paths
-from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths
+from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, Args
+
+from tributaries import my_sweep
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -25,7 +26,9 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
 
-    os.makedirs(args.logger.path)
+    os.makedirs(args.logger.path, exist_ok=True)
+
+    deploy_config.update({key: value for key, value in my_sweep.items() if key not in deploy_config})
 
     # Allow naming tasks with minihydra interpolation syntax
     if deploy_config.pseudonym and (re.compile(r'.+\$\{[^((\$\{)|\})]+\}.*').match(deploy_config.pseudonym) or
@@ -41,7 +44,7 @@ def sbatch_deploy(hyperparams, deploy_config):
     commands = '\n'.join(deploy_config.commands)
 
     script = f"""#!/bin/bash
-#SBATCH -c {args.num_workers + 1}
+#SBATCH -c {args.num_workers}
 {f'#SBATCH -p gpu --gres=gpu:{deploy_config.num_gpus}' if deploy_config.num_gpus else ''}
 {f'#SBATCH -p reserved --reservation={deploy_config.username}-{deploy_config.reservation_id}'
     if deploy_config.reservation_id else ''}
@@ -75,7 +78,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
-    import_paths(yaml_search_paths)
+    import_paths(yaml_search_paths)  # TODO Not sure why this is needed explicitly
 
     sweep = just_args()
 
