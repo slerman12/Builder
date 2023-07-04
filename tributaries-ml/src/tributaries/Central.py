@@ -16,7 +16,7 @@ import ast
 from pexpect import pxssh
 
 from ML import __file__, import_paths, Utils
-from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, Args
+from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -30,6 +30,15 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
     deploy_config.update({key: value for key, value in defaults.items() if key not in deploy_config})
+
+    defaults = Args(num_workers=1, logger=Args(path='./'), task_name='task', seed=0)
+    defaults.update({key: deploy_config[key] for key in defaults if key in deploy_config})
+    args.update({key: value for key, value in defaults.items() if key not in args})
+
+    # Allow naming tasks with minihydra interpolation syntax
+    if args.logger.path and (re.compile(r'.+\$\{[^((\$\{)|\})]+\}.*').match(args.logger.path) or
+                             re.compile(r'.*\$\{[^((\$\{)|\})]+\}.+').match(args.logger.path)):
+        deploy_config.pseudonym = interpolate([args.logger.path], args)[0]
 
     # Allow naming tasks with minihydra interpolation syntax
     if deploy_config.pseudonym and (re.compile(r'.+\$\{[^((\$\{)|\})]+\}.*').match(deploy_config.pseudonym) or
@@ -80,6 +89,14 @@ def sbatch_deploy(hyperparams, deploy_config):
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
     import_paths(yaml_search_paths)  # TODO Not sure why this is needed explicitly
+
+    # Format path names
+    # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
+    grammar.append(lambda arg: Utils.parse(arg, 'format', lambda name: name.split('.')[-1]))
+
+    # A boolean "not" operation for config
+    grammar.append(lambda arg: Utils.parse(arg, 'not', lambda bool: str(not ast.literal_eval(bool)),
+                                           lambda name: ast.literal_eval(name)))
 
     sweep = just_args()
 
