@@ -27,15 +27,6 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     os.makedirs(args.logger.path, exist_ok=True)
 
-    from tributaries.Sweeps import my_sweep
-
-    defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
-    deploy_config.update({key: value for key, value in defaults.items() if key not in deploy_config})
-
-    defaults = Args(num_workers=1, logger=Args(path='./'), task_name='task', seed=0)
-    defaults.update({key: deploy_config[key] for key in defaults if key in deploy_config})
-    args.update({key: value for key, value in defaults.items() if key not in args})
-
     # Allow naming tasks with minihydra interpolation syntax
     if args.logger.path and (re.compile(r'.+\$\{[^((\$\{)|\})]+\}.*').match(args.logger.path) or
                              re.compile(r'.*\$\{[^((\$\{)|\})]+\}.+').match(args.logger.path)):
@@ -103,6 +94,12 @@ def mass_deploy():
 
     if isinstance(sweep.hyperparams, str):
         sweep.hyperparams = [sweep.hyperparams]
+
+    from tributaries.Sweeps import my_sweep
+
+    # Defaults in case tributaries called directly (without sweep)
+    defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
+    sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
 
