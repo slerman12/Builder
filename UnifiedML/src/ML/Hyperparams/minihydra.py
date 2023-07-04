@@ -97,7 +97,7 @@ def instantiate(args, **kwargs):  # TODO Allow regular system paths and relative
 def open_yaml(source):
     for path in yaml_search_paths + ['']:
         try:
-            with open(path + '/' + source, 'r') as file:
+            with open(path + '/' + source.strip('/'), 'r') as file:
                 args = yaml.safe_load(file)
             return recursive_Args(args)
         except FileNotFoundError:
