@@ -12,16 +12,16 @@ import inspect
 
 # import torch
 
-from Hyperparams.minihydra import yaml_search_paths
-
 UnifiedML = os.path.dirname(__file__)
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
+
+sys.path.append(UnifiedML)
+
+from Hyperparams.minihydra import yaml_search_paths
 
 
 # Imports UnifiedML paths and the paths of any launching app
 def import_paths():
-    sys.path.append(UnifiedML)
-
     if UnifiedML not in yaml_search_paths:
         yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to search path
 
