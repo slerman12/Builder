@@ -5,11 +5,13 @@ from tributaries import my_sweep, my_plots
 
 # List of hyperparams to launch
 my_sweep.hyperparams = [
-    # Large + RRUFF, No-Pool-CNN, 7-Way Crystal Systems & 230-Way Space Groups
+    # Large + RRUFF, No-Pool-CNN
     f"""task=NPCNN
     num_classes={num_classes}
     train_steps=5e5
     save_per_steps=1e5
+    +'dataset.roots=["/gpfs/fs2/scratch/public/jsalgad2/icsd1.2m_large/","./Data/Generated/XRDs_RRUFF/"]'
+    +'dataset.train_eval_splits=[1, 0.5]'
     num_workers=6
     mem=20""" for num_classes in (7, 230)
 ]
