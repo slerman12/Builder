@@ -13,6 +13,8 @@ import sys
 from functools import partial
 
 import ast
+
+import ML
 from pexpect import pxssh
 
 from ML import __file__, import_paths
@@ -75,7 +77,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
     import_paths()
-    print(os.path.dirname(__file__), yaml_search_paths)
+    print(os.path.dirname(__file__), yaml_search_paths, ML.UnifiedML)
 
     sweep = just_args()
 
