@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-A lightweight tool for mass-deploying and plotting ML experiments on slurm-enabled servers. Programmed by Sam Lerman.
+A quick tool for mass-deploying and plotting ML experiments on slurm-enabled servers. Programmed by Sam Lerman.
 """
 
 import os
@@ -242,7 +242,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
         assert False, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
 
     github = getattr(args, 'github', True)
-    sftp = github = getattr(args, 'sftp', True)
+    sftp = getattr(args, 'sftp', True)
 
     args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github']}
 
