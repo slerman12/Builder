@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-A quick tool for mass-deploying and plotting ML experiments on slurm-enabled servers. Programmed by Sam Lerman.
+A simple port/mill on the rivers of your remote servers, for mass-deploying and plotting. Programmed by Sam Lerman.
 """
 
 import os
