@@ -149,11 +149,11 @@ def launch_remote(server, username, password, sweep):
     ssh.sendline('tributaries ' + cmd)
     ssh.prompt()
     prompt = ssh.before.decode("utf-8")
-    assert 'Deploying' in str(prompt), 'Could not launch tributaries on remote server. ' \
-                                       'Make sure you have installed tributaries ' \
-                                       '(pip install tributaries) on your remote server and/or ' \
-                                       'included commands for activating a tributaries-installed ' \
-                                       'Python environment in your remote config.'
+    # assert 'Deploying' in str(prompt), 'Could not launch tributaries on remote server. ' \
+    #                                    'Make sure you have installed tributaries ' \
+    #                                    '(pip install tributaries) on your remote server and/or ' \
+    #                                    'included commands for activating a tributaries-installed ' \
+    #                                    'Python environment in your remote config.'
     print(prompt)
 
 
