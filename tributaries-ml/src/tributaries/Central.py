@@ -15,7 +15,7 @@ from functools import partial
 import ast
 from pexpect import pxssh
 
-from ML import __file__
+from ML import __file__, import_paths
 from ML.Hyperparams.minihydra import just_args, instantiate, interpolate, yaml_search_paths
 
 
@@ -74,6 +74,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
+    import_paths()
     print(os.path.dirname(__file__), yaml_search_paths)
 
     sweep = just_args()
