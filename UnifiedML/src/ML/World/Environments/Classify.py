@@ -8,9 +8,9 @@ import warnings
 
 import numpy as np
 
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 
-from World.Dataset import load_dataset, Transform, ClassSubset, ClassToIdx, worker_init_fn, compute_stats
+from World.Dataset import load_dataset, worker_init_fn, compute_stats
 from Hyperparams.minihydra import Args
 
 

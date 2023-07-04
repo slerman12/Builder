@@ -75,13 +75,15 @@ def instantiate(args, **kwargs):  # TODO Allow regular system paths and relative
 
             # Reuse cached imports
             if file.replace('/', '.').replace('...', '..') + '_inst' in sys.modules:
-                return getattr(sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'], module)(**args)
+                module = getattr(sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'], module)
+                return module(**args) if callable(module) else module
 
             # Reuse cached imports
             for key, value in sys.modules.items():
                 if hasattr(value, '__file__') and value.__file__ and path + '/' + file + '.py' in value.__file__:
                     try:
-                        return getattr(value, module)(**args)
+                        module = getattr(value, module)
+                        return module(**args) if callable(module) else module
                     except AttributeError:
                         if i == len(yaml_search_paths) - 1 and j == 1:
                             raise AttributeError(f'Could not initialize {module} in /{file}.py.')
