@@ -159,6 +159,8 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             args = args or original_args  # Note: Could instead use original_args, but support _override_ for overriding
             if 'obs_spec' in original_args:
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
+            if 'recipes' in original_args:
+                args['recipes'] = original_args['recipes']  # Since assumed
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
             if not distributed:

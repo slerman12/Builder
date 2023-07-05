@@ -20,73 +20,18 @@ import yaml
 
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
-# minihydra.yaml_search_paths.append(path)
-yaml_search_paths = [app, os.getcwd(), './', '/']  # List of paths
+yaml_search_paths = [app, os.getcwd(), './', '/']  # List of paths to search for yamls in
+module_paths = []  # List of paths to instantiate modules from
 
 for path in yaml_search_paths:
     if path not in sys.path:
         sys.path.append(path)
 
-added_modules = {}
-
-
-# Simple-sophisticated instantiation of a class or module by various semantics
-def instantiate2(args, i=0, **kwargs):
-    if isinstance(args, (Args, dict)):
-        args = Args(args)  # Non-destructive shallow copy
-
-    if hasattr(args, '_override_'):
-        kwargs.update(args.pop('_override_'))  # For loading old models with new, overridden args
-
-    while hasattr(args, '_default_'):  # Allow inheritance between shorthands
-        if isinstance(args['_default_'], str):
-            args = args['_default_']
-        else:
-            args_ = args.pop('_default_')
-            args_.update(args)
-            args = args_
-
-    if hasattr(args, '_target_') and args._target_:
-        if isinstance(args._target_, nn.Module):  # Allow objects as _target_
-            args = args._target_
-        else:
-            try:
-                return minihydra.instantiate(args, **kwargs)  # Regular hydra
-            except ImportError as e:
-                if '(' in args._target_ and ')' in args._target_:  # Direct code execution
-                    args = args._target_
-                else:
-                    if 'Utils.' in args._target_:
-                        raise ImportError
-                    args._target_ = 'Utils.' + args._target_  # Portal into Utils
-                    try:
-                        return instantiate(args, i, **kwargs)
-                    except ImportError:
-                        raise e  # Original error if all that doesn't work
-            except TypeError as e:
-                kwarg = re.search('got an unexpected keyword argument \'(.+?)\'', str(e))
-                if kwarg and kwarg.group(1) not in args:
-                    kwargs = {key: kwargs[key] for key in kwargs if key != kwarg.group(1)}
-                    return instantiate(args, i, **kwargs)  # Signature matching, only for kwargs not args
-                raise e  # Original error
-
-    if isinstance(args, str):
-        for key in kwargs:
-            args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-        args = eval(args)  # Direct code execution
-
-    # Signature matching
-    if isinstance(args, type):
-        _args = signature(args).parameters
-        args = args(**kwargs if 'kwargs' in _args else {key: kwargs[key] for key in kwargs.keys() & _args})
-
-    return None if hasattr(args, '_target_') \
-        else args[i] if isinstance(args, (list, nn.ModuleList)) \
-        else args  # Additional useful ones
+added_modules = {}  # Name: module pairs to instantiate from
 
 
 """
-Instantiate plans
+Minihydra plans
 
 Accepts a config or string or None or object, and kwargs.
 If None, return None.
@@ -102,32 +47,20 @@ Path can be dot-separated format w.r.t. modules, defined locally or globally, or
     Perhaps then no need for sys.path.append anywhere. yaml_search_paths, module_paths, modules.
 
 Everything in UnifiedML instantiate: _default_, _override_, optionally: signature matching, support for objects, funcs.
-    Or better, allow adding rules (funcs based on args, kwargs that return args, kwargs).
+    Or better, allow adding rules (funcs based on args, kwargs that return args, kwargs). Can skip & remove _override_.
     
 Also, Utils can manually map Uppercase to existing lowercases-with-_target_ attr. 
     Or even create sub-configs for some e.g.senses.Poo creates a new senses.poo={_target_: poo}.
 As well as constructing "recipes" from the main shorthands.
 
 minihydra can have a pseudonyms arg with main_name: pseudonyms-list sublists maybe. Instead of _default_.
+
+minihydra can allow adding yaml_search_paths, module_paths, and modules via command line as reserved arguments. 
+    Maybe add underscores to all reserved arguments.
 """
 
 
-def get_module(path):
-    pass
-
-
-# Something like this
-def instantiate(args, **kwargs):
-    if args is None:
-        return
-
-    if isinstance(args, str):
-        args = Args(_target_=args)
-
-    # args = recursive_Args(args)  # Why does it need to make a copy?
-    args = Args(args)
-    args.update(kwargs)
-
+def get_module1(args):
     file, *module = args.pop('_target_').rsplit('.', 1)
 
     sub_module, *sub_modules = file.split('.')
@@ -180,6 +113,120 @@ def instantiate(args, **kwargs):
             sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'] = package
             module = getattr(package, module)
             return module(**args) if callable(module) else module
+
+
+def get_module(_target_, paths=None, modules=None):
+    paths = list(paths or []) + module_paths
+
+    if modules is None:
+        modules = Args()
+
+    modules.update(added_modules)
+
+    module = _target_  # TODO
+
+    return module
+
+
+def instantiate(args, i=None, paths=None, modules=None, signature_matching=False, **kwargs):
+    if hasattr(args, '_target_'):
+        args = Args(args)
+        _target_ = args.pop('_target_')
+
+        if _target_ is None:
+            return
+        elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
+            for key in kwargs:
+                args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
+            locals().update(modules or {})
+            module = eval(_target_, locals())  # Direct code execution
+        else:
+            module = _target_
+
+            if isinstance(module, str):
+                module = get_module(module, paths, modules)
+
+            if callable(module):
+                # Signature match, only for kwargs not args
+                _args = inspect.signature(module).parameters if signature_matching else kwargs.keys()
+                module = module(**args, **(kwargs if 'kwargs' in _args
+                                           else {key: kwargs[key] for key in kwargs.keys() & _args}))
+    else:
+        # Convert to config
+        return instantiate(Args(_target_=args), i, paths, modules, signature_matching, **kwargs)
+
+    try:
+        iter(module)
+    except TypeError:
+        return module
+    else:
+        return module if i is None else module[i]  # Allow sub-indexing (if specified)
+
+
+# Something like this
+# def instantiate(args, **kwargs):
+#     if args is None:
+#         return
+#
+#     if isinstance(args, str):
+#         args = Args(_target_=args)
+#
+#     # args = recursive_Args(args)  # Why does it need to make a copy?
+#     args = Args(args)
+#     args.update(kwargs)
+#
+#     file, *module = args.pop('_target_').rsplit('.', 1)
+#
+#     sub_module, *sub_modules = file.split('.')
+#
+#     # Can instantiate based on added modules
+#     if sub_module in added_modules:
+#         sub_module = added_modules[sub_module]
+#
+#         try:
+#             for key in sub_modules + module:
+#                 sub_module = getattr(sub_module, key)
+#
+#             return sub_module(**args)
+#         except AttributeError:
+#             pass
+#
+#     # file = file.replace('.', '/').replace('.py', '')  # TODO: Can it search wrt absolute paths?
+#     file = file.replace('..', '$#').replace('.', '/').replace('$#', '..').replace('.py', '')
+#     if module:
+#         module = module[0]
+#     else:
+#         module = file
+#         file = 'Utils'  # TODO Generalize this / allow added modules
+#     for i, path in enumerate(yaml_search_paths):
+#         for j, file in enumerate([file + '/__init__', file]):
+#             if not os.path.exists(path + '/' + file + '.py'):
+#                 if i == len(yaml_search_paths) - 1 and j == 1:
+#                     raise FileNotFoundError(f'Could not find {module} in /{file}.py. '
+#                                             f'Search paths include: {yaml_search_paths}')
+#                 continue
+#
+#             # Reuse cached imports
+#             if file.replace('/', '.').replace('...', '..') + '_inst' in sys.modules:
+#                 module = getattr(sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'], module)
+#                 return module(**args) if callable(module) else module
+#
+#             # Reuse cached imports
+#             for key, value in sys.modules.items():
+#                 if hasattr(value, '__file__') and value.__file__ and path + '/' + file + '.py' in value.__file__:
+#                     try:
+#                         module = getattr(value, module)
+#                         return module(**args) if callable(module) else module
+#                     except AttributeError:
+#                         if i == len(yaml_search_paths) - 1 and j == 1:
+#                             raise AttributeError(f'Could not initialize {module} in /{file}.py.')
+#                         continue
+#
+#             # Import
+#             package = importlib.import_module(file.replace('/', '.').replace('...', '..'))
+#             sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'] = package
+#             module = getattr(package, module)
+#             return module(**args) if callable(module) else module
 
 
 def open_yaml(source):

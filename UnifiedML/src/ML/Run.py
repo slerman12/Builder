@@ -60,7 +60,7 @@ def main(args):
                 vlogger.dump(vlogs, f'{agent.step}')
 
         if args.plot_per_steps and (agent.step + 1) % args.plot_per_steps == 0 and not args.generate or converged:
-            instantiate(args.plotting)
+            instantiate(args.plotting)  # TODO show=converged with web browser
 
         if converged:
             break
