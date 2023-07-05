@@ -14,17 +14,14 @@ import inspect
 import os.path
 import re
 import sys
-from importlib.machinery import SourceFileLoader
 from math import inf
 import yaml
-
 
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
 yaml_search_paths = [app, os.getcwd()]  # List of paths to search for yamls in
 module_paths = [app, os.getcwd()]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
-
 
 """
 Minihydra plans
@@ -113,6 +110,13 @@ def get_module1(args):
             return module(**args) if callable(module) else module
 
 
+def valid_import(module_path):
+    try:
+        return importlib.util.find_spec(module_path) is not None
+    except ModuleNotFoundError:
+        return False
+
+
 def get_module(_target_, paths=None, modules=None):
     paths = list(paths or []) + module_paths
 
@@ -123,11 +127,15 @@ def get_module(_target_, paths=None, modules=None):
 
     if '/' in _target_:
         if '.py.' in _target_:
-            path, module_name = _target_.split('.py.')
+            path, module_name = _target_.split('.py.', 1)
             path += '.py.'
         else:
-            path, module_name = _target_, None
-            assert '.py' in path, f'Directory path must include a .py file, got: {path}'
+            if '.py' in _target_:
+                path, module_name = _target_, None
+            else:
+                assert '.' in _target_, f'Directory path must include a .<module-name>, got: {_target_}'
+                path, module_name = _target_.rsplit('.', 1)
+                path += '/__init__.py.'
     else:
         *path, module_name = _target_.rsplit('.', 1)
         path = path[0].replace('..', '!@#$%^&*').replace('.', '/').replace('!@#$%^&*', '../') + '.py' if path else None
@@ -136,80 +144,70 @@ def get_module(_target_, paths=None, modules=None):
         keys = path.split('/')
         module = None
 
-        if keys and keys[0] in modules:
-            module = modules[keys[0]]
+        first = keys[0].replace('.py', '')
+        if keys and first in modules:
+            module = modules[first]
 
             for key in keys[1:]:
                 module = getattr(module, key.replace('.py', ''))
         else:
+            # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
             for i, base in enumerate(paths + ['']):
                 if base and base[-1] != '/':
                     base += '/'
 
                 if not os.path.exists(base + path):
-                    continue
+                    if os.path.exists(base + path.replace('.py', '/__init__.py')):
+                        path = path.replace('.py', '/__init__.py')
+                    else:
+                        continue
 
-                # name = (base + path).split('.py', 1)[0].replace('/', '.').replace('...', '..').strip('.')
-                # module_spec = importlib.util.spec_from_file_location(name, base + path)
-                # module = importlib.util.module_from_spec(module_spec)
-                # sys.modules[name] = module
-                # module_spec.loader.exec_module(module)  # Import
+                # Start from the absolute path, adding only the highest-level necessary path to the system path
+                parts = [part.replace('.py', '') for part in os.path.abspath(base + path).split('/') if part]
+                explored = name = added = ''
 
+                # Construct a module path name given a directory path
+                for part in parts:
+                    name += '.' + part if name else part
+                    if not valid_import(name):
+                        if added:
+                            sys.path.pop(sys.path.index(added))
+                            added = ''
+                        if explored not in sys.path:
+                            sys.path.append(explored)
+                            added = explored
+                        name = part
+                    explored += '/' + part if explored else part
 
-                # relpath = os.path.relpath(base + path)
-                # top_level = ''.join(['../'] * relpath.count('../'))
-                # if top_level not in sys.path:
-                #     sys.path.append(top_level)
-                added = module = None
-                parts = os.path.abspath(base + path).split('/')
-                for j, part in enumerate(parts):
-                    if part:
-                        if module is not None:
-                            module = getattr(module, part.replace('.py', ''), None)
-                        if module is None:
-                            if added:
-                                sys.path.pop(sys.path.index(added))
-                                added = None
-                            add = '/'.join(parts[:j])
-                            if add not in sys.path:
-                                sys.path.append(add)
-                                added = add
-                            try:
-                                module = __import__(part.replace('.py', ''))
-                            except ModuleNotFoundError:
-                                pass
-                # name = '.'.join(name).replace('.py', '')
-                # print(name)
-                # module = __import__(name)
-
-                # importable_path = '/'.join([part for part in abspath.split('/')])
-                # name = os.path.relpath(base + path).replace('../', '')
-                # module_spec = importlib.util.spec_from_file_location(base + path, base + path)
-                # module = importlib.util.module_from_spec(module_spec)
-                # sys.modules[base + path] = module
-                # module_spec.loader.exec_module(module)  # Import
-
-                # Import
-                # module = __import__(os.path.basename(path).replace('.py', ''))
-                # sys.modules[os.path.basename(path).replace('.py', '')] = module
-                # module = importlib.import_module(os.path.basename(path).replace('.py', ''))
-                # print(os.path.basename(path).replace('.py', ''))
-                # sys.path.pop()
-                # module = SourceFileLoader(base + path, base + path).load_module()  # TODO Verify cached
-                # sys.modules[base + path] = module
+                # Finally, import
+                module = importlib.import_module(name)  # TODO Verify cached imports
+                break
         if module is None:
             raise FileNotFoundError(f'Could note find path {path}. Search paths include: {paths}')
         else:
+            # Return the relevant module
             return module if module_name is None else getattr(module, module_name)
     elif module_name in modules:
+        # Return the module from already-defined modules
         return modules[module_name]
     else:
-        raise FileNotFoundError(f'Could note find module {module_name}. Search modules include: {list(modules.keys())}')
+        for module in modules.values():
+            if hasattr(module, module_name):
+                return getattr(module, module_name)
+    raise FileNotFoundError(f'Could note find module {module_name}. Search modules include: {list(modules.keys())}')
 
 
 def instantiate(args, i=None, paths=None, modules=None, signature_matching=True, **kwargs):
-    if hasattr(args, '_target_'):
+    if hasattr(args, '_target_') or hasattr(args, '_default_'):
         args = Args(args)
+
+        if '_override_' in args:
+            kwargs.update(args.pop('_override_'))  # For overriding args without modifying defaults
+
+        while '_default_' in args:  # Allow inheritance between sub-args Note: For some reason 2nd-last is dict not Args
+            args = Args(_target_=args['_default_']) if isinstance(args['_default_'], str) \
+                else {**args.pop('_default_'), **args}
+
         _target_ = args.pop('_target_')
 
         if _target_ is None:
@@ -417,4 +415,5 @@ def just_args(source=None):
 def get_args(source=None):
     def decorator_func(func):
         return lambda: func(just_args(source))
+
     return decorator_func
