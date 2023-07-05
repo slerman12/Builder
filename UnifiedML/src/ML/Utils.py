@@ -11,7 +11,6 @@ import random
 from functools import cached_property
 import re
 import warnings
-from inspect import signature
 from pathlib import Path
 from multiprocessing.pool import ThreadPool
 
@@ -28,8 +27,7 @@ from torchvision import transforms  # For direct accessibility via command line
 from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct accessibility via command line
 from Blocks.Architectures import *  # For direct accessibility via command line
 
-import minihydra
-from minihydra import Args
+from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate  # TODO Don't import instantiate; update Utils. in ML
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -70,12 +68,15 @@ app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
 
 # Imports UnifiedML paths and the paths of any launching app
-def import_paths(yaml_search_paths=minihydra.yaml_search_paths):
-    if UnifiedML not in sys.path:
-        sys.path.append(UnifiedML)
-
+def import_paths():
     if UnifiedML not in yaml_search_paths:
-        yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to search path
+        yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to yaml search path
+
+    if UnifiedML not in module_paths:
+        module_paths.append(UnifiedML)  # Adds UnifiedML to module instantiation search path
+
+    if __name__ not in added_modules:
+        added_modules[__name__] = sys.modules[__name__]  # Adds Utils to module instantiation path
 
     # Adds Hyperparams dir to search path
     for path in [UnifiedML, app, os.getcwd()]:
@@ -94,7 +95,7 @@ def parse(arg, key, func, resolve=lambda name: name):
     return arg
 
 
-def grammars(grammar=minihydra.grammar):
+def grammars():
     # Format path names
     # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
     grammar.append(lambda arg: parse(arg, 'format', lambda name: name.split('.')[-1]))
@@ -346,61 +347,6 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=classify/mnist", "task=classify/mnist Eyes=MLP"]'
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=NPCNN num_classes=230 Eyes=XRD.Eyes"]'
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
-
-
-# Simple-sophisticated instantiation of a class or module by various semantics
-def instantiate(args, i=0, **kwargs):
-    if isinstance(args, (Args, dict)):
-        args = Args(args)  # Non-destructive shallow copy
-
-    if hasattr(args, '_override_'):
-        kwargs.update(args.pop('_override_'))  # For loading old models with new, overridden args
-
-    while hasattr(args, '_default_'):  # Allow inheritance between shorthands
-        if isinstance(args['_default_'], str):
-            args = args['_default_']
-        else:
-            args_ = args.pop('_default_')
-            args_.update(args)
-            args = args_
-
-    if hasattr(args, '_target_') and args._target_:
-        if isinstance(args._target_, nn.Module):  # Allow objects as _target_
-            args = args._target_
-        else:
-            try:
-                return minihydra.instantiate(args, **kwargs)  # Regular hydra
-            except ImportError as e:
-                if '(' in args._target_ and ')' in args._target_:  # Direct code execution
-                    args = args._target_
-                else:
-                    if 'Utils.' in args._target_:
-                        raise ImportError
-                    args._target_ = 'Utils.' + args._target_  # Portal into Utils
-                    try:
-                        return instantiate(args, i, **kwargs)
-                    except ImportError:
-                        raise e  # Original error if all that doesn't work
-            except TypeError as e:
-                kwarg = re.search('got an unexpected keyword argument \'(.+?)\'', str(e))
-                if kwarg and kwarg.group(1) not in args:
-                    kwargs = {key: kwargs[key] for key in kwargs if key != kwarg.group(1)}
-                    return instantiate(args, i, **kwargs)  # Signature matching, only for kwargs not args
-                raise e  # Original error
-
-    if isinstance(args, str):
-        for key in kwargs:
-            args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-        args = eval(args)  # Direct code execution
-
-    # Signature matching
-    if isinstance(args, type):
-        _args = signature(args).parameters
-        args = args(**kwargs if 'kwargs' in _args else {key: kwargs[key] for key in kwargs.keys() & _args})
-
-    return None if hasattr(args, '_target_') \
-        else args[i] if isinstance(args, (list, nn.ModuleList)) \
-        else args  # Additional useful ones
 
 
 # Initializes model weights a la orthogonal

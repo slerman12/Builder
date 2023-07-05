@@ -55,14 +55,30 @@ print(args.goodbye.cruel)
 ```
 > python run_script.py number=43
 
-{'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
+{'hello': 'world', 'number', 43, {'goodbye': {'cruel': ['world']}}}
 
 world
 43
 [world]
 ```
 
-## As a decorator
+### As a decorator
+
+```python
+# run_script.py
+
+from minihydra import get_args
+
+@get_args(source='path/to/args.yaml')
+def main(args):
+    print(args)
+```
+
+```
+> python run_script.py
+
+{'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
+```
 
 ### Literals: 
 lists, dicts, floats, ints, booleans, null, inf, strings; put lists and dicts in quotes
