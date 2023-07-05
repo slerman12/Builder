@@ -98,9 +98,10 @@ Path belongs to config _target_.
 Path can be dot-separated format w.r.t. search paths, including "..".
 Path can be relative or absolute directory path.
 Path can be dot-separated format w.r.t. modules, defined locally or globally, or module search paths e.g. "Utils.".
+    Perhaps then no need for sys.path.append anywhere. yaml_search_paths, module_paths, modules.
 
 Everything in UnifiedML instantiate: _default_, _override_, optionally: signature matching, support for objects, funcs.
-    Or better, allow adding rules.
+    Or better, allow adding rules. Override funcs.
 """
 
 
