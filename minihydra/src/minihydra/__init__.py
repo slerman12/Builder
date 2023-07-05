@@ -89,9 +89,10 @@ def instantiate2(args, i=0, **kwargs):
 Instantiate plans
 
 Accepts a config or string or None or object, and kwargs.
-If string, create config if path, else execute with kwargs interpolation.
-If config, instantiate. If _target_ None, return None.
 If None, return None.
+If string, create config if path, else (if parens) execute with kwargs interpolation, optionally signature matching, 
+    and modules as locals.
+If config, instantiate. If _target_ None, return None.
 If object callable, instantiate with kwargs and optionally signature matching. Else return object. If iterable, index.
 
 Path belongs to config _target_.
@@ -101,8 +102,18 @@ Path can be dot-separated format w.r.t. modules, defined locally or globally, or
     Perhaps then no need for sys.path.append anywhere. yaml_search_paths, module_paths, modules.
 
 Everything in UnifiedML instantiate: _default_, _override_, optionally: signature matching, support for objects, funcs.
-    Or better, allow adding rules. Override funcs.
+    Or better, allow adding rules (funcs based on args, kwargs that return args, kwargs).
+    
+Also, Utils can manually map Uppercase to existing lowercases-with-_target_ attr. 
+    Or even create sub-configs for some e.g.senses.Poo creates a new senses.poo={_target_: poo}.
+As well as constructing "recipes" from the main shorthands.
+
+minihydra can have a pseudonyms arg with main_name: pseudonyms-list sublists maybe. Instead of _default_.
 """
+
+
+def get_module(path):
+    pass
 
 
 # Something like this

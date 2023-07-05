@@ -155,8 +155,8 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             to_load = torch.load(path, map_location=device)  # Load
             # args = args or Args({})
             # args.update(torch.load(f'{root}/{name}.args'))
-            original_args = torch.load(f'{root}/{name}.args')  # Note: loading without args uses paths of original args
-            args = args or original_args
+            original_args = torch.load(f'{root}/{name}.args')  # Note: loading without args uses path of original args
+            args = args or original_args  # Note: Could instead use original_args, but support _override_ for overriding
             if 'obs_spec' in original_args:
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             break
@@ -166,7 +166,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             warnings.warn(f'Load conflict, resolving...')  # For distributed training
 
     # Overriding original args where specified
-    for key, value in kwargs.items():
+    for key, value in kwargs.items():  # Need to update kwargs to include _override_?
         if attr:
             args.recipes[attr + f'._override_.{key}'] = value
         else:
