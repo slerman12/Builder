@@ -18,8 +18,8 @@ from functools import partial
 import ast
 from pexpect import pxssh, spawn
 
-from ML import __file__, import_paths, Plot
-from ML.Utils import grammars
+from ML import __file__, Plot
+from ML.Utils import grammars, import_paths
 from minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, recursive_update
 
 
@@ -239,9 +239,10 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
         assert False, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
 
     github = getattr(args, 'github', True)
+    level = getattr(args, 'level', 1)
     sftp = getattr(args, 'sftp', True)
 
-    args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github']}
+    args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github', 'level']}
 
     # TODO This kind of dynamic pathfinding should be part of minihydra
     if '/' in sweep:
@@ -277,7 +278,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
         if sftp:
             download(server, username, password, sweep, plots, checkpoints)
         if plot:
-            name = path.replace('.', '/').rsplit('/', 1)[1] if path else 'Downloaded'
+            name = '/'.join(path.replace('.', '/').rsplit('/', level)[1:]) if path else 'Downloaded'
             paint(plots, name)
     else:
         launch_remote(server, username, password, sweep)

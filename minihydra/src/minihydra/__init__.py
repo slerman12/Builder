@@ -30,8 +30,82 @@ for path in yaml_search_paths:
 added_modules = {}
 
 
-# Something like this  TODO Support /__init__.py files
-def instantiate(args, **kwargs):  # TODO Allow regular system paths and relative
+# Simple-sophisticated instantiation of a class or module by various semantics
+def instantiate2(args, i=0, **kwargs):
+    if isinstance(args, (Args, dict)):
+        args = Args(args)  # Non-destructive shallow copy
+
+    if hasattr(args, '_override_'):
+        kwargs.update(args.pop('_override_'))  # For loading old models with new, overridden args
+
+    while hasattr(args, '_default_'):  # Allow inheritance between shorthands
+        if isinstance(args['_default_'], str):
+            args = args['_default_']
+        else:
+            args_ = args.pop('_default_')
+            args_.update(args)
+            args = args_
+
+    if hasattr(args, '_target_') and args._target_:
+        if isinstance(args._target_, nn.Module):  # Allow objects as _target_
+            args = args._target_
+        else:
+            try:
+                return minihydra.instantiate(args, **kwargs)  # Regular hydra
+            except ImportError as e:
+                if '(' in args._target_ and ')' in args._target_:  # Direct code execution
+                    args = args._target_
+                else:
+                    if 'Utils.' in args._target_:
+                        raise ImportError
+                    args._target_ = 'Utils.' + args._target_  # Portal into Utils
+                    try:
+                        return instantiate(args, i, **kwargs)
+                    except ImportError:
+                        raise e  # Original error if all that doesn't work
+            except TypeError as e:
+                kwarg = re.search('got an unexpected keyword argument \'(.+?)\'', str(e))
+                if kwarg and kwarg.group(1) not in args:
+                    kwargs = {key: kwargs[key] for key in kwargs if key != kwarg.group(1)}
+                    return instantiate(args, i, **kwargs)  # Signature matching, only for kwargs not args
+                raise e  # Original error
+
+    if isinstance(args, str):
+        for key in kwargs:
+            args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
+        args = eval(args)  # Direct code execution
+
+    # Signature matching
+    if isinstance(args, type):
+        _args = signature(args).parameters
+        args = args(**kwargs if 'kwargs' in _args else {key: kwargs[key] for key in kwargs.keys() & _args})
+
+    return None if hasattr(args, '_target_') \
+        else args[i] if isinstance(args, (list, nn.ModuleList)) \
+        else args  # Additional useful ones
+
+
+"""
+Instantiate plans
+
+Accepts a config or string or None or object, and kwargs.
+If string, create config if path, else execute with kwargs interpolation.
+If config, instantiate. If _target_ None, return None.
+If None, return None.
+If object callable, instantiate with kwargs and optionally signature matching. Else return object. If iterable, index.
+
+Path belongs to config _target_.
+Path can be dot-separated format w.r.t. search paths, including "..".
+Path can be relative or absolute directory path.
+Path can be dot-separated format w.r.t. modules, defined locally or globally, or module search paths e.g. "Utils.".
+
+Everything in UnifiedML instantiate: _default_, _override_, optionally: signature matching, support for objects, funcs.
+    Or better, allow adding rules.
+"""
+
+
+# Something like this
+def instantiate(args, **kwargs):
     if args is None:
         return
 
