@@ -3,7 +3,9 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import ast
+import inspect
 import math
+import os
 import sys
 import random
 from functools import cached_property
@@ -26,10 +28,8 @@ from torchvision import transforms  # For direct accessibility via command line
 from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct accessibility via command line
 from Blocks.Architectures import *  # For direct accessibility via command line
 
-from Hyperparams import minihydra
-from minihydra import Args, open_yaml
-
-launch_args = {}
+import minihydra
+from minihydra import Args
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -65,6 +65,27 @@ def init(args):
     print('Device:', args.device)
 
 
+UnifiedML = os.path.dirname(__file__)
+app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
+
+
+# Imports UnifiedML paths and the paths of any launching app
+def import_paths(yaml_search_paths=minihydra.yaml_search_paths):
+    if UnifiedML not in sys.path:
+        sys.path.append(UnifiedML)
+
+    if UnifiedML not in yaml_search_paths:
+        yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to search path
+
+    # Adds Hyperparams dir to search path
+    for path in [UnifiedML, app, os.getcwd()]:
+        if path + '/Hyperparams' not in yaml_search_paths and os.path.exists(path + '/Hyperparams'):
+            yaml_search_paths.append(path + '/Hyperparams')
+
+
+import_paths()
+
+
 # Grammar rules for minihydra
 def parse(arg, key, func, resolve=lambda name: name):
     pattern = r'\$\{' + key + r':([^(\$\{|\})]+)\}'
@@ -84,6 +105,34 @@ def grammars(grammar=minihydra.grammar):
 
 
 grammars()
+
+launch_args = {}
+
+
+# Launches UnifiedML from inside a launching app with specified args  TODO Move to Utils since MT needs access
+def launch(**args):
+    from Run import main
+
+    original = list(sys.argv)
+
+    command_line_args = {arg.split('=')[0] for arg in sys.argv if '=' in arg}
+    added = set()
+
+    for key, value in args.items():
+        if isinstance(value, (str, bool)):
+            if key not in command_line_args:
+                sys.argv.append(f'{key}={value}')  # For minihydra grammars in Utils  TODO Maybe just interpolate
+                added.add(key)
+
+    global launch_args
+    launch_args = {key: args[key] for key in args.keys() - command_line_args - added}
+
+    # torch.multiprocessing.set_start_method('spawn')
+
+    main()  # Run
+
+    launch_args = {}
+    sys.argv = original
 
 
 # Saves model + args + selected attributes

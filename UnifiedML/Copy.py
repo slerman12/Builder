@@ -33,4 +33,7 @@ def copy():
 
 
 if __name__ == '__main__':
-    copy()
+    answer = input('Do you want to copy files from a different directory into the Builder directory? '
+                   'Unpushed changes will be lost. (y/n)')
+    if answer == 'y':
+        copy()
