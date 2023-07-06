@@ -243,7 +243,6 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
         assert False, 'A sweep= path must be provided as argument to the server decorator or via command-line.'
 
     github = getattr(args, 'github', True)
-    level = getattr(args, 'level', 1)
     sftp = getattr(args, 'sftp', True)
 
     args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github', 'level']}
@@ -275,7 +274,8 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
         if sftp:
             download(server, username, password, sweep, plots, checkpoints)
         if plot:
-            name = '/'.join(path.replace('.py', '').replace('.', '/').rsplit('/', level)[1:]) if path else 'Downloaded'
+            name = '/'.join(path.replace('.py', '').replace('.', '/').rsplit('/', sweep.level)[1:]) if path \
+                else 'Downloaded'
             paint(plots, name)
     else:
         launch_remote(server, username, password, sweep)

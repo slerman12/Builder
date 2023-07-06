@@ -11,6 +11,7 @@ my_sweep = Args(
     # Directory & GitHub parameters
     app=None,
     branch=None,
+    level=1,  # Directory level for naming plotting directories
     # SLURM parameters
     num_gpus=1,
     gpu='K80|V100|A100|RTX',
