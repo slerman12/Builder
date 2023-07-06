@@ -9,9 +9,7 @@ my_sweep.hyperparams = [
     f"""task=NPCNN
     num_classes={num_classes}
     train_steps=5e5
-    save_per_steps=1e5
-    num_workers=6
-    mem=20""" for num_classes in (7, 230)
+    save_per_steps=1e5""" for num_classes in (7, 230)
 ]
 
 my_sweep.app = 'XRDs'
