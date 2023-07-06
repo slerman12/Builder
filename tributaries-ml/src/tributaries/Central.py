@@ -182,7 +182,7 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
         p.sendline(password)
         p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
-    path = getattr(sweep.app_name_paths, sweep.app, '~/')
+    path = sweep.app_name_paths.get(sweep.app, '~/')
     p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
@@ -271,7 +271,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
         if sftp:
             download(server, username, password, sweep, plots, checkpoints)
         if plot:
-            name = '/'.join(path.replace('.', '/').rsplit('/', level)[1:]) if path else 'Downloaded'
+            name = '/'.join(path.replace('.py', '').replace('.', '/').rsplit('/', level)[1:]) if path else 'Downloaded'
             paint(plots, name)
     else:
         launch_remote(server, username, password, sweep)
