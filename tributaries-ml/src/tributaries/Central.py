@@ -101,12 +101,13 @@ def mass_deploy():
     if isinstance(sweep.hyperparams, str):
         sweep.hyperparams = [sweep.hyperparams]
 
+    sweep = recursive_Args(sweep)
+
     from tributaries.Sweeps import my_sweep
 
     # Defaults in case tributaries called directly (without sweep)
-    defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
+    defaults = Args(**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''})
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
-    sweep = recursive_Args(sweep)
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
 
