@@ -11,6 +11,7 @@ my_sweep.hyperparams = [
     train_steps=5e5
     save_per_steps=1e5
     mem=30
+    Dataset=XRD.MemoryEfficientDataset
     """ for num_classes in (7, 230)
 ]
 

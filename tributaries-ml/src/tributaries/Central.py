@@ -102,6 +102,7 @@ def mass_deploy():
         sweep.hyperparams = [sweep.hyperparams]
 
     from tributaries.Sweeps import my_sweep
+    print(sweep)
 
     # Defaults in case tributaries called directly (without sweep)
     defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
