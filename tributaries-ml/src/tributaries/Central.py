@@ -48,6 +48,8 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     commands = '\n'.join(deploy_config.commands)
 
+    print(deploy_config, deploy_config.app_name_paths, deploy_config.app)
+
     script = f"""#!/bin/bash
 #SBATCH -c {args.num_workers}
 {f'#SBATCH -p gpu --gres=gpu:{deploy_config.num_gpus}' if deploy_config.num_gpus else ''}
@@ -102,7 +104,6 @@ def mass_deploy():
         sweep.hyperparams = [sweep.hyperparams]
 
     from tributaries.Sweeps import my_sweep
-    print(sweep)
 
     # Defaults in case tributaries called directly (without sweep)
     defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
