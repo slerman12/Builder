@@ -83,8 +83,8 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
-    import_paths(yaml_search_paths)  # TODO Not sure why this is needed explicitly
-    grammars(grammar)  # TODO Is this needed explicitly if Utils is imported?
+    # import_paths()  # TODO Not sure why this is needed explicitly
+    # grammars()  # TODO Is this needed explicitly if Utils is imported?
 
     sweep = just_args()
 
