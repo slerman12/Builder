@@ -108,15 +108,26 @@ def get_module(_target_, paths=None, modules=None):
 
                 path = path.replace('/', '.').replace('.py', '')
 
-                try:
-                    module = importlib.import_module(path)
-                except ModuleNotFoundError:
-                    add, path = path.rsplit('.', 1)
-                    sys.path.append(base + add)
-                    module = importlib.import_module(path)
-                    path = add + '.' + path
-                sys.modules[path] = module
-                break
+                # Check if cached
+                if path in sys.modules:
+                    module = sys.modules[path]
+                else:
+                    for key, value in sys.modules.items():
+                        if hasattr(value, '__file__') and value.__file__ and base + path in value.__file__:
+                            module = value
+                            sys.modules[path] = module
+                            break
+                    else:
+                        # Finally import
+                        try:
+                            module = importlib.import_module(path)
+                        except ModuleNotFoundError:
+                            add, path = path.rsplit('.', 1)
+                            sys.path.append(base + add)
+                            module = importlib.import_module(path)
+                            path = add + '.' + path
+                        sys.modules[path] = module
+                        break
         if module is None:
             raise FileNotFoundError(f'Could note find path {path}. Search paths include: {paths}')
         else:
@@ -221,7 +232,7 @@ def recursive_update(args, args2):
 def read(source, parse_task=True):
     args = open_yaml(source)
 
-    # Need to allow imports  TODO Might have to add relative paths to yaml_search_paths
+    # Need to allow imports  TODO Might have to add relative paths to yaml_search_paths !
     if 'imports' in args:
         imports = args.pop('imports')
 
