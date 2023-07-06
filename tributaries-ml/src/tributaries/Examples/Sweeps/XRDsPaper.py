@@ -18,6 +18,8 @@ my_sweep.hyperparams = [
 my_sweep.app = 'XRDs'
 my_sweep.branch = 'Dev'
 
+my_sweep.mem = 30
+
 # Plotting
 
 my_plots.plots.append(['NPCNN'])  # Lists of experiments to plot together

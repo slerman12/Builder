@@ -60,7 +60,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 {deploy_config.sbatch if deploy_config.sbatch else ''}
 {commands}
 {'wandb login ' + deploy_config.wandb_key if deploy_config.wandb_key else ''}
-{'python ' + deploy_config.app_name_path[deploy_config.app] if deploy_config.app_name_path and deploy_config.app
+{'python ' + deploy_config.app_name_paths[deploy_config.app] if deploy_config.app_name_paths and deploy_config.app
     else 'ML'} {hyperparams}
 """
 
@@ -106,8 +106,7 @@ def mass_deploy():
     from tributaries.Sweeps import my_sweep
 
     # Defaults in case tributaries called directly (without sweep)
-    defaults = Args(**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''})
-    print(sweep, {key: value for key, value in defaults.items() if key not in sweep})
+    defaults = Args(**my_sweep, **{'app_name_paths': None, 'commands': [], 'sbatch': ''})
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
