@@ -5,7 +5,7 @@ from tributaries.SafePass import get_pass
 from tributaries.VPN import connect_vpn
 
 
-@my_server('../Sweeps/XRDsPaper')  # Defines a default sweep
+@my_server('../Sweeps/XRDsPaperBluehive')  # Defines a default sweep
 def main(group_name=None, username='slerman', env=None):  # Can pass in special args by command line
     server, password = 'bluehive.circ.rochester.edu', get_pass('bluehive')
 
