@@ -348,22 +348,23 @@ def multirun(args):
 
 
 # Can just get args, no decorator
-def just_args(source=None):
+def just_args(source=None, logging=False):
     if source is not None:
         yaml_search_paths.append(app + '/' + source.split('/', 1)[0])
 
     args = Args() if source is None else read(source)
     args = parse(args)
     args = interpolate(args)  # Command-line requires quotes for interpolation
-    log(args)
+    if logging:
+        log(args)
     # args = multirun(args)
 
     return args
 
 
 # Can decorate a method with args in signature
-def get_args(source=None):
+def get_args(source=None, logging=True):
     def decorator_func(func):
-        return lambda: func(just_args(source))
+        return lambda: func(just_args(source), logging=logging)
 
     return decorator_func
