@@ -35,6 +35,7 @@ def get_module(_target_, paths=None, modules=None):
     modules.update(added_modules)
 
     if '/' in _target_:
+        *prefix, _target_ = _target_.rsplit('../', 1)
         if '.py.' in _target_:
             path, module_name = _target_.split('.py.', 1)
             path += '.py'
@@ -44,13 +45,13 @@ def get_module(_target_, paths=None, modules=None):
             else:
                 assert '.' in _target_, f'Directory path must include a .<module-name>, got: {_target_}'
                 path, module_name = _target_.rsplit('.', 1)
-                path += '/__init__.py.'
+                path += '/__init__.py'
     else:
+        prefix = None
         *path, module_name = _target_.rsplit('.', 1)
         path = path[0].replace('..', '!@#$%^&*').replace('.', '/').replace('!@#$%^&*', '../') + '.py' if path else None
 
     if path:
-        *prefix, path = path.rsplit('../', 1)
         keys = path.split('/')
         module = None
 
@@ -63,15 +64,17 @@ def get_module(_target_, paths=None, modules=None):
         else:
             # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
             for i, base in enumerate(paths + ['']):
-                if prefix:
-                    base += prefix[0] + '../'  # Move relative backwards to base
                 base = os.path.abspath(base)
+                if prefix:
+                    base += '/' + prefix[0] + '..'  # Move relative backwards to base
                 if base:
                     base += '/'
 
                 if not os.path.exists(base + path):
                     if os.path.exists(base + path.replace('.py', '/__init__.py')):
                         path = path.replace('.py', '/__init__.py')
+                    elif os.path.exists(base + path.replace('/__init__', '')):
+                        path = path.replace('/__init__.py', '.py')
                     else:
                         continue
 
@@ -91,10 +94,10 @@ def get_module(_target_, paths=None, modules=None):
                         try:
                             module = importlib.import_module(path)
                         except ModuleNotFoundError:
-                            add, path = path.rsplit('.', 1)
-                            sys.path.append(base + add)
+                            *add, path = path.rsplit('.', 1)
+                            sys.path.append(base + (add[0] if add else ''))
                             module = importlib.import_module(path)
-                            path = add + '.' + path
+                            path = (add[0] if add else '') + '.' + path
                         sys.modules[path] = module
                         break
         if module is None:

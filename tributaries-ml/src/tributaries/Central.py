@@ -244,13 +244,6 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
 
     args = {key: value for key, value in args.items() if key not in ['sweep', 'plot', 'checkpoints', 'github', 'level']}
 
-    # TODO This kind of dynamic pathfinding should be part of minihydra
-    if '/' in sweep:
-        root, sweep = sweep.rsplit('/', 1)
-        if not os.path.exists(root):
-            root = os.getcwd() + '/' + root
-        os.chdir(root)  # Makes server-relative paths possible
-
     path = sweep
     sweep = instantiate(sweep + '.my_sweep') if sweep else Args(**args)
     args = {key: args[key] for key in args.keys() & signature(server).parameters}
