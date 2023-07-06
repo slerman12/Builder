@@ -205,7 +205,7 @@ def recursive_update(args, args2):
 def read(source, parse_task=True):
     args, path = open_yaml(source, return_path=True)
 
-    # Need to allow imports
+    # Need to allow imports  TODO Auto-search task/ as well
     if 'imports' in args:
         imports = args.pop('imports')
 

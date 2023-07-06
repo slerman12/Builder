@@ -94,6 +94,10 @@ def import_paths():
     if __name__ not in added_modules:
         added_modules[__name__] = sys.modules[__name__]  # Adds Utils to module instantiation path
 
+    if 'ML' not in added_modules:
+        import ML
+        added_modules['ML'] = ML
+
     # Adds Hyperparams dir to search path
     for path in [UnifiedML, app, os.getcwd()]:
         if path + '/Hyperparams' not in yaml_search_paths and os.path.exists(path + '/Hyperparams'):
