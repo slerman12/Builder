@@ -63,6 +63,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 {'python ' + deploy_config.app_name_paths[deploy_config.app] if deploy_config.app_name_paths and deploy_config.app
     else 'ML'} {hyperparams}
 """
+    print(script)
 
     # Write script
     with open('./sbatch_script', 'w') as file:
