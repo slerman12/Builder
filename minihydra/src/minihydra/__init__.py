@@ -18,11 +18,12 @@ from math import inf
 import yaml
 
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
+cwd = os.getcwd()
 
-sys.path.extend([app, os.getcwd()])  # Adding sys paths instead of module paths so that imports in modules work as well
+sys.path.extend([app, cwd])  # Adding sys paths instead of module paths so that imports in modules work as well
 
-yaml_search_paths = [app, os.getcwd()]  # List of paths to search for yamls in
-module_paths = [app, os.getcwd()]  # List of paths to instantiate modules from
+yaml_search_paths = [app, cwd]  # List of paths to search for yamls in
+module_paths = [app, cwd]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
 
 log_dir = None
@@ -278,13 +279,6 @@ def parse(args=None):
     return args
 
 
-def log(args):
-    if 'minihydra' in args:
-        if 'log_dir' in args.minihydra:
-            with open(interpolate([args.minihydra.log_dir], args)[0] + '.yaml', 'w') as file:
-                yaml.dump(interpolate(parse(Args()), args).to_dict(), file)
-
-
 def get(args, keys):
     arg = args
     keys = keys.split('.')
@@ -335,6 +329,15 @@ def interpolate(arg, args=None):
             interpolate(arg[key], args)  # Recurse through inner values
 
     return arg
+
+
+def log(args):
+    if 'minihydra' in args:
+        if 'log_dir' in args.minihydra:
+            with open(interpolate([args.minihydra.log_dir], args)[0] + '.yaml', 'w') as file:
+                args = interpolate(parse(Args()), args)
+                args.update(_minihydra_={'app': app, 'cwd': cwd})
+                yaml.dump(args.to_dict(), file, sort_keys=False)
 
 
 def multirun(args):
