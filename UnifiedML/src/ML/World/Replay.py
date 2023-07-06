@@ -167,7 +167,7 @@ class Replay:
 
         # Replay
 
-        self.replay = iter(self)
+        self.replay = Thread(target=iter, args=(self,)).start()
 
     # Allows iteration via "next" (e.g. batch = next(replay))
     def __next__(self):

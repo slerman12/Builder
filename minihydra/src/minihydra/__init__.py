@@ -137,10 +137,11 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
             if isinstance(module, str):
                 module = get_module(module, _paths_, _modules_)
 
-            if callable(module):
-                # Signature match, only for kwargs not args
-                _args = inspect.signature(module).parameters if _signature_matching_ else kwargs.keys()
-                args.update(kwargs if 'kwargs' in _args else {key: kwargs[key] for key in kwargs.keys() & _args})
+            if isinstance(module, type) or inspect.isfunction(module):
+                # Signature matching
+                args.update(kwargs)
+                signature = inspect.signature(module).parameters if _signature_matching_ else args.keys()
+                args = args if 'kwargs' in signature else {key: args[key] for key in args.keys() & signature}
                 module = module(**args)
     else:
         # Convert to config
