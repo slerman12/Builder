@@ -23,7 +23,7 @@ from tqdm import tqdm
 
 import Utils
 from World.Memory import Batch
-from minihydra import instantiate, Args, added_modules, open_yaml
+from minihydra import instantiate, Args, module_paths, added_modules, open_yaml
 
 
 # Returns a path to an existing Memory directory or an instantiated Pytorch Dataset
@@ -51,7 +51,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     # Return a Dataset based on a module path or non-default modules like torchvision
     assert is_valid_path(dataset_config._target_, module_path=True, module=True), \
-        'Not a valid Dataset instantiation argument.'
+        f'Not a valid Dataset instantiation argument: {dataset_config._target_}. Search paths included: {module_paths}'
 
     path += get_dataset_path(dataset_config, path)  # DatasetClassName/Count/
 
@@ -175,8 +175,11 @@ def is_valid_path(path, dir_path=False, module_path=False, module=False):
     if module_path and not truth and path.count('.') > 0:
         try:
             *root, file, module = path.replace('.', '/').rsplit('/', 2)
-            root = root[0] + '/' if root else ''
-            truth = os.path.exists(root + file + '.py')
+            root = root[0].strip('/') + '/' if root else ''
+            for base in module_paths:
+                truth = os.path.exists(base + '/' + root + file + '.py')
+                if truth:
+                    break
         except FileNotFoundError:
             pass
 

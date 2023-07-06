@@ -75,37 +75,6 @@ def get_module(_target_, paths=None, modules=None):
                     else:
                         continue
 
-                # # Start from the absolute path, adding only the highest-level necessary path to the system path
-                # parts = [part.replace('.py', '') for part in os.path.abspath(base + path).split('/') if part]
-                # name = added = ''
-                # explored = '/'
-                #
-                # # Construct a module path name given a directory path
-                # for part in parts:
-                #     name += '.' + part if name else part
-                #     if not os.path.exists(name.replace('.', '/') + '.py'):
-                #         if added:
-                #             sys.path.pop(sys.path.index(added))
-                #             added = ''
-                #         if explored not in sys.path:
-                #             sys.path.append(explored)  # Add exactly 0 or 1 sys paths
-                #             added = explored
-                #         name = part
-                #     explored += '/' + part if explored else part
-
-                # Check if cached
-                # if name in sys.modules:
-                #     module = sys.modules[name]
-                # else:
-                    # for key, value in sys.modules.items():
-                    #     if hasattr(value, '__file__') and value.__file__ and base + path in value.__file__:
-                    #         module = value
-                    #         break
-                    # else:
-                    #     # Finally, import
-                    #     module = importlib.import_module(name)
-                    #     sys.modules[name] = module
-
                 path = path.replace('/', '.').replace('.py', '')
 
                 # Check if cached
@@ -185,12 +154,12 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         return module if _i_ is None else module[_i_]  # Allow sub-indexing (if specified)
 
 
-def open_yaml(source):
+def open_yaml(source, return_path=False):
     for path in yaml_search_paths + ['']:
         try:
             with open(path + '/' + source.strip('/'), 'r') as file:
                 args = yaml.safe_load(file)
-            return recursive_Args(args)
+            return (recursive_Args(args), path + '/' + source.strip('/')) if return_path else recursive_Args(args)
         except FileNotFoundError:
             continue
     raise FileNotFoundError(f'{source} not found. Searched: {yaml_search_paths + [""]}')
@@ -230,7 +199,7 @@ def recursive_update(args, args2):
 
 
 def read(source, parse_task=True):
-    args = open_yaml(source)
+    args, path = open_yaml(source, return_path=True)
 
     # Need to allow imports  TODO Might have to add relative paths to yaml_search_paths !
     if 'imports' in args:
@@ -238,8 +207,16 @@ def read(source, parse_task=True):
 
         self = recursive_Args(args)
 
+        added = None
         for module in imports:
+            path = os.path.dirname(path)
+            if path not in sys.path:
+                added = path
+                yaml_search_paths.append(path)
             module = self if module == 'self' else read(module + '.yaml', parse_task=False)
+            if added:
+                yaml_search_paths.pop(yaml_search_paths.index(added))
+                added = None
             recursive_update(args, module)
 
     # Parse task  TODO Save these in minihydra: log_dir:
@@ -253,8 +230,11 @@ def read(source, parse_task=True):
         if 'task' in args and args.task not in [None, 'null']:
             try:
                 task = read('task/' + args.task + '.yaml', parse_task=False)
-            except FileNotFoundError:
-                task = read(args.task + '.yaml', parse_task=False)
+            except FileNotFoundError as e:
+                try:
+                    task = read(args.task + '.yaml', parse_task=False)
+                except FileNotFoundError:
+                    raise e
             recursive_update(args, task)
 
     return args
