@@ -305,3 +305,6 @@ recipes:
     ActionExtractor: ${action_extractor}
     optim: ${creator.optim}
     scheduler: ${creator.scheduler}
+
+minihydra:
+  log_dir: ${logger.path}${task_name}_${seed}_Command_Line_Args

@@ -376,14 +376,16 @@ def adaptive_shaping(in_shape=None, out_shape=None):
         if not isinstance(in_shape, (list, tuple)):
             in_shape = [in_shape]
 
-        shaping.update(dict(in_shape=in_shape, in_dim=math.prod(in_shape), in_channels=in_shape[0]))
+        shaping.update(dict(input_shape=in_shape, in_shape=in_shape, in_dim=math.prod(in_shape),
+                            in_channels=in_shape[0]))
         shaping['in_features'] = shaping['in_dim']
 
     if out_shape is not None:
         if not isinstance(out_shape, (list, tuple)):
             out_shape = [out_shape]
 
-        shaping.update(dict(out_shape=out_shape, out_dim=math.prod(out_shape), out_channels=out_shape[0]))
+        shaping.update(dict(output_shape=out_shape, out_shape=out_shape, out_dim=math.prod(out_shape),
+                            out_channels=out_shape[0]))
         shaping['out_features'] = shaping['out_dim']
 
     return shaping

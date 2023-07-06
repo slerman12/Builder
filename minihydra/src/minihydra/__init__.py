@@ -25,6 +25,8 @@ yaml_search_paths = [app, os.getcwd()]  # List of paths to search for yamls in
 module_paths = [app, os.getcwd()]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
 
+log_dir = None
+
 
 def get_module(_target_, paths=None, modules=None):
     paths = list(paths or []) + module_paths
@@ -276,6 +278,13 @@ def parse(args=None):
     return args
 
 
+def log(args):
+    if 'minihydra' in args:
+        if 'log_dir' in args.minihydra:
+            with open(interpolate([args.minihydra.log_dir], args)[0] + '.yaml', 'w') as file:
+                yaml.dump(interpolate(parse(Args()), args).to_dict(), file)
+
+
 def get(args, keys):
     arg = args
     keys = keys.split('.')
@@ -341,6 +350,7 @@ def just_args(source=None):
     args = Args() if source is None else read(source)
     args = parse(args)
     args = interpolate(args)  # Command-line requires quotes for interpolation
+    log(args)
     # args = multirun(args)
 
     return args
