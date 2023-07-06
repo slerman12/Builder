@@ -11,7 +11,8 @@ my_sweep.hyperparams = [
     train_steps=5e5
     save_per_steps=1e5
     +'dataset.roots=["/gpfs/fs2/scratch/public/jsalgad2/icsd1.2m_large/","./Data/Generated/XRDs_RRUFF/"]'
-    +'dataset.train_eval_splits=[1, 0.5]'""" for num_classes in (7, 230)
+    +'dataset.train_eval_splits=[1, 0.5]
+    Dataset=XRD.MemoryEfficientXRD'""" for num_classes in (7, 230)
 ]
 
 my_sweep.app = 'XRDs'
