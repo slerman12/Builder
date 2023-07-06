@@ -9,8 +9,8 @@ def main(node):
     app_name_paths = {'XRDs': f"/home/cxu-serve/u1/{username}/XRDs/XRD.py"}  # Defines the name and location of apps
     conda = 'conda activate Sam'
 
-    nodes_partitions = {'macula': 'macula*', 'cornea': 'gpu', 'iris': 'gpu', 'retina': 'gpu'}
-    sbatch = f'#SBATCH --nodelist {node} --partition {nodes_partitions[node]} --pty bash -i'
+    nodes_partitions = {'macula': 'macula', 'cornea': 'gpu', 'iris': 'gpu', 'retina': 'gpu'}
+    sbatch = f'#SBATCH --nodelist {node} --partition {nodes_partitions[node]}'
 
     return server, username, password, None, app_name_paths, conda, sbatch
 
