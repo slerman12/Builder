@@ -79,6 +79,8 @@ minihydra can allow adding yaml_search_paths, module_paths, and modules via comm
     Maybe add underscores to all reserved arguments.
     
 Maybe add __file__ directly from get_args call to add paths/modules.
+
+Wherever task is imported, Utils can add the Python files above Hyperparams (or task, or directly) as app
 """
 
 

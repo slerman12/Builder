@@ -208,7 +208,7 @@ def recursive_update(args, args2):
 def read(source, parse_task=True):
     args, path = open_yaml(source, return_path=True)
 
-    # Need to allow imports  TODO Auto-search task/ as well
+    # Need to allow imports
     if 'imports' in args:
         imports = args.pop('imports')
 
@@ -265,7 +265,7 @@ def _parse(value):
 
 
 def parse(args=None):
-    # Parse command-line  TODO Save these in minihydra: log_dir:
+    # Parse command-line
     for sys_arg in sys.argv[1:]:
         arg = args
         keys, value = sys_arg.split('=', 1)
@@ -334,7 +334,9 @@ def interpolate(arg, args=None):
 def log(args):
     if 'minihydra' in args:
         if 'log_dir' in args.minihydra:
-            with open(interpolate([args.minihydra.log_dir], args)[0] + '.yaml', 'w') as file:
+            path = interpolate([args.minihydra.log_dir], args)[0] + '.yaml'
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'w') as file:
                 args = interpolate(parse(Args()), args)
                 args.update(_minihydra_={'app': app, 'cwd': cwd})
                 yaml.dump(args.to_dict(), file, sort_keys=False)
