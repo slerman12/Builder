@@ -107,6 +107,7 @@ def mass_deploy():
 
     # Defaults in case tributaries called directly (without sweep)
     defaults = Args(**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''})
+    print(sweep, {key: value for key, value in defaults.items() if key not in sweep})
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
