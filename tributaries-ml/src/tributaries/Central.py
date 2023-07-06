@@ -61,9 +61,8 @@ def sbatch_deploy(hyperparams, deploy_config):
 {commands}
 {'wandb login ' + deploy_config.wandb_key if deploy_config.wandb_key else ''}
 {'python ' + deploy_config.app_name_paths[deploy_config.app] if deploy_config.app_name_paths and deploy_config.app
-    else 'ML'} {hyperparams}
+    else 'ML'} {' '.join(hyperparams.split())}
 """
-    print(script)
 
     # Write script
     with open('./sbatch_script', 'w') as file:
