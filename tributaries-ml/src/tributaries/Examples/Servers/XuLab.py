@@ -1,4 +1,4 @@
-# Tutorial: Add an app and activating a conda env
+# Tutorial 2. Adding an app and activating a conda env
 
 from tributaries import my_server
 
@@ -14,8 +14,9 @@ def main():
 if __name__ == '__main__':
     main()
 
+# Command-line examples:
 
-# Run a sweep like this:
-#   $ python XuLab.py sweep=../Sweeps/XRDsPaper
-# Plot it:
-#   $ python XuLab.py sweep=../Sweeps/XRDsPaper plot=true
+#   Run a sweep like this:
+#       $ python XuLab.py sweep=../Sweeps/XRDsPaper
+#   Plot it:
+#       $ python XuLab.py sweep=../Sweeps/XRDsPaper plot=true

@@ -1,4 +1,4 @@
-# Tutorial: Add a default sweep, VPN login, custom command-line args, and custom sbatch code
+# Tutorial 3. Adding a default sweep, VPN login, custom command-line args, and custom sbatch code
 
 from tributaries.Central import my_server
 from tributaries.SafePass import get_pass
@@ -29,8 +29,9 @@ def main(group_name=None, username='slerman', env=None):  # Can pass in special 
 if __name__ == '__main__':
     main()
 
+# Command-line examples:
 
-# Run the default XRDsPaper sweep like this:
-#   $ python Bluehive.py
-# Plot it:
-#   $ python Bluehive.py plot=true
+#   Run the default XRDsPaper sweep like this:
+#       $ python Bluehive.py
+#   Plot it:
+#       $ python Bluehive.py plot=true
