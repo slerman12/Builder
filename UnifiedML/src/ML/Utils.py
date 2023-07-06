@@ -27,7 +27,8 @@ from torchvision import transforms  # For direct accessibility via command line
 from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct accessibility via command line
 from Blocks.Architectures import *  # For direct accessibility via command line
 
-from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate  # TODO Don't import instantiate; update Utils. in ML
+# TODO Don't import instantiate; update Utils. in ML
+from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -62,6 +63,8 @@ def init(args):
 
     print('Device:', args.device)
 
+    interpolate(args)
+
 
 """
 Minihydra plans
@@ -93,10 +96,6 @@ def import_paths():
 
     if __name__ not in added_modules:
         added_modules[__name__] = sys.modules[__name__]  # Adds Utils to module instantiation path
-
-    if 'ML' not in added_modules:
-        import ML
-        added_modules['ML'] = ML
 
     # Adds Hyperparams dir to search path
     for path in [UnifiedML, app, os.getcwd()]:
@@ -367,6 +366,27 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=classify/mnist", "task=classify/mnist Eyes=MLP"]'
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=NPCNN num_classes=230 Eyes=XRD.Eyes"]'
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
+
+
+# Adaptively fills shaping arguments in instantiated Pytorch modules
+def adaptive_shaping(in_shape=None, out_shape=None):
+    shaping = {}
+
+    if in_shape is not None:
+        if not isinstance(in_shape, (list, tuple)):
+            in_shape = [in_shape]
+
+        shaping.update(dict(in_shape=in_shape, in_dim=math.prod(in_shape), in_channels=in_shape[0]))
+        shaping['in_features'] = shaping['in_dim']
+
+    if out_shape is not None:
+        if not isinstance(out_shape, (list, tuple)):
+            out_shape = [out_shape]
+
+        shaping.update(dict(out_shape=out_shape, out_dim=math.prod(out_shape), out_channels=out_shape[0]))
+        shaping['out_features'] = shaping['out_dim']
+
+    return shaping
 
 
 # Initializes model weights a la orthogonal

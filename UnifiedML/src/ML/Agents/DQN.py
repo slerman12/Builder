@@ -6,6 +6,8 @@ import time
 
 import torch
 
+from minihydra import instantiate
+
 import Utils
 
 from Blocks.Augmentations import RandomShiftsAug
@@ -45,7 +47,7 @@ class DQNAgent(torch.nn.Module):
             action_spec.discrete_bins = num_actions  # Continuous env has no discrete bins by default, must specify
 
         # Image augmentation
-        self.aug = Utils.instantiate(recipes.aug) or RandomShiftsAug(pad=4)
+        self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)
 
         self.encoder = CNNEncoder(obs_spec, standardize=standardize, **recipes.encoder, parallel=parallel, lr=lr)
 

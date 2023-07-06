@@ -4,6 +4,8 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import torch
 
+from minihydra import instantiate
+
 import Utils
 
 
@@ -17,15 +19,15 @@ class Residual(torch.nn.Module):
         self.mode = mode  # Additive residual by default
 
         # Can pass a model in as an argument or via the command-line syntax
-        self.model = Utils.instantiate({'_target_': model}, **kwargs) if isinstance(model, str) \
+        self.model = instantiate({'_target_': model}, **kwargs) if isinstance(model, str) \
             else model
 
         if 'input_shape' in kwargs:
             kwargs['output_shape'] = self.repr_shape(*kwargs['input_shape'])
 
         # Can pass a down-sampling model in as an argument or via the command-line syntax
-        self.down_sample = Utils.instantiate({'_target_': down_sample},
-                                             **kwargs) if isinstance(down_sample, str) \
+        self.down_sample = instantiate({'_target_': down_sample},
+                                       **kwargs) if isinstance(down_sample, str) \
             else down_sample
 
     def repr_shape(self, *_):

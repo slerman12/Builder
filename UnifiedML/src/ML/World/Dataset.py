@@ -21,7 +21,6 @@ import torchvision
 from torchvision.transforms import functional as F
 from tqdm import tqdm
 
-import Utils
 from World.Memory import Batch
 from minihydra import instantiate, Args, module_paths, added_modules, open_yaml
 
@@ -97,9 +96,9 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             specs.update(kwargs)
             if is_torchvision:
                 with Lock(path + 'lock'):  # System-wide mutex-lock
-                    dataset = Utils.instantiate(dataset_config, **specs)
+                    dataset = instantiate(dataset_config, **specs)
             else:
-                dataset = Utils.instantiate(dataset_config, **specs)
+                dataset = instantiate(dataset_config, **specs)
         except (TypeError, ValueError):
             continue
         break

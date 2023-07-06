@@ -9,6 +9,8 @@ from copy import copy
 import torch
 from torch.nn.functional import cross_entropy
 
+from minihydra import instantiate
+
 from Blocks.Architectures import MLP
 from Blocks.Architectures.Vision.ResNet import MiniResNet
 
@@ -53,7 +55,7 @@ class AC2Agent(torch.nn.Module):
         action_spec = copy(action_spec)  # Non-destructive copy
 
         # Image augmentation
-        self.aug = Utils.instantiate(recipes.aug) or RandomShiftsAug(pad=4)
+        self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)
 
         # RL -> generate conversion
         if self.generate:

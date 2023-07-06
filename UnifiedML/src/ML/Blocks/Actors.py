@@ -7,6 +7,8 @@ import copy
 
 from torch import nn
 
+from minihydra import instantiate
+
 from Blocks.Architectures.MLP import MLP
 
 import Utils
@@ -30,14 +32,14 @@ class EnsemblePiActor(nn.Module):
 
         in_dim = math.prod(repr_shape)
 
-        self.trunk = Utils.instantiate(trunk, input_shape=repr_shape, output_shape=[trunk_dim]) or nn.Sequential(
+        self.trunk = instantiate(trunk, **Utils.adaptive_shaping(repr_shape, [trunk_dim])) or nn.Sequential(
             nn.Flatten(), nn.Linear(in_dim, trunk_dim), nn.LayerNorm(trunk_dim), nn.Tanh())
 
         in_shape = Utils.cnn_feature_shape(repr_shape, self.trunk)  # Will be trunk_dim when possible
         out_shape = [self.num_actions * action_spec.shape[0] * (1 if stddev_schedule else 2), *action_spec.shape[1:]]
 
         # Ensemble
-        self.Pi_head = Utils.Ensemble([Utils.instantiate(Pi_head, i, input_shape=in_shape, output_shape=out_shape)
+        self.Pi_head = Utils.Ensemble([instantiate(Pi_head, i, **Utils.adaptive_shaping(in_shape, out_shape))
                                        or MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])
 
         # Initialize model optimizer + EMA

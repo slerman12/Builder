@@ -11,6 +11,8 @@ UnifiedML - A unified framework for intelligence training. Built and conceived b
 import sys
 import os
 
+from torch import multiprocessing as mp
+
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -24,7 +26,4 @@ for dir in dirs:
     globals().update({dir: __import__(dir)})
 
 from Utils import launch
-launch = launch
-
-# import torch
-# torch.multiprocessing.set_start_method('spawn')
+main = launch  # TODO main

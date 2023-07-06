@@ -7,6 +7,8 @@ import time
 import torch
 from torch.nn.functional import cross_entropy
 
+from minihydra import instantiate
+
 import Utils
 
 from Blocks.Augmentations import RandomShiftsAug
@@ -39,7 +41,7 @@ class DrQV2Agent(torch.nn.Module):
         assert not generate, f'{type(self).__name__} does not support generative modeling.'
 
         # Image augmentation
-        self.aug = Utils.instantiate(recipes.aug) or RandomShiftsAug(pad=4)
+        self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)
 
         # Discrete -> continuous conversion
         if action_spec.discrete:

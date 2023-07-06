@@ -7,6 +7,7 @@ import os
 import warnings
 
 import numpy as np
+import torch
 
 from torch.utils.data import DataLoader
 
@@ -52,7 +53,7 @@ class Classify:
 
     """
     def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False,
-                 batch_size=8, num_workers=1, low=None, high=None, **kwargs):
+                 batch_size=8, num_workers=1, low=None, high=None, device='cpu', **kwargs):
         self.episode_done = False
 
         if not train:
@@ -73,7 +74,7 @@ class Classify:
                                   batch_size=batch_size,
                                   shuffle=True,
                                   num_workers=num_workers,
-                                  pin_memory=True,
+                                  pin_memory=torch.device(device).type == 'cuda',
                                   collate_fn=getattr(dataset, 'collate_fn', None),  # Useful if streaming dynamic lens
                                   worker_init_fn=worker_init_fn)
 

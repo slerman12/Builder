@@ -9,6 +9,8 @@ import copy
 import torch
 from torch import nn
 
+from minihydra import instantiate
+
 from Distributions import TruncatedNormal, NormalizedCategorical
 
 import Utils
@@ -31,8 +33,8 @@ class Creator(nn.Module):
         self.temp_schedule = temp_schedule
 
         # A mapping that can be applied after or concurrently with action sampling
-        self.ActionExtractor = Utils.instantiate(ActionExtractor, input_shape=math.prod(self.action_spec.shape)
-                                                 ) or nn.Identity()
+        self.ActionExtractor = instantiate(ActionExtractor, **Utils.adaptive_shaping(math.prod(self.action_spec.shape))
+                                           ) or nn.Identity()
 
         # Initialize model optimizer + EMA
         self.optim, self.scheduler = Utils.optimizer_init(self.parameters(), optim, scheduler,
@@ -47,9 +49,9 @@ class Creator(nn.Module):
         r = step < self.rand_steps  # Whether to sample uniformly random actions
 
         # Optionally create policy from recipe
-        return Utils.instantiate(self.policy, mean=mean, stddev=stddev, step=step,
-                                 action_spec=self.action_spec, discrete=self.discrete,
-                                 rand=r, temp_schedule=self.temp_schedule, ActionExtractor=self.ActionExtractor) or \
+        return instantiate(self.policy, mean=mean, stddev=stddev, step=step,
+                           action_spec=self.action_spec, discrete=self.discrete,
+                           rand=r, temp_schedule=self.temp_schedule, ActionExtractor=self.ActionExtractor) or \
             MonteCarlo(self.action_spec, self.discrete, mean, stddev, step, r, self.temp_schedule, self.ActionExtractor)
 
 

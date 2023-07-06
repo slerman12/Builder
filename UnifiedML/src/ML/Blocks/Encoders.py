@@ -7,6 +7,8 @@ import copy
 import torch
 from torch import nn
 
+from minihydra import instantiate
+
 from Blocks.Architectures.Vision.CNN import CNN
 
 import Utils
@@ -34,7 +36,7 @@ class CNNEncoder(nn.Module):
         obs_shape[0] += context_dim
 
         # CNN TODO Auto-infer how to broadcast input shape based on whether signature arg 0 is in_features, in_channels,
-        self.Eyes = Utils.instantiate(Eyes, input_shape=obs_shape) or CNN(obs_shape)            # TODO input_shape, etc.
+        self.Eyes = instantiate(Eyes, **Utils.adaptive_shaping(obs_shape)) or CNN(obs_shape)            # TODO input_shape, etc.
         #     TODO e.g. dynamically support output_dim vs output_shape, or "out_features" and common names. Maybe just a
         #           conversion method in instantiate based on signature try-catch
 
@@ -45,7 +47,7 @@ class CNNEncoder(nn.Module):
 
         self.feature_shape = Utils.cnn_feature_shape(obs_shape, self.Eyes)  # Feature map shape
 
-        self.pool = Utils.instantiate(pool, input_shape=self.feature_shape) or nn.Flatten()
+        self.pool = instantiate(pool, **Utils.adaptive_shaping(self.feature_shape)) or nn.Flatten()
 
         self.repr_shape = Utils.cnn_feature_shape(self.feature_shape, self.pool)  # Shape after pooling
 

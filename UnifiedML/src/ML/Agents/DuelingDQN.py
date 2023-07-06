@@ -6,7 +6,7 @@ from torch.nn import Module
 
 from Blocks.Architectures import MLP
 
-from Utils import instantiate
+from minihydra import instantiate
 
 from Agents import DQNAgent
 

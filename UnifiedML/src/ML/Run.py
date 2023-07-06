@@ -2,9 +2,8 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-import torch.multiprocessing
-
 from minihydra import instantiate, get_args, interpolate  # minihydra conveniently and cleanly manages sys args
+
 from Utils import init, MT, MP, save, load
 
 
@@ -96,5 +95,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    torch.multiprocessing.set_start_method('spawn')
     main()

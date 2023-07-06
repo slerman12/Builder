@@ -8,6 +8,8 @@ import copy
 import torch
 from torch import nn
 
+from minihydra import instantiate
+
 from Blocks.Architectures.MLP import MLP
 
 import Utils
@@ -33,7 +35,7 @@ class EnsembleQCritic(nn.Module):
         in_dim = math.prod(repr_shape)
         out_shape = [self.num_actions, *action_spec.shape] if discrete else [1]
 
-        self.trunk = Utils.instantiate(trunk, input_shape=repr_shape, output_shape=[trunk_dim]) or nn.Sequential(
+        self.trunk = instantiate(trunk, **Utils.adaptive_shaping(repr_shape, [trunk_dim])) or nn.Sequential(
             nn.Flatten(), nn.Linear(in_dim, trunk_dim), nn.LayerNorm(trunk_dim), nn.Tanh())  # Not used if ignore obs!
 
         # Continuous action-space Critic gets (obs, action) as input
@@ -41,7 +43,7 @@ class EnsembleQCritic(nn.Module):
                                                                       else self.num_actions * self.action_dim)]
 
         # Ensemble
-        self.Q_head = Utils.Ensemble([Utils.instantiate(Q_head, i, input_shape=in_shape, output_shape=out_shape) or
+        self.Q_head = Utils.Ensemble([instantiate(Q_head, i, **Utils.adaptive_shaping(in_shape, out_shape)) or
                                       MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])  # e
 
         self.binary = isinstance(tuple(self.Q_head.modules())[-1],
