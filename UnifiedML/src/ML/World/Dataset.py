@@ -231,7 +231,8 @@ class Lock:
 
     def __exit__(self, _type, value, tb):
         self.unlock(self.file)
-        self.file.close()  # Perhaps delete
+        self.file.close()
+        os.remove(self.path)
 
 
 def datums_as_batch(datums):
