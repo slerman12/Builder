@@ -63,6 +63,22 @@ def init(args):
     print('Device:', args.device)
 
 
+"""
+Minihydra plans
+    
+Utils can manually map Uppercase to existing lowercases-with-_target_ attr. 
+    Or even create sub-configs for some e.g.senses.Poo creates a new senses.poo={_target_: poo}.
+As well as constructing "recipes" from the main shorthands.
+
+minihydra can have a pseudonyms arg with main_name: pseudonyms-list sublists maybe. Instead of _default_.
+
+minihydra can allow adding yaml_search_paths, module_paths, and modules via command line as reserved arguments. 
+    Maybe add underscores to all reserved arguments.
+    
+Maybe add __file__ directly from get_args call to add paths/modules.
+"""
+
+
 UnifiedML = os.path.dirname(__file__)
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
@@ -110,7 +126,7 @@ grammars()
 launch_args = {}
 
 
-# Launches UnifiedML from inside a launching app with specified args  TODO Move to Utils since MT needs access
+# Launches UnifiedML from inside a launching app with specified args
 def launch(**args):
     from Run import main
 

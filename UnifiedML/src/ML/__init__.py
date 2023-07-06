@@ -24,3 +24,4 @@ for dir in dirs:
     globals().update({dir: __import__(dir)})
 
 from Utils import launch
+launch = launch

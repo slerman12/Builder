@@ -23,92 +23,6 @@ yaml_search_paths = [app, os.getcwd()]  # List of paths to search for yamls in
 module_paths = [app, os.getcwd()]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
 
-"""
-Minihydra plans
-
-Accepts a config or string or None or object, and kwargs.
-If None, return None.
-If string, create config if path, else (if parens) execute with kwargs interpolation, optionally signature matching, 
-    and modules as locals.
-If config, instantiate. If _target_ None, return None.
-If object callable, instantiate with kwargs and optionally signature matching. Else return object. If iterable, index.
-
-Path belongs to config _target_.
-Path can be dot-separated format w.r.t. search paths, including "..".
-Path can be relative or absolute directory path.
-Path can be dot-separated format w.r.t. modules, defined locally or globally, or module search paths e.g. "Utils.".
-    Perhaps then no need for sys.path.append anywhere. yaml_search_paths, module_paths, modules.
-
-Everything in UnifiedML instantiate: _default_, _override_, optionally: signature matching, support for objects, funcs.
-    Or better, allow adding rules (funcs based on args, kwargs that return args, kwargs). Can skip & remove _override_.
-    
-Also, Utils can manually map Uppercase to existing lowercases-with-_target_ attr. 
-    Or even create sub-configs for some e.g.senses.Poo creates a new senses.poo={_target_: poo}.
-As well as constructing "recipes" from the main shorthands.
-
-minihydra can have a pseudonyms arg with main_name: pseudonyms-list sublists maybe. Instead of _default_.
-
-minihydra can allow adding yaml_search_paths, module_paths, and modules via command line as reserved arguments. 
-    Maybe add underscores to all reserved arguments.
-    
-Maybe add __file__ directly from get_args call to add paths/modules.
-"""
-
-
-def get_module1(args):
-    file, *module = args.pop('_target_').rsplit('.', 1)
-
-    sub_module, *sub_modules = file.split('.')
-
-    # Can instantiate based on added modules
-    if sub_module in added_modules:
-        sub_module = added_modules[sub_module]
-
-        try:
-            for key in sub_modules + module:
-                sub_module = getattr(sub_module, key)
-
-            return sub_module(**args)
-        except AttributeError:
-            pass
-
-    # file = file.replace('.', '/').replace('.py', '')  # TODO: Can it search wrt absolute paths?
-    file = file.replace('..', '$#').replace('.', '/').replace('$#', '..').replace('.py', '')
-    if module:
-        module = module[0]
-    else:
-        module = file
-        file = 'Utils'  # TODO Generalize this / allow added modules
-    for i, path in enumerate(yaml_search_paths):
-        for j, file in enumerate([file + '/__init__', file]):
-            if not os.path.exists(path + '/' + file + '.py'):
-                if i == len(yaml_search_paths) - 1 and j == 1:
-                    raise FileNotFoundError(f'Could not find {module} in /{file}.py. '
-                                            f'Search paths include: {yaml_search_paths}')
-                continue
-
-            # Reuse cached imports
-            if file.replace('/', '.').replace('...', '..') + '_inst' in sys.modules:
-                module = getattr(sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'], module)
-                return module(**args) if callable(module) else module
-
-            # Reuse cached imports
-            for key, value in sys.modules.items():
-                if hasattr(value, '__file__') and value.__file__ and path + '/' + file + '.py' in value.__file__:
-                    try:
-                        module = getattr(value, module)
-                        return module(**args) if callable(module) else module
-                    except AttributeError:
-                        if i == len(yaml_search_paths) - 1 and j == 1:
-                            raise AttributeError(f'Could not initialize {module} in /{file}.py.')
-                        continue
-
-            # Import
-            package = importlib.import_module(file.replace('/', '.').replace('...', '..'))
-            sys.modules[file.replace('/', '.').replace('...', '..') + '_inst'] = package
-            module = getattr(package, module)
-            return module(**args) if callable(module) else module
-
 
 def valid_import(module_path):
     try:
@@ -179,8 +93,19 @@ def get_module(_target_, paths=None, modules=None):
                         name = part
                     explored += '/' + part if explored else part
 
+                # Check if cached
+                # if name in sys.modules:
+                #     module = sys.modules[name]
+                # else:
+                    # for key, value in sys.modules.items():
+                    #     if hasattr(value, '__file__') and value.__file__ and base + path in value.__file__:
+                    #         module = value
+                    #         break
+                    # else:
+                    #     # Finally, import
                 # Finally, import
-                module = importlib.import_module(name)  # TODO Verify cached imports
+                module = importlib.import_module(name)
+                sys.modules[name] = module
                 break
         if module is None:
             raise FileNotFoundError(f'Could note find path {path}. Search paths include: {paths}')
@@ -215,8 +140,7 @@ def instantiate(args, i=None, paths=None, modules=None, signature_matching=True,
         elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
             for key in kwargs:
                 args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-            locals().update(modules or {})
-            module = eval(_target_, locals())  # Direct code execution
+            module = eval(_target_, globals(), {**added_modules, **(modules or {})})  # Direct code execution
         else:
             module = _target_
 
