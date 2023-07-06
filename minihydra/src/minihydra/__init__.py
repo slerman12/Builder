@@ -365,6 +365,6 @@ def just_args(source=None, logging=False):
 # Can decorate a method with args in signature
 def get_args(source=None, logging=True):
     def decorator_func(func):
-        return lambda: func(just_args(source), logging=logging)
+        return lambda: func(just_args(source, logging=logging))
 
     return decorator_func
