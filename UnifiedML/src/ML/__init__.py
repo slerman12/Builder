@@ -11,8 +11,8 @@ UnifiedML - A unified framework for intelligence training. Built and conceived b
 import sys
 import os
 
-sys.path.append(os.path.dirname(__file__))
 
+sys.path.append(os.path.dirname(__file__))
 
 _, dirs, files = next(os.walk(os.path.dirname(__file__)))
 
@@ -25,3 +25,6 @@ for dir in dirs:
 
 from Utils import launch
 launch = launch
+
+# import torch
+# torch.multiprocessing.set_start_method('spawn')

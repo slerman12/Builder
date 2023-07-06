@@ -19,16 +19,11 @@ import yaml
 
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
+sys.path.extend([app, os.getcwd()])  # Adding sys paths instead of module paths so that imports in modules work as well
+
 yaml_search_paths = [app, os.getcwd()]  # List of paths to search for yamls in
 module_paths = [app, os.getcwd()]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
-
-
-def valid_import(module_path):
-    try:
-        return importlib.util.find_spec(module_path) is not None
-    except ModuleNotFoundError:
-        return False
 
 
 def get_module(_target_, paths=None, modules=None):
@@ -42,7 +37,7 @@ def get_module(_target_, paths=None, modules=None):
     if '/' in _target_:
         if '.py.' in _target_:
             path, module_name = _target_.split('.py.', 1)
-            path += '.py.'
+            path += '.py'
         else:
             if '.py' in _target_:
                 path, module_name = _target_, None
@@ -55,6 +50,7 @@ def get_module(_target_, paths=None, modules=None):
         path = path[0].replace('..', '!@#$%^&*').replace('.', '/').replace('!@#$%^&*', '../') + '.py' if path else None
 
     if path:
+        *prefix, path = path.rsplit('../', 1)
         keys = path.split('/')
         module = None
 
@@ -67,7 +63,10 @@ def get_module(_target_, paths=None, modules=None):
         else:
             # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
             for i, base in enumerate(paths + ['']):
-                if base and base[-1] != '/':
+                if prefix:
+                    base += prefix[0] + '../'  # Move relative backwards to base
+                base = os.path.abspath(base)
+                if base:
                     base += '/'
 
                 if not os.path.exists(base + path):
@@ -76,22 +75,23 @@ def get_module(_target_, paths=None, modules=None):
                     else:
                         continue
 
-                # Start from the absolute path, adding only the highest-level necessary path to the system path
-                parts = [part.replace('.py', '') for part in os.path.abspath(base + path).split('/') if part]
-                explored = name = added = ''
-
-                # Construct a module path name given a directory path
-                for part in parts:
-                    name += '.' + part if name else part
-                    if not valid_import(name):
-                        if added:
-                            sys.path.pop(sys.path.index(added))
-                            added = ''
-                        if explored not in sys.path:
-                            sys.path.append(explored)
-                            added = explored
-                        name = part
-                    explored += '/' + part if explored else part
+                # # Start from the absolute path, adding only the highest-level necessary path to the system path
+                # parts = [part.replace('.py', '') for part in os.path.abspath(base + path).split('/') if part]
+                # name = added = ''
+                # explored = '/'
+                #
+                # # Construct a module path name given a directory path
+                # for part in parts:
+                #     name += '.' + part if name else part
+                #     if not os.path.exists(name.replace('.', '/') + '.py'):
+                #         if added:
+                #             sys.path.pop(sys.path.index(added))
+                #             added = ''
+                #         if explored not in sys.path:
+                #             sys.path.append(explored)  # Add exactly 0 or 1 sys paths
+                #             added = explored
+                #         name = part
+                #     explored += '/' + part if explored else part
 
                 # Check if cached
                 # if name in sys.modules:
@@ -103,9 +103,19 @@ def get_module(_target_, paths=None, modules=None):
                     #         break
                     # else:
                     #     # Finally, import
-                # Finally, import
-                module = importlib.import_module(name)
-                sys.modules[name] = module
+                    #     module = importlib.import_module(name)
+                    #     sys.modules[name] = module
+
+                path = path.replace('/', '.').replace('.py', '')
+
+                try:
+                    module = importlib.import_module(path)
+                except ModuleNotFoundError:
+                    add, path = path.rsplit('.', 1)
+                    sys.path.append(base + add)
+                    module = importlib.import_module(path)
+                    path = add + '.' + path
+                sys.modules[path] = module
                 break
         if module is None:
             raise FileNotFoundError(f'Could note find path {path}. Search paths include: {paths}')
@@ -122,7 +132,7 @@ def get_module(_target_, paths=None, modules=None):
     raise FileNotFoundError(f'Could note find module {module_name}. Search modules include: {list(modules.keys())}')
 
 
-def instantiate(args, i=None, paths=None, modules=None, signature_matching=True, **kwargs):
+def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, **kwargs):
     if hasattr(args, '_target_') or hasattr(args, '_default_'):
         args = Args(args)
 
@@ -140,28 +150,28 @@ def instantiate(args, i=None, paths=None, modules=None, signature_matching=True,
         elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
             for key in kwargs:
                 args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-            module = eval(_target_, globals(), {**added_modules, **(modules or {})})  # Direct code execution
+            module = eval(_target_, globals(), {**added_modules, **(_modules_ or {})})  # Direct code execution
         else:
             module = _target_
 
             if isinstance(module, str):
-                module = get_module(module, paths, modules)
+                module = get_module(module, _paths_, _modules_)
 
             if callable(module):
                 # Signature match, only for kwargs not args
-                _args = inspect.signature(module).parameters if signature_matching else kwargs.keys()
+                _args = inspect.signature(module).parameters if _signature_matching_ else kwargs.keys()
                 args.update(kwargs if 'kwargs' in _args else {key: kwargs[key] for key in kwargs.keys() & _args})
                 module = module(**args)
     else:
         # Convert to config
-        return instantiate(Args(_target_=args), i, paths, modules, signature_matching, **kwargs)
+        return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, **kwargs)
 
     try:
         iter(module)
     except TypeError:
         return module
     else:
-        return module if i is None else module[i]  # Allow sub-indexing (if specified)
+        return module if _i_ is None else module[_i_]  # Allow sub-indexing (if specified)
 
 
 def open_yaml(source):
