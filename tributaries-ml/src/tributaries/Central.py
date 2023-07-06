@@ -20,7 +20,7 @@ from pexpect import pxssh, spawn
 
 from ML import __file__, Plot
 from ML.Utils import grammars, import_paths
-from minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, recursive_update
+from minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, recursive_update, recursive_Args
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -108,6 +108,7 @@ def mass_deploy():
     # Defaults in case tributaries called directly (without sweep)
     defaults = {**my_sweep, **{'app_name_path': None, 'commands': [], 'sbatch': ''}}
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
+    sweep = recursive_Args(sweep)
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
 
