@@ -217,7 +217,13 @@ def read(source, parse_task=True):
             if path not in sys.path:
                 added = path
                 yaml_search_paths.append(path)
-            module = self if module == 'self' else read(module + '.yaml', parse_task=False)
+            try:
+                module = self if module == 'self' else read(module + '.yaml', parse_task=False)
+            except FileNotFoundError as e:
+                try:
+                    module = read('task/' + module + '.yaml', parse_task=False)
+                except FileNotFoundError:
+                    raise e
             if added:
                 yaml_search_paths.pop(yaml_search_paths.index(added))
                 added = None
