@@ -201,7 +201,7 @@ def recursive_update(args, args2):
 def read(source, parse_task=True):
     args, path = open_yaml(source, return_path=True)
 
-    # Need to allow imports  TODO Might have to add relative paths to yaml_search_paths !
+    # Need to allow imports
     if 'imports' in args:
         imports = args.pop('imports')
 
@@ -219,7 +219,7 @@ def read(source, parse_task=True):
                 added = None
             recursive_update(args, module)
 
-    # Parse task  TODO Save these in minihydra: log_dir:
+    # Parse task
     if parse_task:  # Not needed in imports recursions
         for sys_arg in sys.argv[1:]:
             key, value = sys_arg.split('=', 1)
