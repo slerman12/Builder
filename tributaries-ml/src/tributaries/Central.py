@@ -221,7 +221,7 @@ def paint(plots, name=''):
                       )
 
 
-def decorate(server, sweep=None, plot=False, checkpoints=False):
+def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
     args = just_args()
 
     if 'sweep' in args:
@@ -247,7 +247,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
     path = sweep
     sweep = instantiate(sweep + '.my_sweep') if sweep else Args(**args)
     args = {key: args[key] for key in args.keys() & signature(server).parameters}
-    config = server(**args)
+    config = server(**args, **kwargs)
 
     if len(config) == 3:
         (server, username, password), func, app_name_paths, commands, sbatch = config, None, None, None, None
@@ -278,7 +278,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False):
 
 
 # Decorator for defining servers
-def my_server(sweep=None, plot=False, checkpoints=False):
+def my_server(sweep=None, plot=False, checkpoints=False, **kwargs):
     def decorator_func(server):
-        return partial(decorate, server, sweep, plot, checkpoints)
+        return partial(decorate, server, sweep, plot, checkpoints, **kwargs)
     return decorator_func
