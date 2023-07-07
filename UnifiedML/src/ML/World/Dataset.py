@@ -203,7 +203,7 @@ def is_valid_path(path, dir_path=False, module_path=False, module=False):
 class Lock:
     def __init__(self, path):
         self.path = path
-        os.makedirs(self.path, exist_ok=True)
+        os.makedirs(os.path.dirname(self.path), exist_ok=True)
 
         if os.name == "nt":
             import msvcrt
