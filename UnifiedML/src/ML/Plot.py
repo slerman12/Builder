@@ -68,7 +68,7 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
                                       })
 
     # RETRIEVE DATA FOR PLOTTING
-    performance, predicted_vs_actual, min_steps = get_data(specs, steps, plot_train, verbose)
+    performance, predicted_vs_actual, predicted_probas, min_steps = get_data(specs, steps, plot_train, verbose)
 
     universal_hue_order, palette = [], {}
 
@@ -344,6 +344,9 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
         general_plot(original_predicted_vs_actual, path, plot_name + 'Heatmap.png', palette,
                      make, ['Task', 'Agent'], title, 'Agent', False, True)
 
+        if len(predicted_probas) > 0:
+            pass
+
 
 def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
     # All CSVs from path, recursive
@@ -351,6 +354,7 @@ def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
 
     performance = []
     predicted_vs_actual = []
+    predicted_probas = []
 
     min_steps = steps
 
@@ -419,7 +423,7 @@ def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
         if 'predicted_vs_actual' in eval.lower():
             predicted_vs_actual.append(csv)
         elif 'predicted_probas' in eval.lower():
-            pass
+            predicted_probas.append(csv)
         else:
             performance.append(csv)
 
@@ -446,8 +450,17 @@ def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
 
         # To int
         predicted_vs_actual = predicted_vs_actual.astype({'Predicted': int, 'Actual': int})
+    if len(predicted_probas):
+        # To csv
+        predicted_probas = pd.concat(predicted_probas, ignore_index=True)
 
-    return performance, predicted_vs_actual, min_steps
+        # Capitalize column names
+        predicted_probas.columns = [' '.join([name[0].capitalize() + name[1:] for name in re.split(r'_|\s+', col_name)])
+                                    for col_name in predicted_probas.columns]
+
+        # To softmax multiple columns
+
+    return performance, predicted_vs_actual, predicted_probas, min_steps
 
 
 def general_plot(data, path, plot_name, palette, make_func, per='Task', title='UnifiedML', hue='Agent',

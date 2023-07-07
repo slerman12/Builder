@@ -216,6 +216,53 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
     return model
 
 
+class MultiModal(nn.Module):
+    def __init__(self, args=None, **parts):
+        super().__init__()
+
+        args = args or Args()
+
+        # Default accepted mappings
+        defaults = Args(Eyes={'obs', 'image'}, Ears={'audio', 'sound'})
+
+        # If args is itself a part, then apply it to (Eyes, Obs, Image, obs, image). a.k.a. Eyes is default name.
+        # Note. Maybe just do all lowercase.
+        # If args is string, instantiate-it.
+
+        # Maps parts names (lowercase) to corresponding datums (lowercase)
+        #   s.t. if datums are present, they get fed as input to the corresponding part
+        self.datums = Args()
+
+        # Synonymous datums
+        for name in args.keys() | parts.keys():
+            # All parts can accept datums with matching-key name
+            self.datums[name.upper()] = {name.lower()} | set(n.lower() for n in args[name].pop('datums', ()))
+            if name.upper() in defaults:
+                self.datums[name.upper()] = self.datums[name.upper()] | defaults[name.upper()]
+
+        # Default possible batch datums
+        batch_keys = {'obs', 'action', 'label', 'reward'} | set().union(self.datums.values())
+
+        self.datums.update({key.upper(): key for key in batch_keys if key.upper() not in self.datums})
+
+        # Convert and pop Uppercase to _target_ syntax if str and not already
+
+        # Passed-in modules
+        self.parts.update({name.upper(): part for name, part in parts.items() if part is not None})
+        # Instantiate
+        self.parts.update({name.upper(): instantiate(args[name]) for name in args if name.upper() not in self.parts and
+                           '_target_' in args[name]})
+        # Default batch keys and specified datums
+        self.parts = Args({key.upper(): nn.Identity() for key in batch_keys if key.upper() not in self.parts})
+
+    def forward(self, batch):
+        # Parts collect their batch items
+        #   If none present, don't include part
+        # Output with lowercase version of part name
+        # If input isn't a batch, treats it as obs, returns non-batch.
+        pass
+
+
 # Launches and synchronizes multiple tasks
 class MultiTask:
     def __init__(self):
@@ -748,7 +795,7 @@ class MixedPrecision:
         self.ready = True
 
 
-MP = MixedPrecision()  # AutoCast + GradScaler scales gradients for automatic mixed precision training speedup
+MP = MixedPrecision()  # AutoCast + GradScaler automatic mixed precision gradient scaling for training speedup
 
 
 import time
