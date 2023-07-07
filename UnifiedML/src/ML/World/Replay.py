@@ -53,7 +53,7 @@ class Replay:
 
         self.add_lock = Lock()  # For adding to memory in concurrency
 
-        dataset_config = dataset
+        dataset_config = dataset  # TODO Add capacities to card
         card = Args({'_target_': dataset_config}) if isinstance(dataset_config, str) else dataset_config
         # Perhaps if Online, include whether discrete -> continuous, since action shape changes in just that case
 
@@ -87,8 +87,15 @@ class Replay:
                 batches = DataLoader(dataset, batch_size=mem_size or batch_size)
 
                 # Add Dataset into Memory in batch-size chunks
-                for data in tqdm(batches, desc='Loading Dataset into accelerated Memory...'):
-                    self.memory.add(datums_as_batch(data))
+                capacity = sum(self.memory.capacities)
+                with tqdm(total=len(batches), desc='Loading Dataset into accelerated Memory...') as bar:
+                    for i, data in enumerate(batches):
+                        if len(self.memory) + len(data[-1]) > capacity:
+                            bar.total = i
+                            break
+                        self.memory.add(datums_as_batch(data))
+                        bar.update()
+                    bar.refresh()
 
             if hasattr(dataset, 'num_classes'):
                 card['num_classes'] = dataset.num_classes

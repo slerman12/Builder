@@ -48,8 +48,9 @@ frame_stack: 3
 truncate_episode_steps: 1000
 action_repeat: 1
 # Replay
-ram_capacity: 1e6  # Shorthand for replay.ram_capacity
-capacity: ${ram_capacity}
+capacity: 1e6  # Shorthand for replay.ram_capacity
+ram_capacity: ${capacity}
+hd_capacity: inf
 nstep: 10
 batch_size: 256
 discount: 0.99
@@ -139,7 +140,7 @@ replay:
   pinned_capacity: 0
   ram_capacity: ${ram_capacity}
   np_ram_capacity: 0
-  hd_capacity: inf
+  hd_capacity: ${hd_capacity}
   save: ${offline}
 #  load: ${load}  # TODO For Online, might want to overwrite
   mem_size: null
