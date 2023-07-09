@@ -53,8 +53,8 @@ def sbatch_deploy(hyperparams, deploy_config):
 {f'#SBATCH -p gpu --gres=gpu:{deploy_config.num_gpus}' if deploy_config.num_gpus else ''}
 {f'#SBATCH -p reserved --reservation={deploy_config.username}-{deploy_config.reservation_id}'
     if deploy_config.reservation_id else ''}
-#SBATCH -t {deploy_config.time} -o {args.logger.path}{args.task_name}_{args.seed}.log -J {deploy_config.pseudonym or
-                                                                                          args.task_name}
+#SBATCH -t {deploy_config.time} -o {args.logger.path}{args.task_name}_{args.seed}_Log.txt -J {deploy_config.pseudonym or
+                                                                                              args.task_name}
 #SBATCH --mem={deploy_config.mem}gb 
 {extra}
 {deploy_config.sbatch if deploy_config.sbatch else ''}
