@@ -321,6 +321,9 @@ def get_dataset_path(dataset_config, path):
         if 'classes' in card and 'classes' not in dataset_config:
             card.pop('classes')
 
+        if 'classes' in dataset_config:
+            dataset_config.classes = tuple(dataset_config.classes)
+
         # Just a shorthand
         if 'Transform' in card:
             card.pop('Transform')
