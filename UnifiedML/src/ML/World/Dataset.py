@@ -318,8 +318,8 @@ def get_dataset_path(dataset_config, path):
         if 'stats' in card and 'stats' not in dataset_config:
             card.pop('stats')
 
-        if 'num_classes' in card and 'num_classes' not in dataset_config:
-            card.pop('num_classes')
+        if 'classes' in card and 'classes' not in dataset_config:
+            card.pop('classes')
 
         # Just a shorthand
         if 'Transform' in card:

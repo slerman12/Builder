@@ -97,15 +97,15 @@ class Replay:
                         bar.update()
                     bar.refresh()
 
-            if hasattr(dataset, 'num_classes'):
+            if hasattr(dataset, 'classes'):
                 card['classes'] = dataset.classes
 
             if action_spec is not None and action_spec.discrete:
                 if 'discrete_bins' not in action_spec or action_spec.discrete_bins is None:
-                    action_spec['discrete_bins'] = card.num_classes
+                    action_spec['discrete_bins'] = len(card.classes)
 
                 if 'high' not in action_spec or action_spec.high is None:
-                    action_spec['high'] = card.num_classes - 1
+                    action_spec['high'] = len(card.classes) - 1
 
                 if 'low' not in action_spec or action_spec.low is None:
                     action_spec['low'] = 0
