@@ -85,9 +85,9 @@ class Classify:
         obs_shape = (1,) * (2 - len(obs_shape)) + obs_shape  # At least 1 channel dim and spatial dim - can comment out
 
         self.action_spec = Args({'shape': (1,),
-                                 'discrete_bins': dataset.num_classes,
+                                 'discrete_bins': len(dataset.classes),
                                  'low': 0,
-                                 'high': dataset.num_classes - 1,
+                                 'high': len(dataset.classes) - 1,
                                  'discrete': True})
 
         self.obs_spec = Args({'shape': obs_shape,

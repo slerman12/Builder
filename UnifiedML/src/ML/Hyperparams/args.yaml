@@ -79,6 +79,7 @@ log_per_episodes: 1
 # Plotting
 plot_per_steps: 50000
 # Misc
+path: null
 device: ???
 parallel: false
 num_workers: 8

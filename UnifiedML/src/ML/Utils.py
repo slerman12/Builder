@@ -42,6 +42,10 @@ def set_seeds(seed):
 
 # Initializes seeds, device, and CUDA acceleration
 def init(args):
+    # Customize working dir
+    if args.path:
+        os.chdir(args.path)
+
     # For launching via an external app
     args.update(launch_args)
 
