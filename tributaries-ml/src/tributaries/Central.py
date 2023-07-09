@@ -61,7 +61,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 {commands}
 {'wandb login ' + deploy_config.wandb_key if deploy_config.wandb_key else ''}
 {'python ' + deploy_config.app_name_paths[deploy_config.app] if deploy_config.app_name_paths and deploy_config.app
-    else 'ML'} {' '.join(hyperparams.split())}
+    else 'ML'} {' '.join(hyperparams.split())} {deploy_config.hyper or ''}
 """
 
     # Write script
@@ -115,7 +115,6 @@ def mass_deploy():
         print(f'Set: {i + 1},', hyperparams)
         sbatch_deploy(hyperparams, sweep)
 
-import torchvision.datasets
 
 def launch_remote(server, username, password, sweep):
     # SSH login
@@ -254,13 +253,15 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
     config = server(**args, **kwargs)
 
     if len(config) == 3:
-        (server, username, password), func, app_name_paths, commands, sbatch = config, None, None, None, None
+        (server, username, password), (func, app_name_paths, commands, sbatch, hyper) = config, (None,) * 4
     elif len(config) == 5:
-        (server, username, password, func, app_name_paths), commands, sbatch = config, None, None
+        (server, username, password, func, app_name_paths), (commands, sbatch, hyper) = config, (None,) * 3
+    elif len(config) == 7:
+        (server, username, password, func, app_name_paths, commands, sbatch), hyper = config, None
     else:
-        server, username, password, func, app_name_paths, commands, sbatch = config
+        server, username, password, func, app_name_paths, commands, sbatch, hyper = config
 
-    recursive_update(sweep, {'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch,
+    recursive_update(sweep, {'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch, 'hyper': hyper,
                              'github': github, 'username': username})
 
     # Call func first
