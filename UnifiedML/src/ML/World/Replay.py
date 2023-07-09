@@ -53,7 +53,7 @@ class Replay:
 
         self.add_lock = Lock()  # For adding to memory in concurrency
 
-        dataset_config = dataset  # TODO Add capacities to card
+        dataset_config = dataset
         dataset_config['capacities'] = sum(self.memory.capacities)
         card = Args({'_target_': dataset_config}) if isinstance(dataset_config, str) else dataset_config
         # Perhaps if Online, include whether discrete -> continuous, since action shape changes in just that case
@@ -122,6 +122,7 @@ class Replay:
         if not offline and save:
             self.memory.set_save_path('World/ReplayBuffer/Online/' + path)
             atexit.register(self.memory.save, desc='Saving Replay Memory...', card=card)
+            atexit.register(print, f'Successfully saved Replay Memory to {self.memory.save_path}')
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
@@ -171,6 +172,7 @@ class Replay:
             if save or self.memory.num_batches > sum(self.memory.capacities[:-1]):  # Until save-delete check
                 self.memory.save(desc='Memory-mapping Dataset for training acceleration and future re-use. '
                                       'This only has to be done once', card=card)
+                print('Successfully saved Replay Memory to', self.memory.save_path)
 
         # Replay
 

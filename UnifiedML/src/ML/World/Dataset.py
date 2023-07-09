@@ -75,7 +75,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     # From custom module path
     if is_valid_path(dataset_config._target_, module_path=True):
         root_specs = download_specs = transform_specs = [{}]  # Won't assume any signature args except possibly train
-    # From torchvision Dataset  TODO It shouldn't re-download for every version of the dataset
+    # From torchvision Dataset
+    # TODO It shouldn't re-download for every version of the dataset. Make torchvision dir in __file__ dir /ReplayBuffer
     else:
         is_torchvision = True
         if train is not None:
