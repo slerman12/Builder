@@ -54,6 +54,7 @@ class Replay:
         self.add_lock = Lock()  # For adding to memory in concurrency
 
         dataset_config = dataset  # TODO Add capacities to card
+        dataset_config['capacities'] = sum(self.memory.capacities)
         card = Args({'_target_': dataset_config}) if isinstance(dataset_config, str) else dataset_config
         # Perhaps if Online, include whether discrete -> continuous, since action shape changes in just that case
 
