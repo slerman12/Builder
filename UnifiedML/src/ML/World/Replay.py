@@ -120,6 +120,7 @@ class Replay:
 
         # Save Online replay on terminate  TODO Maybe delete if not save
         if not offline and save:
+            card['capacities'] = sum(self.memory.capacities)
             self.memory.set_save_path('World/ReplayBuffer/Online/' + path)
             atexit.register(self.memory.save, desc='Saving Replay Memory...', card=card)
 
