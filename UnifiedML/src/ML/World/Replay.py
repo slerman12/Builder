@@ -121,8 +121,8 @@ class Replay:
         # Save Online replay on terminate  TODO Maybe delete if not save
         if not offline and save:
             self.memory.set_save_path('World/ReplayBuffer/Online/' + path)
-            atexit.register(self.memory.save, desc='Saving Replay Memory...', card=card)
-            atexit.register(print, f'Successfully saved Replay Memory to {self.memory.save_path}')
+            atexit.register(lambda: (self.memory.save(desc='Saving Replay Memory...', card=card),
+                                     print('Successfully saved Replay Memory to', self.memory.save_path)))
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
