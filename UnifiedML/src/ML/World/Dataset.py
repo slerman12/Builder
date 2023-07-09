@@ -8,6 +8,7 @@ import itertools
 import math
 import os
 import random
+import sys
 from copy import copy
 
 import numpy as np
@@ -87,6 +88,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     transform = dataset_config.pop('transform') if 'transform' in dataset_config else None
     subset = dataset_config.pop('subset') if 'subset' in dataset_config else None
 
+    e = ''
+
     # Instantiate dataset
     for all_specs in itertools.product(root_specs, train_specs, download_specs, transform_specs):
         try:
@@ -99,22 +102,36 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
                     dataset = instantiate(dataset_config, **specs)
             else:
                 dataset = instantiate(dataset_config, **specs)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as error:
+            if not e:
+                sys.exc_info()
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                e = str(error) + f'\nerror type: {exc_type}, error filename: {fname}, ' \
+                                 f'error line number: {exc_tb.tb_lineno}'
             continue
         break
 
-    assert dataset, 'Could not find Dataset.'
+    assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
+
+    if hasattr(dataset, 'num_classes'):
+        assert isinstance(dataset[0][1], int), f'The .num_classes= attribute of Dataset expects 0-starting-index ' \
+                                               f'consecutive integer labels. Got .num_classes={dataset.num_classes} ' \
+                                               f'with {type(dataset[0][1])} type labels. To use arbitrary label types' \
+                                               f', specify the list of unique labels in your Dataset instead, for ' \
+                                               f'example, .classes=["dog", "cat"].'
 
     classes = subset if subset is not None \
         else range(dataset.classes if isinstance(dataset.classes, int)
                    else len(dataset.classes)) if hasattr(dataset, 'classes') \
-        else range(dataset.num_classes) if hasattr(dataset, 'num_classes') \
+        else range(dataset.num_classes) if hasattr(dataset, 'num_classes') and isinstance(dataset.num_classes, int) \
+        else dataset.num_classes if hasattr(dataset, 'num_classes') \
         else dataset.class_to_idx.keys() if hasattr(dataset, 'class_to_idx') \
         else [print(f'Identifying unique classes... '
                     f'This can take some time for large datasets.'),
               sorted(list(set(str(exp[1]) for exp in dataset)))][1]
 
-    setattr(dataset, 'num_classes', len(classes))
+    setattr(dataset, 'classes', classes)
 
     # Can select a subset of classes
     if subset is not None:

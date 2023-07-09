@@ -104,7 +104,7 @@ def get_module(_target_, paths=None, modules=None):
                         sys.modules[path] = module
                         break
         if module is None:
-            raise FileNotFoundError(f'Could note find path {path}. Search paths include: {paths}')
+            raise FileNotFoundError(f'Could not find path {path}. Search paths include: {paths}')
         else:
             # Return the relevant module
             return module if module_name is None else getattr(module, module_name)
@@ -115,7 +115,7 @@ def get_module(_target_, paths=None, modules=None):
         for module in modules.values():
             if hasattr(module, module_name):
                 return getattr(module, module_name)
-    raise FileNotFoundError(f'Could note find module {module_name}. Search modules include: {list(modules.keys())}')
+    raise FileNotFoundError(f'Could not find module {module_name}. Search modules include: {list(modules.keys())}')
 
 
 def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, **kwargs):

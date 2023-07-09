@@ -223,13 +223,13 @@ class MultiModal(nn.Module):
         args = args or Args()
 
         # Default accepted mappings
-        defaults = Args(Eyes={'obs', 'image'}, Ears={'audio', 'sound'})
+        defaults = Args(Eyes={'obs', 'image', 'sight'}, Ears={'audio', 'sound'}, Proprio={'features', 'touch'})
 
         # If args is itself a part, then apply it to (Eyes, Obs, Image, obs, image). a.k.a. Eyes is default name.
         # Note. Maybe just do all lowercase.
         # If args is string, instantiate-it.
 
-        # Maps parts names (lowercase) to corresponding datums (lowercase)
+        # Maps parts names (uppercase) to corresponding datums (lowercase)
         #   s.t. if datums are present, they get fed as input to the corresponding part
         self.datums = Args()
 

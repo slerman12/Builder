@@ -98,7 +98,7 @@ class Replay:
                     bar.refresh()
 
             if hasattr(dataset, 'num_classes'):
-                card['num_classes'] = dataset.num_classes
+                card['classes'] = dataset.classes
 
             if action_spec is not None and action_spec.discrete:
                 if 'discrete_bins' not in action_spec or action_spec.discrete_bins is None:
