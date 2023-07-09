@@ -66,7 +66,7 @@ class Replay:
             #   Only one process should save a previously non-existent memory at a time
 
             if offline:
-                root = 'World/ReplayBuffer/Offline/'
+                root = 'World/ReplayBuffer/Offline/'  # TODO can't control root?
                 save_path = root + get_dataset_path(dataset_config, root)
             else:
                 save_path = 'World/ReplayBuffer/Online/' + path

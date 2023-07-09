@@ -96,6 +96,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             root_spec, train_spec, download_spec, transform_spec = all_specs
             specs = dict(**root_spec, **train_spec, **download_spec, **transform_spec)
             specs = {key: specs[key] for key in set(specs) - set(dataset_config)}
+            specs.update({key: value for key, value in dataset_config.items() if key in specs})  # Prioritize config
             specs.update(kwargs)
             if is_torchvision:
                 with Lock(path + 'lock'):  # System-wide mutex-lock

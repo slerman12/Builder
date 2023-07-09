@@ -115,6 +115,7 @@ def mass_deploy():
         print(f'Set: {i + 1},', hyperparams)
         sbatch_deploy(hyperparams, sweep)
 
+import torchvision.datasets
 
 def launch_remote(server, username, password, sweep):
     # SSH login
