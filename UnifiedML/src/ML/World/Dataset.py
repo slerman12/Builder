@@ -131,7 +131,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
                     f'This can take some time for large datasets.'),
               sorted(list(set(str(exp[1]) for exp in dataset)))][1]
 
-    setattr(dataset, 'classes', classes)
+    setattr(dataset, 'classes', tuple(classes))
 
     # Can select a subset of classes
     if subset is not None:
