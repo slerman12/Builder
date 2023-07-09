@@ -324,13 +324,14 @@ def get_dataset_path(dataset_config, path):
         if 'classes' in dataset_config:
             dataset_config.classes = tuple(dataset_config.classes)
 
+        if 'capacities' in card and 'capacities' not in dataset_config:
+            card.pop('capacities')
+
         # Just a shorthand
         if 'Transform' in card:
             card.pop('Transform')
         if 'Transform' in dataset_config:
             dataset_config.pop('Transform')
-
-        print(card, dataset_config.to_dict(), card == dataset_config.to_dict())
 
         if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card:
             count = int(file.rsplit('/', 2)[-2])
