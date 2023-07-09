@@ -38,6 +38,9 @@ class Memory:
 
         self.capacities = [gpu_capacity, pinned_capacity, ram_capacity, np_ram_capacity, hd_capacity]
 
+        if np_ram_capacity:
+            warnings.warn('np_ram_capacity is still experimental.')
+
         self.save_path = save_path
 
         manager = mp.Manager()
