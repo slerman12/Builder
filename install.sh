@@ -1,0 +1,2 @@
+git pull
+pip install UnifiedML/dist/UnifiedML-1.0.0-py3-none-any.whl tributaries-ml/dist/tributaries_ml-1.0.0-py3-none-any.whl minihydra/dist/minihydra-1.0.0-py3-none-any.whl --force-reinstall --no-dependencies
