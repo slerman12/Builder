@@ -81,13 +81,8 @@ class CNNEncoder(nn.Module):
             obs = torch.cat([obs, *[c.reshape(obs.shape[0], c.shape[-1], *axes or (1,)).expand(-1, -1, *obs.shape[2:])
                                     for c in context]], 1)
 
-        from torch.profiler import profile, ProfilerActivity
-        with profile(activities=[ProfilerActivity.CPU], profile_memory=True) as prof:
-            # CNN encode
-            h = self.Eyes(obs)
-
-        print('\n'.join(list(map(str, [(a.name, a.cpu_memory_usage)
-                                       for a in sorted(prof.events(), key=lambda x: x.cpu_memory_usage)]))))
+        # CNN encode
+        h = self.Eyes(obs)
 
         try:
             h = h.view(h.shape[0], *self.feature_shape)  # Validate shape
