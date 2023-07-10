@@ -3,6 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import time
+from copy import copy
 
 import torch
 from torch.nn.functional import cross_entropy
@@ -39,6 +40,8 @@ class DrQV2Agent(torch.nn.Module):
         # Continuous RL
         assert not discrete and RL, f'{type(self).__name__} only supports continuous RL. Set "discrete=false RL=true".'
         assert not generate, f'{type(self).__name__} does not support generative modeling.'
+
+        action_spec = copy(action_spec)  # Non-destructive copy
 
         # Image augmentation
         self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)

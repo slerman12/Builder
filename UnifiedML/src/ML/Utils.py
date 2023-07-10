@@ -21,13 +21,12 @@ import torch.nn as nn
 from torch.optim import *
 from torch.optim.lr_scheduler import *
 
-# These can be added to minihydra
+# TODO These can be added to added_modules
 from torch.nn import Identity, Flatten  # For direct accessibility via command line
 from torchvision import transforms  # For direct accessibility via command line
 from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct accessibility via command line
 from Blocks.Architectures import *  # For direct accessibility via command line
 
-# TODO Don't import instantiate; update Utils. in ML
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate
 
 
@@ -799,7 +798,7 @@ class MixedPrecision:
         self.ready = True
 
 
-MP = MixedPrecision()  # AutoCast + GradScaler automatic mixed precision gradient scaling for training speedup
+MP = MixedPrecision()  # AutoCast + GradScaler automatic mixed precision training speedup via gradient scaling
 
 
 # Backward pass on a loss; clear the grads of models; update EMAs; step optimizers and schedulers
@@ -845,6 +844,7 @@ def schedule(schedule, step):
             return (1.0 - mix) * start + mix * stop
 
 
+import time
 class Profiler:
     def __init__(self, print_per=None):
         self.starts = {}

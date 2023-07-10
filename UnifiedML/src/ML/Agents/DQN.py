@@ -3,6 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import time
+from copy import copy
 
 import torch
 
@@ -38,6 +39,8 @@ class DQNAgent(torch.nn.Module):
         # Discrete RL
         assert discrete and RL, f'{type(self).__name__} only supports discrete RL. Set "discrete=true RL=true".'
         assert not generate, f'{type(self).__name__} does not support generative modeling.'
+
+        action_spec = copy(action_spec)  # Non-destructive copy
 
         # Continuous -> discrete conversion
         if not action_spec.discrete:

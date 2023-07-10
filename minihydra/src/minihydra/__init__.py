@@ -118,7 +118,7 @@ def get_module(_target_, paths=None, modules=None):
     raise FileNotFoundError(f'Could not find module {module_name}. Search modules include: {list(modules.keys())}')
 
 
-def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, **kwargs):
+def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, _verbose_=False, **kwargs):
     if hasattr(args, '_target_') or hasattr(args, '_default_'):
         args = Args(args)
 
@@ -148,6 +148,8 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
                 args.update(kwargs)
                 signature = inspect.signature(module).parameters if _signature_matching_ else args.keys()
                 args = args if 'kwargs' in signature else {key: args[key] for key in args.keys() & signature}
+                if _verbose_:
+                    print('instantiated', _target_)
                 module = module(**args)
     else:
         # Convert to config
