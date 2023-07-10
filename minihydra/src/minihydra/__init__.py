@@ -106,7 +106,7 @@ def get_module(_target_, paths=None, modules=None):
         if module is None:
             raise FileNotFoundError(f'Could not find path {path}. Search paths include: {paths}')
         else:
-            # Return the relevant module
+            # Return the relevant sub-module
             return module if module_name is None else getattr(module, module_name)
     elif module_name in modules:
         # Return the module from already-defined modules

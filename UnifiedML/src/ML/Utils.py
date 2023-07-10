@@ -802,40 +802,6 @@ class MixedPrecision:
 MP = MixedPrecision()  # AutoCast + GradScaler automatic mixed precision gradient scaling for training speedup
 
 
-import time
-class Profiler:
-    def __init__(self, print_per=None):
-        self.starts = {}
-        self.profiles = {}
-        self.counts = {}
-        self.print_per = print_per
-        self.step = {}
-
-    def start(self, name):
-        self.starts[name] = time.time()
-
-    def stop(self, name):
-        if name in self.profiles:
-            self.profiles[name] += time.time() - self.starts[name]
-            self.counts[name] += 1
-            self.step[name] += 1
-        else:
-            self.profiles[name] = time.time() - self.starts[name]
-            self.counts[name] = 1
-            self.step[name] = 1
-        if self.print_per and self.step[name] % self.print_per == 0:
-            self.print()
-
-    def print(self):
-        for name in self.profiles:
-            print(name, ':', self.profiles[name] / self.counts[name])
-        self.profiles.clear()
-        self.counts.clear()
-
-
-profiler = Profiler(100)
-
-
 # Backward pass on a loss; clear the grads of models; update EMAs; step optimizers and schedulers
 def optimize(loss, *models, clear_grads=True, backward=True, retain_graph=False, step_optim=True, epoch=0, ema=True):
     # Clear grads

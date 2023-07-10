@@ -35,10 +35,7 @@ class CNNEncoder(nn.Module):
         obs_shape = [*(1,) * (len(self.obs_shape) < 2), *self.obs_shape]  # Create at least 1 channel dim & spatial dim
         obs_shape[0] += context_dim
 
-        # CNN TODO Auto-infer how to broadcast input shape based on whether signature arg 0 is in_features, in_channels,
-        self.Eyes = instantiate(Eyes, **Utils.adaptive_shaping(obs_shape)) or CNN(obs_shape)            # TODO input_shape, etc.
-        #     TODO e.g. dynamically support output_dim vs output_shape, or "out_features" and common names. Maybe just a
-        #           conversion method in instantiate based on signature try-catch
+        self.Eyes = instantiate(Eyes, **Utils.adaptive_shaping(obs_shape)) or CNN(obs_shape)
 
         adapt_cnn(self.Eyes, obs_shape)  # Adapt 2d CNN kernel sizes for 1d or small-d compatibility
 
@@ -58,7 +55,7 @@ class CNNEncoder(nn.Module):
             self.ema_decay = ema_decay
             self.ema = copy.deepcopy(self).requires_grad_(False).eval()
 
-    def forward(self, obs, *context, pool=True):  # TODO Shaping when missing channel dim?
+    def forward(self, obs, *context, pool=True):
         # Operate on non-batch dims, then restore
 
         dims = len(self.obs_shape)
@@ -84,8 +81,13 @@ class CNNEncoder(nn.Module):
             obs = torch.cat([obs, *[c.reshape(obs.shape[0], c.shape[-1], *axes or (1,)).expand(-1, -1, *obs.shape[2:])
                                     for c in context]], 1)
 
-        # CNN encode
-        h = self.Eyes(obs)
+        from torch.profiler import profile, ProfilerActivity
+        with profile(activities=[ProfilerActivity.CPU], profile_memory=True) as prof:
+            # CNN encode
+            h = self.Eyes(obs)
+
+            print('\n'.join(list(map(str, [(a.name, a.cpu_memory_usage)
+                                           for a in sorted(prof.events(), key=lambda x: x.cpu_memory_usage)]))))
 
         try:
             h = h.view(h.shape[0], *self.feature_shape)  # Validate shape

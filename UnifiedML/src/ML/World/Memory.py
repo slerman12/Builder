@@ -23,12 +23,6 @@ import torch.multiprocessing as mp
 from minihydra import Args
 
 
-try:
-    mp.set_start_method('spawn')
-except RuntimeError:
-    pass
-
-
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
                  ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf):
@@ -562,3 +556,7 @@ class Mem:
                     os.remove(self.path)
 
         self.saved = False
+
+
+if mp.current_process().name == 'MainProcess':
+    mp.set_start_method('spawn')
