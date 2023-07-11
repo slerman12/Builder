@@ -44,13 +44,12 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     pytorch_datasets = {m: getattr(torchvision.datasets, m)
                         for m in dir(torchvision.datasets) if inspect.isclass(getattr(torchvision.datasets, m))
                         and issubclass(getattr(torchvision.datasets, m), Dataset)}
-    added_modules.update(pytorch_datasets)
 
     if dataset_config._target_[:len('torchvision.datasets.')] == 'torchvision.datasets.':
-        dataset_config._target_ = dataset_config._target_[len('torchvision.datasets.'):]  # Allow torchvision. syntax
+        dataset_config._target_ = dataset_config._target_[len('torchvision.datasets.'):]  # Simplify torchvision. syntax
 
     # Return a Dataset based on a module path or non-default modules like torchvision
-    assert is_valid_path(dataset_config._target_, module_path=True, module=True), \
+    assert is_valid_path(dataset_config._target_, module_path=True, module=True, _modules_=pytorch_datasets), \
         f'Not a valid Dataset instantiation argument: {dataset_config._target_}. Search paths included: {module_paths}'
 
     path += get_dataset_path(dataset_config, path)  # DatasetClassName/Count/
@@ -101,7 +100,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             specs.update(kwargs)
             if is_torchvision:
                 with Lock(path + 'lock'):  # System-wide mutex-lock
-                    dataset = instantiate(dataset_config, **specs)
+                    dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets)
             else:
                 dataset = instantiate(dataset_config, **specs)
         except (TypeError, ValueError) as error:
@@ -186,7 +185,7 @@ def compute_stats(batches):
 
 
 # Check if is valid path for instantiation
-def is_valid_path(path, dir_path=False, module_path=False, module=False):
+def is_valid_path(path, dir_path=False, module_path=False, module=False, _modules_=None):
     truth = False
 
     if dir_path:
@@ -197,7 +196,7 @@ def is_valid_path(path, dir_path=False, module_path=False, module=False):
 
     if module_path and not truth and path.count('.') > 0:
         try:
-            *root, file, module = path.replace('.', '/').rsplit('/', 2)
+            *root, file, _ = path.replace('.', '/').rsplit('/', 2)
             root = root[0].strip('/') + '/' if root else ''
             for base in module_paths:
                 truth = os.path.exists(base + '/' + root + file + '.py')
@@ -206,11 +205,16 @@ def is_valid_path(path, dir_path=False, module_path=False, module=False):
         except FileNotFoundError:
             pass
 
+    if _modules_ is None:
+        _modules_ = {}
+
+    _modules_.update(added_modules)
+
     if module and not truth:
         sub_module, *sub_modules = path.split('.')
 
-        if sub_module in added_modules:
-            sub_module = added_modules[sub_module]
+        if sub_module in _modules_:
+            sub_module = _modules_[sub_module]
 
             try:
                 for key in sub_modules:

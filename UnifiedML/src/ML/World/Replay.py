@@ -126,7 +126,6 @@ class Replay:
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
-        added_modules.update({'torchvision': torchvision})
         transform = instantiate(transform)
 
         # Parallel worker for batch loading
@@ -296,8 +295,6 @@ class Worker:
 
         if 'label' in experience and experience.label.dtype == torch.int64:
             experience.label = experience.label.long()
-
-        assert False, [(key, value.dtype if hasattr(value, 'dtype') else value) for key, value in experience.items()]
 
         return experience
 

@@ -10,9 +10,16 @@ import sys
 import random
 from functools import cached_property
 import re
-import warnings
 from pathlib import Path
 from multiprocessing.pool import ThreadPool
+
+from torch.nn import Identity, Flatten  # For direct accessibility via command line
+import torchvision  # For direct accessibility via command line
+from torchvision import transforms  # For direct accessibility via command line
+from Blocks.Augmentations import *  # For direct accessibility via command line
+from Blocks.Architectures import *  # For direct accessibility via command line
+
+import warnings
 
 import numpy as np
 
@@ -20,12 +27,6 @@ import torch
 import torch.nn as nn
 from torch.optim import *
 from torch.optim.lr_scheduler import *
-
-# TODO These can be added to added_modules
-from torch.nn import Identity, Flatten  # For direct accessibility via command line
-from torchvision import transforms  # For direct accessibility via command line
-from Blocks.Augmentations import *  # For direct accessibility via command line
-from Blocks.Architectures import *  # For direct accessibility via command line
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate
 
