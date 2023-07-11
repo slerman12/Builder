@@ -297,7 +297,7 @@ class Worker:
         if 'label' in experience and experience.label.dtype == torch.int64:
             experience.label = experience.label.long()
 
-        assert False, [(key, value.shape if hasattr(value, 'shape') else value) for key, value in experience.items()]
+        assert False, [(key, value.dtype if hasattr(value, 'dtype') else value) for key, value in experience.items()]
 
         return experience
 
