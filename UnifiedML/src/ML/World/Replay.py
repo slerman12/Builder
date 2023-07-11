@@ -293,10 +293,12 @@ class Worker:
         # Add metadata
         experience['episode_index'] = index
         experience['episode_step'] = step
-        print(experience.label.dtype)
 
         if 'label' in experience and experience.label.dtype == torch.int64:
             experience.label = experience.label.long()
+
+        print('reached')
+        print([(key, value.shape) for key, value in experience.items()])
 
         return experience
 
