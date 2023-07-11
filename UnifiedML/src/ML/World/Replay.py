@@ -298,7 +298,7 @@ class Worker:
             experience.label = experience.label.long()
 
         print('reached')
-        print([(key, value.shape) for key, value in experience.items()])
+        print([(key, value.shape if hasattr(value, 'shape') else value) for key, value in experience.items()])
 
         return experience
 
