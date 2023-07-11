@@ -19,8 +19,7 @@ import ast
 from pexpect import pxssh, spawn
 
 from ML import __file__, Plot
-from ML.Utils import grammars, import_paths
-from minihydra import just_args, instantiate, interpolate, yaml_search_paths, grammar, Args, recursive_update, recursive_Args
+from minihydra import just_args, instantiate, interpolate, Args, recursive_update, recursive_Args
 
 
 def sbatch_deploy(hyperparams, deploy_config):
@@ -83,9 +82,6 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
-    # import_paths()  # TODO Not sure why this is needed explicitly
-    # grammars()  # TODO Is this needed explicitly if Utils is imported?
-
     sweep = just_args()
 
     if 'hyperparams' not in sweep:
@@ -207,7 +203,7 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     os.chdir(cwd)
 
 
-def paint(plots, name=''):
+def paint_river(plots, name=''):
     for plot_train in [False, True]:
         print(f'\n Plotting {"train" if plot_train else "eval"}...')
 
@@ -272,7 +268,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
         if plot:
             name = '/'.join(path.replace('.py', '').replace('.', '/').rsplit('/', sweep.level)[1:]) if path \
                 else 'Downloaded'
-            paint(plots, name)
+            paint_river(plots, name)
     else:
         launch_remote(server, username, password, sweep)
 
