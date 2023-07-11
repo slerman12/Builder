@@ -299,6 +299,7 @@ class Worker:
 
         print('reached')
         print([(key, value.shape if hasattr(value, 'shape') else value) for key, value in experience.items()])
+        assert False
 
         return experience
 
