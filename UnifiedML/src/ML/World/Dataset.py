@@ -117,10 +117,15 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
 
     if hasattr(dataset, 'num_classes'):
-        assert isinstance(dataset[0][1], int), f'The .num_classes= attribute of Dataset got value' \
-                                               f'{dataset.num_classes} with type {type(dataset[0][1])} labels. ' \
-                                               f'If your labels aren\'t consecutive integers starting from 0, ' \
-                                               f'specify a list instead, e.g., .classes=["dog", "cat"].'
+        assert isinstance(dataset[0][1], int) or \
+               isinstance(dataset[0][1], (np.ndarray, torch.Tensor)) and math.prod(dataset[0][1].shape) < 2 and \
+               not torch.is_floating_point(torch.as_tensor(dataset[0][1])), f'The .num_classes= attribute of Dataset ' \
+                                                                            f'got value {dataset.num_classes} with ' \
+                                                                            f'type {type(dataset[0][1])} labels. If ' \
+                                                                            f'your labels aren\'t consecutive ' \
+                                                                            f'integers starting from 0, specify a ' \
+                                                                            f'list instead, e.g., ' \
+                                                                            f'.classes=["dog", "cat"].'
 
     classes = subset if subset is not None \
         else range(dataset.classes if isinstance(dataset.classes, int)
