@@ -136,7 +136,7 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
             for key in kwargs:
                 args = args.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-            module = eval(_target_, globals(), {**added_modules, **(_modules_ or {})})  # Direct code execution
+            module = eval(_target_, None, {**added_modules, **(_modules_ or {})})  # Direct code execution
         else:
             module = _target_
 

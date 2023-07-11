@@ -1,6 +1,6 @@
 Env: World.Environments.Classify.Classify
 Dataset: torchvision.datasets.VOCSegmentation
-environment:
+env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}
     low: 0

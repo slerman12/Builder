@@ -138,8 +138,7 @@ class AC2Agent(torch.nn.Module):
         # "Birth"
 
     def act(self, obs):
-        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):  # Should probably be done in env
-            obs = torch.as_tensor(obs, device=self.device).float()
+        with Utils.act_mode(self.encoder, self.actor):
 
             # Exponential moving average (EMA) shadows
             encoder = self.encoder.ema if self.ema else self.encoder

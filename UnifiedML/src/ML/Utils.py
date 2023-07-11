@@ -24,7 +24,7 @@ from torch.optim.lr_scheduler import *
 # TODO These can be added to added_modules
 from torch.nn import Identity, Flatten  # For direct accessibility via command line
 from torchvision import transforms  # For direct accessibility via command line
-from Blocks.Augmentations import RandomShiftsAug, IntensityAug  # For direct accessibility via command line
+from Blocks.Augmentations import *  # For direct accessibility via command line
 from Blocks.Architectures import *  # For direct accessibility via command line
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate
@@ -99,8 +99,7 @@ def import_paths():
     if UnifiedML not in module_paths:
         module_paths.append(UnifiedML)  # Adds UnifiedML to module instantiation search path
 
-    if __name__ not in added_modules:
-        added_modules[__name__] = sys.modules[__name__]  # Adds Utils to module instantiation path
+    added_modules.update(globals())  # Adds everything in Utils to module instantiation path TODO Manually specify
 
     # Adds Hyperparams dir to search path
     for path in [UnifiedML, app, os.getcwd()]:

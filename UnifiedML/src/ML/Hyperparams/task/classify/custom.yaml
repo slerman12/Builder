@@ -1,6 +1,6 @@
 Env: World.Environments.Classify.Classify
 Dataset: null
-environment:
+env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}
     low: null

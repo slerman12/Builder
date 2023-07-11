@@ -21,7 +21,7 @@ if __name__ == '__main__':
         f = open(f"./{task.lower()}.yaml", "w")
         f.write(fr"""Env: World.Environments.Classify.Classify
 Dataset: {dataset_path}
-environment:
+env:
     dataset: ${{dataset}}
     test_dataset: ${{test_dataset}}
     low: {'null' if task == 'Custom' else 0}

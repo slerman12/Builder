@@ -1,6 +1,6 @@
 Env: World.Environments.Classify.Classify
 Dataset: World.Datasets.Kinetics400.Kinetics400
-environment:
+env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}
     low: 0

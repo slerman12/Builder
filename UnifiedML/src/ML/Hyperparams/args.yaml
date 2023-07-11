@@ -28,6 +28,7 @@ multi_task: null
 Env: ???  # To be specified later, defaults per respective task
 env:
   _target_: ${Env}
+  transform: null
 Dataset: null  # Defaults per respective Classify task
 TestDataset: null
 dataset:
@@ -102,6 +103,7 @@ environment:
   stream: ${stream}
   generate: ${generate}
   seed: ${seed}
+  transform: ${env.transform}
   device: ${device}
 
 agent:

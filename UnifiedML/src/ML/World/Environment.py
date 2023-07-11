@@ -5,15 +5,19 @@
 import time
 from math import inf
 
+import torch
 from minihydra import instantiate
 
 
 class Environment:
     def __init__(self, env, suite='DMC', task='cheetah_run', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
-                 offline=False, stream=False, generate=False, train=True, seed=0, **kwargs):
+                 offline=False, stream=False, generate=False, train=True, seed=0, transform=None, device='cpu'):
         self.suite = suite.lower()
         self.offline = offline
         self.generate = generate
+
+        self.device = device
+        self.transform = instantiate(env.pop('transform', transform)) or (lambda _: _)
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
         self.disable, self.on_policy = (offline or generate) and train, stream
@@ -22,7 +26,7 @@ class Environment:
 
         if not self.disable or stream:
             self.env = instantiate(env, task=task, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat,
-                                   offline=offline, generate=generate, stream=stream, train=train, seed=seed, **kwargs)
+                                   offline=offline, generate=generate, train=train, seed=seed, device=device)
             self.env.reset()
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
@@ -45,9 +49,11 @@ class Environment:
 
             # Frame-stacked obs
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
+            obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
-            action, store = agent.act(obs)
+            with torch.no_grad():
+                action, store = agent.act(obs)
 
             if not self.generate:
                 exp = self.env.step(action.cpu().numpy())  # Experience
