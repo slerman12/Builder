@@ -13,7 +13,7 @@ my_sweep = Args(
     branch=None,
     level=1,  # Directory level for naming plotting directories
     # SLURM parameters
-    num_cpus=None,  # Will default to num_workers of ML script
+    num_cpus=None,  # Will default to num_workers + 1 of ML script
     num_gpus=1,
     gpu='K80|V100|A100|RTX',
     mem=20,

@@ -49,7 +49,7 @@ def sbatch_deploy(hyperparams, deploy_config):
     commands = '\n'.join(deploy_config.commands)
 
     script = f"""#!/bin/bash
-#SBATCH -c {getattr(deploy_config, 'num_cpus', None) or args.num_workers}
+#SBATCH -c {getattr(deploy_config, 'num_cpus', None) or args.num_workers + 1}
 {f'#SBATCH -p gpu --gres=gpu:{deploy_config.num_gpus}' if deploy_config.num_gpus else ''}
 {f'#SBATCH -p reserved --reservation={deploy_config.username}-{deploy_config.reservation_id}'
     if deploy_config.reservation_id else ''}
