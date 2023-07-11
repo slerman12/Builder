@@ -203,7 +203,7 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     os.chdir(cwd)
 
 
-def paint_river(plots, name=''):
+def paint_landscape(plots, name=''):
     for plot_train in [False, True]:
         print(f'\n Plotting {"train" if plot_train else "eval"}...')
 
@@ -221,7 +221,7 @@ def paint_river(plots, name=''):
                       )
 
 
-def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
+def fish(server, sweep=None, plot=False, checkpoints=False, **kwargs):
     args = just_args()
 
     if 'sweep' in args:
@@ -268,7 +268,7 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
         if plot:
             name = '/'.join(path.replace('.py', '').replace('.', '/').rsplit('/', sweep.level)[1:]) if path \
                 else 'Downloaded'
-            paint_river(plots, name)
+            paint_landscape(plots, name)
     else:
         launch_remote(server, username, password, sweep)
 
@@ -276,5 +276,5 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
 # Decorator for defining servers
 def my_server(sweep=None, plot=False, checkpoints=False, **kwargs):
     def decorator_func(server):
-        return partial(decorate, server, sweep, plot, checkpoints, **kwargs)
+        return partial(fish, server, sweep, plot, checkpoints, **kwargs)
     return decorator_func
