@@ -118,7 +118,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     if hasattr(dataset, 'num_classes'):
         assert isinstance(dataset[0][1], int) or \
-               (isinstance(dataset[0][1], torch.Tensor) or 'np.' in str(type(dataset[0][1]))) and \
+               (isinstance(dataset[0][1], (torch.Tensor, np.ndarray)) or 'numpy.' in str(type(dataset[0][1]))) and \
                math.prod(dataset[0][1].shape) < 2 and \
                not torch.is_floating_point(torch.as_tensor(dataset[0][1])), f'The .num_classes= attribute of Dataset ' \
                                                                             f'got value {dataset.num_classes} with ' \
