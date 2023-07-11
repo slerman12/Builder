@@ -252,14 +252,8 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
     args = {key: args[key] for key in args.keys() & signature(server).parameters}
     config = server(**args, **kwargs)
 
-    if len(config) == 3:
-        (server, username, password), (func, app_name_paths, commands, sbatch, hyper) = config, (None,) * 4
-    elif len(config) == 5:
-        (server, username, password, func, app_name_paths), (commands, sbatch, hyper) = config, (None,) * 3
-    elif len(config) == 7:
-        (server, username, password, func, app_name_paths, commands, sbatch), hyper = config, None
-    else:
-        server, username, password, func, app_name_paths, commands, sbatch, hyper = config
+    config += [None] * (8 - len(config))
+    server, username, password, func, app_name_paths, commands, sbatch, hyper = config
 
     recursive_update(sweep, {'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch, 'hyper': hyper,
                              'github': github, 'username': username})
