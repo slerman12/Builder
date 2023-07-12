@@ -296,7 +296,7 @@ class Worker:
         for key in experience:
             if getattr(experience[key], 'dtype', None) == torch.int64:
                 experience[key] = experience[key].long()
-        assert False, [(getattr(experience[key], 'dtype', experience[key]), getattr(experience[key], 'shape', experience[key])) for key in experience]
+        assert False, [(key, getattr(experience[key], 'dtype', experience[key]), getattr(experience[key], 'shape', experience[key])) for key in experience]
 
         return experience
 
