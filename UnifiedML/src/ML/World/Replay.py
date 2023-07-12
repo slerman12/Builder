@@ -8,7 +8,6 @@ from threading import Thread, Lock
 from math import inf
 import os
 
-import torchvision
 from tqdm import tqdm
 
 import numpy as np
@@ -18,7 +17,7 @@ from torch.utils.data import IterableDataset, Dataset, DataLoader
 
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
-from minihydra import instantiate, added_modules, open_yaml, Args
+from minihydra import instantiate, open_yaml, Args
 
 
 class Replay:

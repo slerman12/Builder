@@ -164,6 +164,11 @@ def launch_remote(server, username, password, sweep):
 
 
 def download(server, username, password, sweep, plots=None, checkpoints=None):
+    if sweep.hyper is not None and 'path' in [arg.split('=')[0] for arg in sweep.hyper.split()]:
+        sweep.app_name_paths['path'] = [arg.split('=')[1]
+                                        for arg in sweep.hyper.split() if arg.split('=')[0] == 'path'][0]
+        sweep.app = 'path'
+
     plots = [] if plots is None else plots.plots
     checkpoints = [] if checkpoints is None else checkpoints.experiments
 
