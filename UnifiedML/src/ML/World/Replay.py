@@ -293,6 +293,10 @@ class Worker:
         experience['episode_index'] = index
         experience['episode_step'] = step
 
+        for key in experience:
+            if getattr(experience[key], 'dtype', None) == torch.int64:
+                experience[key] = experience[key].to(torch.int32)
+
         return experience
 
     def compute_RL(self, episode, experience, step):
