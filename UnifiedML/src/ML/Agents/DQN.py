@@ -65,8 +65,7 @@ class DQNAgent(torch.nn.Module):
                                       discrete=True, lr=lr, ema_decay=ema_decay)
 
     def act(self, obs):
-        with torch.no_grad(), Utils.act_mode(self.encoder, self.actor):
-            obs = torch.as_tensor(obs, device=self.device).float()
+        with Utils.act_mode(self.encoder, self.actor):
 
             obs = self.encoder(obs)
 

@@ -5,8 +5,6 @@
 import torch
 from torch import nn
 
-import timm
-
 from Blocks.Architectures.Vision.CNN import cnn_broadcast
 
 import Utils
@@ -14,11 +12,16 @@ import Utils
 
 class TIMM(nn.Module):
     """Backwards compatibility with the TIMM (Pytorch Image Models) ecosystem. Download or load a model as follows.
-    Usage:  python Run.py  task=classify/mnist  Eyes=Blocks.Architectures.Vision.TIMM.TIMM  +eyes.name=mobilenetv2_100
+    Usage:  python Run.py  task=classify/mnist  Eyes=TIMM  eyes.name=mobilenetv2_100.ra_in1k
     Not installed by default. $ pip install timm  (that dollar sign is totally a Freudian slip)
-    Models listed here:  https://rwightman.github.io/pytorch-image-models/models/
+    Models listed here:  https://huggingface.co/timm
     """
     def __init__(self, input_shape, name, pretrained=False, detach=False, pool='avg', output_shape=None):
+        try:
+            import timm
+        except ModuleNotFoundError as e:
+            print(e, 'Try \'pip install timm\'.')
+
         super().__init__()
 
         self.input_shape, output_dim = Utils.to_tuple(input_shape), Utils.prod(output_shape)
@@ -27,7 +30,7 @@ class TIMM(nn.Module):
 
         assert name in timm.list_models(pretrained=True), f'Could not find model {name} in TIMM models. ' \
                                                           f'Find a list of available models in the TIMM docs here: ' \
-                                                          f'https://rwightman.github.io/pytorch-image-models/models/'
+                                                          f'https://huggingface.co/timm'
 
         self.model = timm.create_model(name, pretrained=pretrained, in_chans=in_channels,
                                        num_classes=0 if output_shape is None else output_dim,

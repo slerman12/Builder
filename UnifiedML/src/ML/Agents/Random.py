@@ -30,8 +30,7 @@ class RandomAgent(torch.nn.Module):
         self.actor = Utils.Rand(action_dim, uniform=True)
 
     def act(self, obs):
-        with torch.no_grad(), Utils.act_mode(self.actor):
-            obs = torch.as_tensor(obs, device=self.device).float()
+        with Utils.act_mode(self.actor):
 
             action = self.actor(obs) * 2 - 1  # [-1, 1]
 
