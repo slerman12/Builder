@@ -293,8 +293,9 @@ class Worker:
         experience['episode_index'] = index
         experience['episode_step'] = step
 
-        if 'label' in experience and experience.label.dtype == torch.int64:
-            experience.label = experience.label.long()
+        for key in experience:
+            if getattr(experience[key], 'dtype', None) == torch.int64:
+                experience[key] = experience[key].long()
 
         return experience
 
