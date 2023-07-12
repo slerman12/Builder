@@ -46,6 +46,12 @@ def init(args):
     if args.path:
         os.chdir(args.path)
 
+        if args.path not in yaml_search_paths:
+            yaml_search_paths.append(args.path)
+
+        if args.path + '/Hyperparams' not in yaml_search_paths and os.path.exists(args.path + '/Hyperparams'):
+            yaml_search_paths.append(args.path + '/Hyperparams')
+
     # For launching via an external app
     args.update(launch_args)
 
