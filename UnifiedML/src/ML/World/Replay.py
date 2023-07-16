@@ -298,7 +298,7 @@ class Worker:
         new_experience = Args()
 
         for key in experience:
-            new_experience[key] = experience[key].to(torch.int32) if getattr(experience[key], 'dtype', None) == torch.int64 else experience[key]
+            new_experience[key] = experience[key].to(torch.float32) if getattr(experience[key], 'dtype', None) == torch.int64 else experience[key]
             # if getattr(experience[key], 'dtype', None) == torch.int64:
             #     experience[key] = experience[key].to(torch.int32)
         experience = new_experience
