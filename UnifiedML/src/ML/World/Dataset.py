@@ -148,7 +148,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     dataset = ClassToIdx(dataset, classes)
 
     # Add transforms to dataset
-    dataset = Transform(dataset, instantiate(transform if getattr(transform, '_target_', None) else None))
+    dataset = Transform(dataset, instantiate(transform))
 
     return dataset
 
@@ -308,7 +308,6 @@ class Transform(Dataset):
         x, y = self.__dataset.__getitem__(idx)
         x, y = F.to_tensor(x) if isinstance(x, Image) else x, y
         x = (self.__transform or (lambda _: _))(x)  # Transform
-        print(self.__transform)
         return x, y
 
     def __len__(self):
