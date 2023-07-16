@@ -101,6 +101,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             specs.update(kwargs)
             if is_torchvision:
                 with Lock(path + 'lock'):  # System-wide mutex-lock
+                    # TODO Use signature instead of try-catch!!
                     dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets)
             else:
                 dataset = instantiate(dataset_config, **specs)
@@ -305,11 +306,12 @@ class Transform(Dataset):
         self.__dataset, self.__transform = dataset, transform
 
     def __getitem__(self, idx):
-        x, y = self.__dataset.__getitem__(idx)
-        assert isinstance(x, Image), type(x)
-        print([x.size if isinstance(x, Image) else x.shape])
-        x, y = F.to_tensor(x) if isinstance(x, Image) else x, y
-        print(x.shape, self.__transform)
+        x_, y = self.__dataset.__getitem__(idx)
+        # assert isinstance(x, Image), type(x)
+        # print([x.size if isinstance(x, Image) else x.shape])
+        x, y = F.to_tensor(x_) if isinstance(x_, Image) else x_, y
+        assert list(x.shape) == [3, 375, 500], x_.size
+        # print(x.shape, self.__transform)
         # assert list(x.shape) == [3, 375, 500], x.shape
         x = (self.__transform or (lambda _: _))(x)  # Transform
         return x, y
