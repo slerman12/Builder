@@ -344,6 +344,8 @@ def get_dataset_path(dataset_config, path):
         if 'Transform' in dataset_config:
             dataset_config.pop('Transform')
 
+        print(dataset_config.to_dict(), card.to_dict())
+
         if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card.to_dict():
             count = int(file.rsplit('/', 2)[-2])
             break
