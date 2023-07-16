@@ -174,7 +174,7 @@ class Replay:
 
         # Replay
 
-        self.replay = iter(self) if offline else Thread(target=iter, args=(self,)).start()
+        self._replay = None
 
     # Allows iteration via "next" (e.g. batch = next(replay))
     def __next__(self):
@@ -187,15 +187,21 @@ class Replay:
                 sample = next(self.replay)
             except StopIteration:
                 self.epoch += 1
-                self.replay = iter(self)
+                self._replay = None  # Reset iterator when depleted
                 sample = next(self.replay)
 
         return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True)
                       for key, value in sample.items()})
 
     def __iter__(self):
-        self.replay = iter(self.batches)
+        self._replay = iter(self.batches)
         return self.replay
+
+    @property
+    def replay(self):
+        if self._replay is None:
+            self._replay = iter(self.batches)  # Recreates the iterator when exhausted
+        return self._replay
 
     def include_trajectories(self):
         self.trajectory_flag.set()

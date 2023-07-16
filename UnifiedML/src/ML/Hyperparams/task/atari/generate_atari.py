@@ -47,8 +47,8 @@ train_steps: 500000
 stddev_schedule: 'linear(1.0,0.1,20000)'
 
 # Atari has two augmentations
+Aug: Sequential
 aug:
-    _target_: Utils.Sequential  # TODO This negates the interpolatability of Aug
     _targets_: [RandomShiftsAug, IntensityAug]
     pad: 4
     noise: 0.05
