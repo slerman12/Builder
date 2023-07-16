@@ -308,7 +308,7 @@ class Transform(Dataset):
         x, y = self.__dataset.__getitem__(idx)
         x, y = F.to_tensor(x) if isinstance(x, Image) else x, y
         print(x.shape)
-        assert list(x.shape) == [3, 500, 375], x.shape
+        assert list(x.shape) == [3, 375, 500], x.shape
         x = (self.__transform or (lambda _: _))(x)  # Transform
         return x, y
 
