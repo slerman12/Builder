@@ -64,7 +64,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     train_specs = [] if train is None else [dict(train=train),
                                             dict(version='2021_' + 'train' if train else 'valid'),
                                             dict(subset='training' if train else 'testing'),
-                                            dict(split='train' if train else 'test'), {}]
+                                            dict(split='train' if train else 'test'),
+                                            dict(split='train' if train else 'val'), {}]
     download_specs = [dict(download=True), {}]
     transform_specs = [dict(transform=None), {}]
 
