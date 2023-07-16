@@ -70,7 +70,7 @@ def main(args):
 
         replay.add(experiences)
 
-        if env.episode_done:
+        if env.episode_done:  # TODO log_per_steps
             if args.log_per_episodes and (agent.episode - 2 * replay.offline) % args.log_per_episodes == 0:
                 logger.log(logs, 'Train' if training else 'Seed', dump=True)
 

@@ -159,7 +159,7 @@ def compute_stats(batches):
     low, high = np.inf, -np.inf
 
     for batch in tqdm(batches, 'Computing mean, stddev, low, high for standardization/normalization.'):
-        obs = batch.obs if 'obs' in batch else batch[0]
+        obs = batch['obs'] if 'obs' in batch else batch[0]
         b, c, *hw = obs.shape
         if not hw:
             *hw, c = c, 1  # At least 1 channel dim and spatial dim - can comment out
@@ -344,7 +344,7 @@ def get_dataset_path(dataset_config, path):
         if 'Transform' in dataset_config:
             dataset_config.pop('Transform')
 
-        if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card:
+        if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card.to_dict():
             count = int(file.rsplit('/', 2)[-2])
             break
         else:

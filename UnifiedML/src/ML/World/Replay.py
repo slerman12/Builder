@@ -292,18 +292,12 @@ class Worker:
         experience['episode_index'] = index
         experience['episode_step'] = step
 
-        # TODO Convert to int32 if int64 in collate func.
-        # assert False, [(key, getattr(value, 'dtype', value)) for key, value in experience.items()]
+        for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
+            if getattr(experience[key], 'dtype', None) == torch.int64:
+                # For some reason, casting to int32 can throw collate_fn errors
+                experience[key] = experience[key].to(torch.float32)
 
-        new_experience = Args()
-
-        for key in experience:
-            new_experience[key] = experience[key].to(torch.float32) if getattr(experience[key], 'dtype', None) == torch.int64 else experience[key]
-            # if getattr(experience[key], 'dtype', None) == torch.int64:
-            #     experience[key] = experience[key].to(torch.int32)
-        experience = new_experience
-
-        return experience
+        return experience.to_dict()
 
     def compute_RL(self, episode, experience, step):
         # TODO Just apply nstep and frame stack as transforms nstep, frame_stack, transform

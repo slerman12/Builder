@@ -334,12 +334,7 @@ class Experience:
         return iter(self.episode_trace[self.step].keys())
 
 
-class Batch(dict):
-    def __init__(self, _dict=None, **kwargs):
-        super().__init__()
-        self.__dict__ = self  # Allows access via attributes
-        self.update({**(_dict or {}), **kwargs})
-
+class Batch(Args):
     @property
     def mems(self):  # An element can be Mem or datums
         yield from self.values()
