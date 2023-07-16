@@ -299,7 +299,6 @@ class Transform(Dataset):
 
         # Get transform from config
         if isinstance(transform, (Args, dict)):
-            added_modules.update({'torchvision': torchvision})
             transform = instantiate(transform)
 
         # Map inputs
@@ -310,7 +309,7 @@ class Transform(Dataset):
         # assert isinstance(x, Image), type(x)
         # print([x.size if isinstance(x, Image) else x.shape])
         x, y = F.to_tensor(x_) if isinstance(x_, Image) else x_, y
-        assert list(x.shape) == [3, 375, 500], x_.size
+        assert list(x.shape) == [3, 500, 375], x_.size
         # print(x.shape, self.__transform)
         # assert list(x.shape) == [3, 375, 500], x.shape
         x = (self.__transform or (lambda _: _))(x)  # Transform
