@@ -378,6 +378,7 @@ def log(args):
     if 'minihydra' in args:
         if 'log_dir' in args.minihydra:
             path = interpolate([args.minihydra.log_dir], args)[0] + '.yaml'
+            print(args.minihydra.log_dir, path)
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, 'w') as file:
                 args = interpolate(parse(Args()), args)
