@@ -149,6 +149,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     # Add transforms to dataset
     dataset = Transform(dataset, instantiate(transform if getattr(transform, '_target_', None) else None))
+    print(transform)
 
     return dataset
 
