@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from World.Dataset import load_dataset, worker_init_fn, compute_stats
 from minihydra import Args
 
-
+import torchvision.datasets
 class Classify:
     """
     A general-purpose environment:
@@ -126,7 +126,7 @@ class Classify:
 
         return self.exp
 
-    def reset(self):  # The reset step is never stored in isolation
+    def reset(self):  # The reset step is never stored
         obs, label = [np.array(b, dtype='float32') for b in self.sample()]
         if len(label.shape) == 1:
             label = np.expand_dims(label, 1)
