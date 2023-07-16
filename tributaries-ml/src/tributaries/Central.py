@@ -23,7 +23,7 @@ from minihydra import just_args, instantiate, interpolate, Args, recursive_updat
 
 
 def sbatch_deploy(hyperparams, deploy_config):
-    sys.argv = sys.argv[:1] + shlex.split(hyperparams)
+    sys.argv = sys.argv[:1] + shlex.split(hyperparams) + (deploy_config.hyper.split() if deploy_config.hyper else [])
 
     args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
 
