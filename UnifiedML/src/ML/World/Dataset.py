@@ -307,9 +307,8 @@ class Transform(Dataset):
     def __getitem__(self, idx):
         x, y = self.__dataset.__getitem__(idx)
         x, y = F.to_tensor(x) if isinstance(x, Image) else x, y
-        print('transform called', x.shape)
         x = (self.__transform or (lambda _: _))(x)  # Transform
-        print('transformed', x.shape)
+        print(self.__transform)
         return x, y
 
     def __len__(self):
