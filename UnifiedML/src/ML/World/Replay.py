@@ -292,11 +292,16 @@ class Worker:
         experience['episode_index'] = index
         experience['episode_step'] = step
 
-        assert False, [(key, getattr(value, 'dtype', value)) for key, value in experience.items()]
+        # TODO Convert to int32 if int64 in collate func.
+        # assert False, [(key, getattr(value, 'dtype', value)) for key, value in experience.items()]
+
+        new_experience = Args()
 
         for key in experience:
-            if getattr(experience[key], 'dtype', None) == torch.int64:
-                experience[key] = experience[key].to(torch.int32)
+            new_experience[key] = experience[key].to(torch.int32) if getattr(experience[key], 'dtype', None) == torch.int64 else experience[key]
+            # if getattr(experience[key], 'dtype', None) == torch.int64:
+            #     experience[key] = experience[key].to(torch.int32)
+        experience = new_experience
 
         return experience
 
