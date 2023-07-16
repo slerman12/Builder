@@ -27,8 +27,6 @@ def sbatch_deploy(hyperparams, deploy_config):
 
     args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
 
-    print(deploy_config.hyper, sys.argv[:1], args.log_path, args.logger.path)
-
     os.makedirs(args.logger.path, exist_ok=True)
 
     # Allow naming tasks with minihydra interpolation syntax
