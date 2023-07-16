@@ -81,6 +81,7 @@ log_per_episodes: 1
 plot_per_steps: 50000
 # Misc
 path: null
+log_path: ./
 device: ???
 parallel: false
 num_workers: 8
@@ -165,7 +166,7 @@ replay:
 
 logger:
   _target_: Logger.Logger
-  path: ./Benchmarking/${experiment}/${format:${Agent}}/${environment.suite}/
+  path: ${log_path}Benchmarking/${experiment}/${format:${Agent}}/${environment.suite}/
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
@@ -181,7 +182,7 @@ vlogger:
 
 plotting:
   _target_: Plot.plot
-  path: ./Benchmarking/${experiment}/Plots
+  path: ${log_path}Benchmarking/${experiment}/Plots
   plot_experiments: ${experiment}
   plot_agents: null
   plot_suites: null
