@@ -235,7 +235,7 @@ def read(source, parse_task=True):
             recursive_update(args, module)
 
     # Parse task
-    if parse_task:  # Not needed in imports recursions
+    if parse_task:  # Not needed in imports recursions  # TODO Why not?
         for sys_arg in sys.argv[1:]:
             key, value = sys_arg.split('=', 1)
             if key == 'task':

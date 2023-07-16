@@ -3,15 +3,13 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-UnifiedML - A unified framework for intelligence training. Built and conceived by Sam Lerman.
+UnifiedML - A unified framework for intelligence training. Built and conceived as a generalist agent by Sam Lerman.
 
     This file makes it possible to import UnifiedML as a package or launch it within Python.
 """
 
 import sys
 import os
-
-from torch import multiprocessing as mp
 
 
 sys.path.append(os.path.dirname(__file__))
@@ -26,4 +24,4 @@ for dir in dirs:
     globals().update({dir: __import__(dir)})
 
 from Utils import launch
-main = launch  # TODO main
+main = launch

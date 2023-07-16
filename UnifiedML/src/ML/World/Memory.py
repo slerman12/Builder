@@ -559,4 +559,7 @@ class Mem:
 
 
 if mp.current_process().name == 'MainProcess':
-    mp.set_start_method('spawn')
+    try:
+        mp.set_start_method('spawn')
+    except RuntimeError:
+        pass
