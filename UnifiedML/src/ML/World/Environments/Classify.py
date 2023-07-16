@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import random
 import os
+import resource
 import warnings
 
 import numpy as np
@@ -64,6 +65,9 @@ class Classify:
                 dataset.subset = test_dataset.subset
             elif test_dataset.transform._target_ is not None:
                 dataset.transform = test_dataset.transform
+
+        _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descriptors
+        resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
 
         dataset = load_dataset('World/ReplayBuffer/Offline/', dataset, allow_memory=False, train=train)
 
