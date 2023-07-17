@@ -102,6 +102,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         module = get_module(dataset_config._target_, modules=pytorch_datasets)
         signature = inspect.signature(module).parameters
         args = {key: dataset_config[key] for key in dataset_config.keys() & signature}
+
         try:
             if is_torchvision and 'kwargs' in str(inspect.signature(module).bind(**args, **specs)):
                 continue
@@ -111,6 +112,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         with Lock(path + 'lock'):  # System-wide mutex-lock
             try:
                 dataset = instantiate(args, **specs, _modules_=pytorch_datasets if is_torchvision else None)
+                break
             except ValueError as error:
                 if not e:
                     sys.exc_info()
@@ -119,7 +121,6 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
                     e = str(error) + f'\nerror type: {exc_type}, error filename: {fname}, ' \
                                      f'error line number: {exc_tb.tb_lineno}'
                 continue
-        break
 
     assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
 
