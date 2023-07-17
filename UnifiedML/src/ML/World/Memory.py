@@ -53,11 +53,8 @@ class Memory:
 
         atexit.register(self.cleanup)
 
-        if use_file_descriptors:
-            _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
-            resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
-        else:
-            mp.set_sharing_strategy('file_system')
+        _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
+        resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -557,5 +554,6 @@ class Mem:
 if mp.current_process().name == 'MainProcess':
     try:
         mp.set_start_method('spawn')
+        mp.set_sharing_strategy('file_system')
     except RuntimeError:
         pass

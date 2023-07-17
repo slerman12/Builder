@@ -191,13 +191,13 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
         p.sendline(password)
         p.expect('sftp> ', timeout=None)
     print('- Connected! ✓\n')
-    path = sweep.app_name_paths.get(sweep.app, '~/')
+    path = sweep.app_name_paths.get(sweep.app, '')
     p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
-            p.sendline(f"get -r ./Benchmarking/{experiment.replace('.*', '*')}")  # Some regex compatibility
+            p.sendline(f'get -r ./Benchmarking/{experiment.replace(".*", "*")}')  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
     p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
