@@ -564,3 +564,4 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
+mp.set_sharing_strategy('file_system')

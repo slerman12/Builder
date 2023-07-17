@@ -215,11 +215,11 @@ class Replay:
             if self.stream:
                 self.stream = batch  # For streaming directly from Environment  TODO N-step in {0, 1}
             else:
-                def add():
-                    with self.add_lock:
+                # def add():
+                #     with self.add_lock:
                         self.memory.add(batch)  # Add to memory
 
-                Thread(target=add).start()  # Threading
+                # Thread(target=add).start()  # Threading
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]
