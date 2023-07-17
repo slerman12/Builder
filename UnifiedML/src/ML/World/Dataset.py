@@ -154,36 +154,44 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     return dataset
 
 
-# Computes mean, stddev, low, high
-def compute_stats(batches):
-    cnt = 0
-    fst_moment, snd_moment = None, None
-    low, high = np.inf, -np.inf
+def get_dataset_path(dataset_config, path):
+    dataset_class_name = dataset_config.__name__ if isinstance(dataset_config, Dataset) \
+        else getattr(dataset_config, '_target_', dataset_config).rsplit('.', 1)[-1] + '/' if dataset_config \
+        else ''
 
-    for batch in tqdm(batches, 'Computing mean, stddev, low, high for standardization/normalization.'):
-        obs = batch['obs'] if 'obs' in batch else batch[0]
-        b, c, *hw = obs.shape
-        if not hw:
-            *hw, c = c, 1  # At least 1 channel dim and spatial dim - can comment out
-        obs = obs.view(b, c, *hw)
-        fst_moment = torch.zeros(c) if fst_moment is None else fst_moment
-        snd_moment = torch.zeros(c) if snd_moment is None else snd_moment
-        nb_pixels = b * math.prod(hw)
-        dim = [0, *[2 + i for i in range(len(hw))]]
-        sum_ = torch.sum(obs, dim=dim)
-        sum_of_square = torch.sum(obs ** 2, dim=dim)
-        fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
-        snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+    count = 0
 
-        cnt += nb_pixels
+    for file in sorted(glob.glob(path + dataset_class_name + '*/*.yaml')):
+        card = open_yaml(file)
 
-        low, high = min(obs.min().item(), low), max(obs.max().item(), high)
+        if not hasattr(dataset_config, '_target_'):
+            card.pop('_target_')
 
-    stddev = torch.sqrt(snd_moment - fst_moment ** 2)
-    stddev[stddev == 0] = 1
+        if 'stats' in card and 'stats' not in dataset_config:
+            card.pop('stats')
 
-    mean, stddev = fst_moment.tolist(), stddev.tolist()
-    return Args(mean=mean, stddev=stddev, low=low, high=high)  # Save stat values for future reuse
+        if 'classes' in card and 'classes' not in dataset_config:
+            card.pop('classes')
+
+        if 'classes' in dataset_config:
+            dataset_config.classes = tuple(dataset_config.classes)
+
+        if 'capacities' in card and 'capacities' not in dataset_config:
+            card.pop('capacities')
+
+        # Just a shorthand
+        if 'Transform' in card:
+            card.pop('Transform')
+        if 'Transform' in dataset_config:
+            dataset_config.pop('Transform')
+
+        if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card.to_dict():
+            count = int(file.rsplit('/', 2)[-2])
+            break
+        else:
+            count += 1
+
+    return f'{dataset_class_name}{count}/'
 
 
 # Check if is valid path for instantiation
@@ -228,6 +236,120 @@ def is_valid_path(path, dir_path=False, module_path=False, module=False, _module
     return truth
 
 
+# Computes mean, stddev, low, high
+def compute_stats(batches):
+    cnt = 0
+    fst_moment, snd_moment = None, None
+    low, high = np.inf, -np.inf
+
+    for batch in tqdm(batches, 'Computing mean, stddev, low, high for standardization/normalization.'):
+        obs = batch['obs'] if 'obs' in batch else batch[0]
+        b, c, *hw = obs.shape
+        if not hw:
+            *hw, c = c, 1  # At least 1 channel dim and spatial dim - can comment out
+        obs = obs.view(b, c, *hw)
+        fst_moment = torch.zeros(c) if fst_moment is None else fst_moment
+        snd_moment = torch.zeros(c) if snd_moment is None else snd_moment
+        nb_pixels = b * math.prod(hw)
+        dim = [0, *[2 + i for i in range(len(hw))]]
+        sum_ = torch.sum(obs, dim=dim)
+        sum_of_square = torch.sum(obs ** 2, dim=dim)
+        fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
+        snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+
+        cnt += nb_pixels
+
+        low, high = min(obs.min().item(), low), max(obs.max().item(), high)
+
+    stddev = torch.sqrt(snd_moment - fst_moment ** 2)
+    stddev[stddev == 0] = 1
+
+    mean, stddev = fst_moment.tolist(), stddev.tolist()
+    return Args(mean=mean, stddev=stddev, low=low, high=high)  # Save stat values for future reuse
+
+
+def datums_as_batch(datums):
+    if isinstance(datums, (Batch, dict)):
+        if 'done' not in datums:
+            datums['done'] = True
+        return Batch(datums)
+    else:
+        # Potentially extract by variable name
+        # For now assuming obs, label
+        obs, label, *_ = datums
+
+        # May assume image uint8
+        # if len(obs.shape) == 4 and int(obs.shape[1]) in [1, 3]:
+        #     obs *= 255  # Note: Assumes [0, 1] low, high
+        #     dtype = {'dtype': torch.uint8}
+        # else:
+        #     dtype = {}
+
+        # Note: need to parse label TODO
+        obs = torch.as_tensor(obs)
+        label = torch.as_tensor(label)
+
+        if len(label.shape) == 1:
+            label = label.view(-1, 1)
+
+        return Batch({'obs': obs, 'label': label, 'done': True})
+
+
+# # Map class labels to Tensor integers
+class ClassToIdx(Dataset):
+    def __init__(self, dataset, classes):
+        # Inherit attributes of given dataset
+        self.__dict__.update(dataset.__dict__)
+
+        # Map string labels to integers
+        self.__dataset, self.__map = dataset, {str(classes[i]): torch.tensor(i) for i in range(len(classes))}
+
+    def __getitem__(self, idx):
+        x, y = self.__dataset.__getitem__(idx)
+        return x, self.__map[str(y)]  # Map
+
+    def __len__(self):
+        return self.__dataset.__len__()
+
+
+# Select classes from dataset e.g. python Run.py task=classify/mnist 'env.subset=[0,2,3]'
+class ClassSubset(torch.utils.data.Subset):
+    def __init__(self, dataset, classes, train=None):
+        # Inherit attributes of given dataset
+        self.__dict__.update(dataset.__dict__)
+
+        train = '' if train is None else 'train' if train else 'test'
+
+        # Find subset indices which only contain the specified classes, multi-label or single-label
+        indices = [i for i in tqdm(range(len(dataset)), desc=f'Selecting subset of classes from {train} dataset...')
+                   if str(dataset[i][1]) in map(str, classes)]
+
+        # Initialize
+        super().__init__(dataset=dataset, indices=indices)
+
+
+class Transform(Dataset):
+    def __init__(self, dataset, transform=None):
+        # Inherit attributes of given dataset
+        self.__dict__.update(dataset.__dict__)
+
+        # Get transform from config
+        if isinstance(transform, (Args, dict)):
+            transform = instantiate(transform)
+
+        # Map inputs
+        self.__dataset, self.__transform = dataset, transform
+
+    def __getitem__(self, idx):
+        x_, y = self.__dataset.__getitem__(idx)
+        x, y = F.to_tensor(x_) if isinstance(x_, Image) else x_, y
+        x = (self.__transform or (lambda _: _))(x)  # Transform
+        return x, y
+
+    def __len__(self):
+        return self.__dataset.__len__()
+
+
 # System-wide mutex lock
 # https://stackoverflow.com/a/60214222/22002059
 class Lock:
@@ -263,133 +385,6 @@ class Lock:
     def __exit__(self, _type, value, tb):
         self.unlock(self.file)
         self.file.close()
-
-
-def datums_as_batch(datums):
-    if isinstance(datums, (Batch, dict)):
-        if 'done' not in datums:
-            datums['done'] = True
-        return Batch(datums)
-    else:
-        # Potentially extract by variable name
-        # For now assuming obs, label
-        obs, label, *_ = datums
-
-        # May assume image uint8
-        # if len(obs.shape) == 4 and int(obs.shape[1]) in [1, 3]:
-        #     obs *= 255  # Note: Assumes [0, 1] low, high
-        #     dtype = {'dtype': torch.uint8}
-        # else:
-        #     dtype = {}
-
-        # Note: need to parse label TODO
-        obs = torch.as_tensor(obs)
-        label = torch.as_tensor(label)
-
-        if len(label.shape) == 1:
-            label = label.view(-1, 1)
-
-        return Batch({'obs': obs, 'label': label, 'done': True})
-
-
-class Transform(Dataset):
-    def __init__(self, dataset, transform=None):
-        # Inherit attributes of given dataset
-        self.__dict__.update(dataset.__dict__)
-
-        # Get transform from config
-        if isinstance(transform, (Args, dict)):
-            transform = instantiate(transform)
-
-        # Map inputs
-        self.__dataset, self.__transform = dataset, transform
-
-    def __getitem__(self, idx):
-        x_, y = self.__dataset.__getitem__(idx)
-        # assert isinstance(x, Image), type(x)
-        # print([x.size if isinstance(x, Image) else x.shape])
-        x, y = F.to_tensor(x_) if isinstance(x_, Image) else x_, y
-        assert list(x.shape) == [3, 500, 375], x_.size
-        # print(x.shape, self.__transform)
-        # assert list(x.shape) == [3, 375, 500], x.shape
-        x = (self.__transform or (lambda _: _))(x)  # Transform
-        return x, y
-
-    def __len__(self):
-        return self.__dataset.__len__()
-
-
-def get_dataset_path(dataset_config, path):
-    dataset_class_name = dataset_config.__name__ if isinstance(dataset_config, Dataset) \
-        else getattr(dataset_config, '_target_', dataset_config).rsplit('.', 1)[-1] + '/' if dataset_config \
-        else ''
-
-    count = 0
-
-    for file in sorted(glob.glob(path + dataset_class_name + '*/*.yaml')):
-        card = open_yaml(file)
-
-        if not hasattr(dataset_config, '_target_'):
-            card.pop('_target_')
-
-        if 'stats' in card and 'stats' not in dataset_config:
-            card.pop('stats')
-
-        if 'classes' in card and 'classes' not in dataset_config:
-            card.pop('classes')
-
-        if 'classes' in dataset_config:
-            dataset_config.classes = tuple(dataset_config.classes)
-
-        if 'capacities' in card and 'capacities' not in dataset_config:
-            card.pop('capacities')
-
-        # Just a shorthand
-        if 'Transform' in card:
-            card.pop('Transform')
-        if 'Transform' in dataset_config:
-            dataset_config.pop('Transform')
-
-        if not hasattr(dataset_config, '_target_') and not card or dataset_config.to_dict() == card.to_dict():
-            count = int(file.rsplit('/', 2)[-2])
-            break
-        else:
-            count += 1
-
-    return f'{dataset_class_name}{count}/'
-
-
-# # Map class labels to Tensor integers
-class ClassToIdx(Dataset):
-    def __init__(self, dataset, classes):
-        # Inherit attributes of given dataset
-        self.__dict__.update(dataset.__dict__)
-
-        # Map string labels to integers
-        self.__dataset, self.__map = dataset, {str(classes[i]): torch.tensor(i) for i in range(len(classes))}
-
-    def __getitem__(self, idx):
-        x, y = self.__dataset.__getitem__(idx)
-        return x, self.__map[str(y)]  # Map
-
-    def __len__(self):
-        return self.__dataset.__len__()
-
-
-# Select classes from dataset e.g. python Run.py task=classify/mnist 'env.subset=[0,2,3]'
-class ClassSubset(torch.utils.data.Subset):
-    def __init__(self, dataset, classes, train=None):
-        # Inherit attributes of given dataset
-        self.__dict__.update(dataset.__dict__)
-
-        train = '' if train is None else 'train' if train else 'test'
-
-        # Find subset indices which only contain the specified classes, multi-label or single-label
-        indices = [i for i in tqdm(range(len(dataset)), desc=f'Selecting subset of classes from {train} dataset...')
-                   if str(dataset[i][1]) in map(str, classes)]
-
-        # Initialize
-        super().__init__(dataset=dataset, indices=indices)
 
 
 def worker_init_fn(worker_id):
