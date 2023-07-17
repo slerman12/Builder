@@ -199,6 +199,8 @@ if __name__ == '__main__':
 python Run.py
 ```
 
+</details>
+
 <details>
 <summary>
 Method 4. Inferred Code
