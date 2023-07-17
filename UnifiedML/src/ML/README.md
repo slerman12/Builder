@@ -122,7 +122,7 @@ Thus, you can pass classes to command-line, not just objects. Later, we'll see [
 ### Acceleration
 
 * Hard disk memory mapping.
-* Adaptive RAM, CUDA, and pinned-memory allocation & caching, [customizable]().
+* Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
 * Shared-RAM parallelism.
 * Automatic 16-bit mixed precision with ```mixed_precision=true```.
 * Multi-GPU automatic detection and parallel training with ```parallel=true```.
