@@ -23,7 +23,7 @@ class RandomShiftsAug(nn.Module):
         assert h == w, f'Height≠width ({h}≠{w}), obs shape not supported by this augmentation, try \'Aug=Identity\''
         padding = tuple([self.pad] * 4)
         if obs.dtype == torch.uint8:
-            obs = obs.to(torch.int16)
+            obs = obs.to(torch.int32)
         obs = F.pad(obs, padding, 'replicate')
         eps = 1.0 / (h + 2 * self.pad)
         arange = torch.linspace(-1.0 + eps,
