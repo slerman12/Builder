@@ -89,6 +89,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     transform = dataset_config.pop('transform') if 'transform' in dataset_config else None
     subset = dataset_config.pop('subset') if 'subset' in dataset_config else None
 
+    e = ''
+
     # Instantiate dataset
     for all_specs in itertools.product(root_specs, train_specs, download_specs, transform_specs):
         root_spec, train_spec, download_spec, transform_spec = all_specs
@@ -106,10 +108,19 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         except TypeError:
             continue
         with Lock(path + 'lock'):  # System-wide mutex-lock
-            dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets if is_torchvision else None)
+            try:
+                dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets if is_torchvision else None)
+            except ValueError as error:
+                if not e:
+                    sys.exc_info()
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    e = str(error) + f'\nerror type: {exc_type}, error filename: {fname}, ' \
+                                     f'error line number: {exc_tb.tb_lineno}'
+                continue
         break
 
-    assert dataset, f'Could not instantiate Dataset.'
+    assert dataset, f'Could not instantiate Dataset. {e}'
 
     if hasattr(dataset, 'num_classes'):
         assert isinstance(dataset[0][1], int) or \
