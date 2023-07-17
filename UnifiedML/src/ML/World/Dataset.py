@@ -107,9 +107,10 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
                 continue
         except TypeError:
             continue
+        args['_target_'] = dataset_config._target_
         with Lock(path + 'lock'):  # System-wide mutex-lock
             try:
-                dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets if is_torchvision else None)
+                dataset = instantiate(args, **specs, _modules_=pytorch_datasets if is_torchvision else None)
             except ValueError as error:
                 if not e:
                     sys.exc_info()
@@ -120,7 +121,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
                 continue
         break
 
-    assert dataset, f'Could not instantiate Dataset. {e}'
+    assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
 
     if hasattr(dataset, 'num_classes'):
         assert isinstance(dataset[0][1], int) or \
