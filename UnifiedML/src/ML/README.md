@@ -131,7 +131,7 @@ Works across domains, including reinforcement learning and generative modeling.
 
 # Syntax
 
-1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```eyes.depth=5``` in [Methods 1, 2, and 3 below](#heres-how-to-write-the-same-program-in-5-different-ways).
+1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```eyes.depth=5``` (shown in [Methods 1, 2, and 3 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
 2. Executable code, lists, tuples, and dictionaries should be passed in as quotes.
 3. Note: we often use the "```task```" and "```recipe```" terms interchangeably. Both refer to the ```task=``` flag.
 
