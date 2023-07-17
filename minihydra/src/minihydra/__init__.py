@@ -119,7 +119,8 @@ def get_module(_target_, paths=None, modules=None):
 
 
 def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, _verbose_=False, **kwargs):
-    if hasattr(args, '_target_') or hasattr(args, '_default_'):
+    if hasattr(args, '_target_') or hasattr(args, '_default_') or \
+            isinstance(args, dict) and ('_target_' in args or '_default_' in args):
         args = Args(args)
 
         if '_override_' in args:
