@@ -55,6 +55,9 @@ class Memory:
 
         self.use_file_descriptors = use_file_descriptors
 
+        if not self.use_file_descriptors:
+            mp.set_sharing_strategy('file_system')
+
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
 
