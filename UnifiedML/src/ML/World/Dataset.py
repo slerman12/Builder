@@ -100,7 +100,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         module = get_module(dataset_config._target_, modules=pytorch_datasets)
         args = {key: dataset_config[key] for key in dataset_config.keys() & inspect.signature(module).parameters}
         try:
-            inspect.signature(module).bind(**args, **specs)
+            if is_torchvision:
+                print(inspect.signature(module).bind(**args, **specs))
         except TypeError:
             continue
         with Lock(path + 'lock'):  # System-wide mutex-lock
