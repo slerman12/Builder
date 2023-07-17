@@ -114,7 +114,14 @@ class Memory:
                        for key in batch})  # TODO a meta key for special save_path
 
         self.batches.append(batch)
-        self.update()
+        # self.update()
+
+        while True:
+            try:
+                self.update()
+                break
+            except EOFError:
+                pass
 
     def writable_tape(self, batch, ind, step):  # TODO Should be its own thread
         assert self.main_worker == os.getpid(), 'Only main worker can send rewrites across the memory tape.'
