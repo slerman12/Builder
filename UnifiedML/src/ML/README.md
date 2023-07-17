@@ -131,11 +131,11 @@ Works across domains, including reinforcement learning and generative modeling.
 
 # Syntax
 
-1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```eyes.depth=5``` (shown in [Methods 1, 2, and 3 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
+1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```eyes.depth=5``` (shown in [Methods 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
 2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes.
 3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag.
 
-## Here's how to write the same program in 5 different ways.
+## Here's how to write the same program in 6 different ways.
 
 Train a simple 5-layer CNN to play Atari Pong:
 
@@ -178,7 +178,30 @@ python Run.py task=RL Env=Atari env.game=pong Eyes=CNN eyes.depth=5
 
 <details>
 <summary>
-Method 3. Code
+Method 3. Purely Code
+</summary>
+<br>
+
+```python
+# Run.py
+
+from ML import main
+from ML.Architectures import CNN
+from ML.Environments import Atari
+
+if __name__ == '__main__':
+    main(task='RL', Env=Atari(game='pong'), Eyes=CNN(depth=5))
+```
+
+**Run:**
+
+```console
+python Run.py
+```
+
+<details>
+<summary>
+Method 4. Inferred Code
 </summary>
 <br>
 
@@ -201,7 +224,7 @@ python Run.py
 
 <details>
 <summary>
-Method 4. Recipes
+Method 5. Recipes
 </summary>
 <br>
 
@@ -233,7 +256,7 @@ The ```imports:``` syntax allows importing multiple tasks/recipes from different
 
 <details>
 <summary>
-Method 5. All of the above
+Method 6. All of the above
 </summary>
 <br>
 
