@@ -101,8 +101,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         signature = inspect.signature(module).parameters
         args = {key: dataset_config[key] for key in dataset_config.keys() & signature}
         try:
+            print(inspect.signature(module).bind(**args, **specs), inspect.signature(module).bind(**args, **specs).kwargs)
             if is_torchvision and 'kwargs' in inspect.signature(module).bind(**args, **specs).kwargs:
-                print(inspect.signature(module).bind(**args, **specs), inspect.signature(module).bind(**args, **specs).kwargs)
                 continue
         except TypeError:
             continue
