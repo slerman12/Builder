@@ -25,7 +25,7 @@ from minihydra import Args
 
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
-                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf):
+                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf, use_file_descriptors=False):
         self.id = id(self)
         self.worker = 0
         self.main_worker = os.getpid()
@@ -53,8 +53,11 @@ class Memory:
 
         atexit.register(self.cleanup)
 
-        _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descriptors
-        resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+        if use_file_descriptors:
+            _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
+            resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+        else:
+            mp.set_sharing_strategy('file_system')
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -378,8 +381,6 @@ class Mem:
         self.main_worker = os.getpid()
 
     def __getstate__(self):
-        if self.mode == 'shared':
-            self.shm.close()
         return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, \
             self.mem if self.mode in ('pinned', 'shared_tensor', 'gpu') else None
 
