@@ -30,6 +30,8 @@ class Memory:
         self.worker = 0
         self.main_worker = os.getpid()
 
+        mp.set_sharing_strategy('file_system')
+
         self.capacities = [gpu_capacity, pinned_capacity, ram_capacity, np_ram_capacity, hd_capacity]
 
         if np_ram_capacity:
@@ -55,7 +57,6 @@ class Memory:
 
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
-        print(resource.getrlimit(resource.RLIMIT_NOFILE))
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -557,4 +558,3 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
-mp.set_sharing_strategy('file_system')
