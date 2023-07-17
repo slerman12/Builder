@@ -69,25 +69,30 @@ class Memory:
             self.episode(episode)[step] = experience
 
     def update(self):  # Maybe truly-shared list variable can tell workers when to do this / lock
-        num_batches_deleted = self.num_batches_deleted.item()
-        self.num_batches = max(self.num_batches, num_batches_deleted)
+        while True:
+            try:
+                num_batches_deleted = self.num_batches_deleted.item()
+                self.num_batches = max(self.num_batches, num_batches_deleted)
 
-        for batch in self.batches[self.num_batches - num_batches_deleted:]:
-            batch_size = batch.size()
+                for batch in self.batches[self.num_batches - num_batches_deleted:]:
+                    batch_size = batch.size()
 
-            if not self.episode_trace:
-                self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
+                    if not self.episode_trace:
+                        self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
 
-            self.episode_trace.append(batch)
+                    self.episode_trace.append(batch)
 
-            self.num_batches += 1
+                    self.num_batches += 1
 
-            if batch['done']:
-                self.episode_trace = []
-                self.num_traces += 1
+                    if batch['done']:
+                        self.episode_trace = []
+                        self.num_traces += 1
 
-            self.num_experiences += batch_size
-            self.enforce_capacity()  # Note: Last batch does enter RAM before capacity is enforced
+                    self.num_experiences += batch_size
+                    self.enforce_capacity()  # Note: Last batch does enter RAM before capacity is enforced
+                break
+            except (EOFError, BrokenPipeError):
+                continue
 
     # TODO Be own thread https://stackoverflow.com/questions/14234547/threads-with-decorators
     def add(self, batch):
@@ -114,14 +119,7 @@ class Memory:
                        for key in batch})  # TODO a meta key for special save_path
 
         self.batches.append(batch)
-        # self.update()
-
-        while True:
-            try:
-                self.update()
-                break
-            except EOFError:
-                pass
+        self.update()
 
     def writable_tape(self, batch, ind, step):  # TODO Should be its own thread
         assert self.main_worker == os.getpid(), 'Only main worker can send rewrites across the memory tape.'
