@@ -218,7 +218,7 @@ class Args:
 
 # Allow access via attributes recursively
 def recursive_Args(args):
-    if isinstance(args, dict):
+    if isinstance(args, (Args, dict)):
         args = Args(args)
 
     items = enumerate(args) if isinstance(args, list) \
@@ -230,16 +230,16 @@ def recursive_Args(args):
     return args
 
 
-def recursive_update(args, args2):
-    for key, value in args2.items():
-        if isinstance(value, type(args2)) and key in args:
-            args[key].update(recursive_update(args.get(key, {}), value))
+def recursive_update(original, update):
+    for key, value in update.items():
+        if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)):
+            original[key].update(recursive_update(original[key], value))
         else:
-            args[key] = value
-    return args
+            original[key] = value
+    return original
 
 
-def read(source, parse_task=True):
+def read(source, recurse=False):
     args, path = open_yaml(source, return_path=True)
 
     # Need to allow imports
@@ -255,10 +255,10 @@ def read(source, parse_task=True):
                 added = path
                 yaml_search_paths.append(path)
             try:
-                module = self if module == 'self' else read(module + '.yaml', parse_task=False)
+                module = self if module == 'self' else read(module + '.yaml', recurse=True)
             except FileNotFoundError as e:
                 try:
-                    module = read('task/' + module + '.yaml', parse_task=False)
+                    module = read('task/' + module + '.yaml', recurse=True)
                 except FileNotFoundError:
                     raise e
             if added:
@@ -267,22 +267,22 @@ def read(source, parse_task=True):
             recursive_update(args, module)
 
     # Parse task
-    if parse_task:  # Not needed in imports recursions  # TODO Why not?
+    if not recurse:
         for sys_arg in sys.argv[1:]:
             key, value = sys_arg.split('=', 1)
             if key == 'task':
                 args['task'] = value
 
-        # Command-line task import
-        if 'task' in args and args.task not in [None, 'null']:
+    # Command-line task import
+    if 'task' in args and args.task not in [None, 'null']:
+        try:
+            task = read('task/' + args.task + '.yaml', recurse=True)
+        except FileNotFoundError as e:
             try:
-                task = read('task/' + args.task + '.yaml', parse_task=False)
-            except FileNotFoundError as e:
-                try:
-                    task = read(args.task + '.yaml', parse_task=False)
-                except FileNotFoundError:
-                    raise e
-            recursive_update(args, task)
+                task = read(args.task + '.yaml', recurse=True)
+            except FileNotFoundError:
+                raise e
+        recursive_update(args, task)
 
     return args
 
@@ -378,7 +378,7 @@ def log(args):
 
 def multirun(args):
     # Divide args into multiple copies
-    return args
+    pass
 
 
 # Can just get args, no decorator
@@ -391,7 +391,6 @@ def just_args(source=None, logging=False):
     args = interpolate(args)  # Command-line requires quotes for interpolation
     if logging:
         log(args)
-    # args = multirun(args)
 
     return args
 

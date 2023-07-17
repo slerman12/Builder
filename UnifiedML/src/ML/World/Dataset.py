@@ -166,6 +166,8 @@ def get_dataset_path(dataset_config, path):
         else getattr(dataset_config, '_target_', dataset_config).rsplit('.', 1)[-1] + '/' if dataset_config \
         else ''
 
+    # TODO Convert dataset_config to Args if not or only do below check if Args e.g. for passing Dataset to Replay
+
     count = 0
 
     for file in sorted(glob.glob(path + dataset_class_name + '*/*.yaml')):
