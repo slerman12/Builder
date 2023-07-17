@@ -22,8 +22,8 @@ class RandomShiftsAug(nn.Module):
         n, c, h, w = obs.size()
         assert h == w, f'Height≠width ({h}≠{w}), obs shape not supported by this augmentation, try \'Aug=Identity\''
         padding = tuple([self.pad] * 4)
-        if obs.dtype == torch.uint8:
-            obs = obs.to(torch.int32)
+        if not torch.is_floating_point(obs):
+            obs = obs.to(torch.float32)  # Cuda replication_pad2d_cuda requires float
         obs = F.pad(obs, padding, 'replicate')
         eps = 1.0 / (h + 2 * self.pad)
         arange = torch.linspace(-1.0 + eps,
