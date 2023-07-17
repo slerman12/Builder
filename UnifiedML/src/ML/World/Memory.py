@@ -37,6 +37,11 @@ class Memory:
 
         self.save_path = save_path
 
+        self.use_file_descriptors = use_file_descriptors
+
+        if not self.use_file_descriptors:
+            mp.set_sharing_strategy('file_system')
+
         manager = mp.Manager()
 
         self.batches = manager.list()
@@ -53,11 +58,6 @@ class Memory:
 
         atexit.register(self.cleanup)
 
-        self.use_file_descriptors = use_file_descriptors
-
-        if not self.use_file_descriptors:
-            mp.set_sharing_strategy('file_system')
-
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
 
@@ -69,30 +69,25 @@ class Memory:
             self.episode(episode)[step] = experience
 
     def update(self):  # Maybe truly-shared list variable can tell workers when to do this / lock
-        while True:
-            try:
-                num_batches_deleted = self.num_batches_deleted.item()
-                self.num_batches = max(self.num_batches, num_batches_deleted)
+        num_batches_deleted = self.num_batches_deleted.item()
+        self.num_batches = max(self.num_batches, num_batches_deleted)
 
-                for batch in self.batches[self.num_batches - num_batches_deleted:]:
-                    batch_size = batch.size()
+        for batch in self.batches[self.num_batches - num_batches_deleted:]:
+            batch_size = batch.size()
 
-                    if not self.episode_trace:
-                        self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
+            if not self.episode_trace:
+                self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
 
-                    self.episode_trace.append(batch)
+            self.episode_trace.append(batch)
 
-                    self.num_batches += 1
+            self.num_batches += 1
 
-                    if batch['done']:
-                        self.episode_trace = []
-                        self.num_traces += 1
+            if batch['done']:
+                self.episode_trace = []
+                self.num_traces += 1
 
-                    self.num_experiences += batch_size
-                    self.enforce_capacity()  # Note: Last batch does enter RAM before capacity is enforced
-                break
-            except (EOFError, BrokenPipeError):
-                continue
+            self.num_experiences += batch_size
+            self.enforce_capacity()  # Note: Last batch does enter RAM before capacity is enforced
 
     # TODO Be own thread https://stackoverflow.com/questions/14234547/threads-with-decorators
     def add(self, batch):
