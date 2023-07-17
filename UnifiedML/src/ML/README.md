@@ -284,7 +284,7 @@ from ML import main
 from ML.World.Environments.Atari import Atari
 
 if __name__ == '__main__':
-    main(Env=Atari(game='pong'))  # Note: Can directly pass in classes / instantiated classes
+    main(Env=Atari(game='pong'))
 ```
 
 **Run:**
