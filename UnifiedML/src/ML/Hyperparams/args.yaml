@@ -51,6 +51,7 @@ action_repeat: 1
 # Replay
 capacity: 1e6  # Shorthand for replay.ram_capacity
 ram_capacity: ${capacity}
+np_ram_capacity: 0
 hd_capacity: inf
 nstep: 10
 batch_size: 256
@@ -143,7 +144,7 @@ replay:
   gpu_capacity: 0
   pinned_capacity: 0
   ram_capacity: ${ram_capacity}
-  np_ram_capacity: 0
+  np_ram_capacity: ${np_ram_capacity}
   hd_capacity: ${hd_capacity}
   save: ${offline}
 #  load: ${load}  # TODO For Online, might want to overwrite
