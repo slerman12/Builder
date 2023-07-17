@@ -16,7 +16,7 @@ class TIMM(nn.Module):
     Not installed by default. $ pip install timm  (that dollar sign is totally a Freudian slip)
     Models listed here:  https://huggingface.co/timm
     """
-    def __init__(self, input_shape, name, pretrained=False, detach=False, pool='avg', output_shape=None):
+    def __init__(self, input_shape, name, pretrained=True, detach=True, pool='avg', output_shape=None):
         try:
             import timm
         except ModuleNotFoundError as e:
