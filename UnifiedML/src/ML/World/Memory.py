@@ -25,7 +25,7 @@ from minihydra import Args
 
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
-                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf, use_file_descriptors=False):
+                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf, use_file_descriptors=True):
         self.id = id(self)
         self.worker = 0
         self.main_worker = os.getpid()
@@ -53,8 +53,11 @@ class Memory:
 
         atexit.register(self.cleanup)
 
-        _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
-        resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+        if use_file_descriptors:
+            _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
+            resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+        else:
+            mp.set_sharing_strategy('file_system')
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -554,6 +557,5 @@ class Mem:
 if mp.current_process().name == 'MainProcess':
     try:
         mp.set_start_method('spawn')
-        mp.set_sharing_strategy('file_system')
     except RuntimeError:
         pass

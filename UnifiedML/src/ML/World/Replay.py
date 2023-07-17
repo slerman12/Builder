@@ -23,7 +23,7 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf,
-                 use_file_descriptors=False, save=False, mem_size=None, fetch_per=1,
+                 use_file_descriptors=True, save=False, mem_size=None, fetch_per=1,
                  prefetch_factor=3, pin_memory=False, pin_device_memory=False, shuffle=True, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
