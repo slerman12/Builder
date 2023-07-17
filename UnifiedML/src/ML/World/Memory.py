@@ -187,9 +187,6 @@ class Memory:
         self.save_path = save_path
 
     def set_worker(self, worker):
-        if not self.use_file_descriptors:
-            mp.set_sharing_strategy('file_system')
-
         self.worker = worker
 
     @property
