@@ -263,7 +263,10 @@ class Worker:
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
-            self.memory.update()
+            try:
+                self.memory.update()
+            except EOFError:
+                pass
 
             if len(self.memory):
                 break
