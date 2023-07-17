@@ -174,16 +174,6 @@ def open_yaml(source, return_path=False):
     raise FileNotFoundError(f'{source} not found. Searched: {yaml_search_paths + [""]}')
 
 
-# class Args(dict):
-#     def __init__(self, _dict=None, **kwargs):
-#         super().__init__()
-#         self.__dict__ = self  # Allows access via attributes
-#         self.update({**(_dict or {}), **kwargs})
-#
-#     def to_dict(self):
-#         return {**{key: self[key].to_dict() if isinstance(self[key], Args) else self[key] for key in self}}
-
-
 class Args:
     def __init__(self, _dict=None, **kwargs):
         self.__dict__.update({**(_dict or {}), **kwargs})

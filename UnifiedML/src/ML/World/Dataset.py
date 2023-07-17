@@ -23,7 +23,7 @@ from torchvision.transforms import functional as F
 from tqdm import tqdm
 
 from World.Memory import Batch
-from minihydra import instantiate, Args, module_paths, added_modules, open_yaml
+from minihydra import instantiate, Args, module_paths, added_modules, open_yaml, get_module
 
 
 # Returns a path to an existing Memory directory or an instantiated Pytorch Dataset
@@ -89,33 +89,25 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     transform = dataset_config.pop('transform') if 'transform' in dataset_config else None
     subset = dataset_config.pop('subset') if 'subset' in dataset_config else None
 
-    e = ''
-
     # Instantiate dataset
     for all_specs in itertools.product(root_specs, train_specs, download_specs, transform_specs):
+        root_spec, train_spec, download_spec, transform_spec = all_specs
+        specs = dict(**root_spec, **train_spec, **download_spec, **transform_spec)
+        specs = {key: specs[key] for key in set(specs) - set(dataset_config)}
+        specs.update({key: value for key, value in dataset_config.items() if key in specs})  # Prioritize config
+        specs.update(kwargs)
+
+        module = get_module(dataset_config._target_, modules=pytorch_datasets)
+        specs = {key: specs[key] for key in specs.keys() & inspect.signature(module).parameters}
         try:
-            root_spec, train_spec, download_spec, transform_spec = all_specs
-            specs = dict(**root_spec, **train_spec, **download_spec, **transform_spec)
-            specs = {key: specs[key] for key in set(specs) - set(dataset_config)}
-            specs.update({key: value for key, value in dataset_config.items() if key in specs})  # Prioritize config
-            specs.update(kwargs)
-            if is_torchvision:
-                with Lock(path + 'lock'):  # System-wide mutex-lock
-                    # TODO Use signature instead of try-catch!!
-                    dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets)
-            else:
-                dataset = instantiate(dataset_config, **specs)
-        except (TypeError, ValueError) as error:
-            if not e:
-                sys.exc_info()
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                e = str(error) + f'\nerror type: {exc_type}, error filename: {fname}, ' \
-                                 f'error line number: {exc_tb.tb_lineno}'
+            inspect.signature(module).bind(**specs)
+        except TypeError:
             continue
+        with Lock(path + 'lock'):  # System-wide mutex-lock
+            dataset = instantiate(dataset_config, **specs, _modules_=pytorch_datasets if is_torchvision else None)
         break
 
-    assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
+    assert dataset, f'Could not instantiate Dataset.'
 
     if hasattr(dataset, 'num_classes'):
         assert isinstance(dataset[0][1], int) or \
