@@ -22,9 +22,9 @@ class RandomShiftsAug(nn.Module):
         n, c, h, w = obs.size()
         assert h == w, f'Height≠width ({h}≠{w}), obs shape not supported by this augmentation, try \'Aug=Identity\''
         padding = tuple([self.pad] * 4)
-        print(obs.dtype, obs.shape)
+        if obs.dtype == torch.uint8:
+            obs = obs.to(torch.int16)
         obs = F.pad(obs, padding, 'replicate')
-        # TODO This error: RuntimeError: "replication_pad2d_cuda" not implemented for 'Byte'
         eps = 1.0 / (h + 2 * self.pad)
         arange = torch.linspace(-1.0 + eps,
                                 1.0 - eps,
