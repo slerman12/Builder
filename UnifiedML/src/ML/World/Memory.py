@@ -37,11 +37,6 @@ class Memory:
 
         self.save_path = save_path
 
-        self.use_file_descriptors = use_file_descriptors
-
-        if not self.use_file_descriptors:
-            mp.set_sharing_strategy('file_system')
-
         manager = mp.Manager()
 
         self.batches = manager.list()
@@ -60,6 +55,7 @@ class Memory:
 
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+        print(resource.getrlimit(resource.RLIMIT_NOFILE))
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
