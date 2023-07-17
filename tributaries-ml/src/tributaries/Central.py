@@ -164,6 +164,8 @@ def launch_remote(server, username, password, sweep):
 
 
 def download(server, username, password, sweep, plots=None, checkpoints=None):
+    original_path = sweep.app_name_paths.get(sweep.app, '')
+
     if sweep.hyper is not None and 'log_path' in [arg.split('=')[0] for arg in sweep.hyper.split()]:
         sweep.app_name_paths['path'] = [arg.split('=')[1]
                                         for arg in sweep.hyper.split() if arg.split('=')[0] == 'log_path'][0]
@@ -202,6 +204,10 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
     if checkpoints:
+        p.sendline(f'cd ~/')
+        p.expect('sftp> ', timeout=None)
+        p.sendline(f'cd {os.path.dirname(original_path) if ".py" in original_path else original_path}')
+        p.expect('sftp> ', timeout=None)
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
             p.sendline(f'get -r ./Checkpoints/{experiment.replace(".*", "*")}')  # Some regex compatibility
