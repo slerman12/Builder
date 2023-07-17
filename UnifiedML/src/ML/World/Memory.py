@@ -25,12 +25,10 @@ from minihydra import Args
 
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
-                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf, use_file_descriptors=True):
+                 ram_capacity=1e6, np_ram_capacity=0, hd_capacity=inf):
         self.id = id(self)
         self.worker = 0
         self.main_worker = os.getpid()
-
-        mp.set_sharing_strategy('file_system')
 
         self.capacities = [gpu_capacity, pinned_capacity, ram_capacity, np_ram_capacity, hd_capacity]
 
@@ -112,6 +110,7 @@ class Memory:
 
         self.batches.append(batch)
         self.update()
+        # TODO Pop updated from self.batches and convert tensors to numpy to avoid file descriptors. Then delete line -1
 
     def writable_tape(self, batch, ind, step):  # TODO Should be its own thread
         assert self.main_worker == os.getpid(), 'Only main worker can send rewrites across the memory tape.'
@@ -558,3 +557,4 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
+mp.set_sharing_strategy('file_system')
