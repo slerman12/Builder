@@ -319,7 +319,7 @@ class MyDataset(Dataset):
         self.classes = ['dog', 'cat']
         ...
     
-    def __getitem__(self, item):
+    def __getitem__(self, index):
         ...
     
     def __len__(self):
