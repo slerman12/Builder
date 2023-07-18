@@ -83,7 +83,6 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
 def mass_deploy():
-    print('running...')
     sweep = just_args()
 
     if 'hyperparams' not in sweep:
@@ -118,6 +117,7 @@ def launch_remote(server, username, password, sweep):
     # SSH login
     ssh = pxssh.pxssh()
     ssh.login(server, username, password)
+    # ssh.setwinsize(10000, 10000)  # Allow longer-length commands
     # Go to app
     if sweep.app_name_paths and sweep.app:
         ssh.sendline(f'cd {sweep.app_name_paths[sweep.app].rsplit("/", 1)[0]}')
@@ -148,7 +148,6 @@ def launch_remote(server, username, password, sweep):
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
-        print(ssh.before.decode("utf-8"))
     # Mass-deploy via tributaries
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
