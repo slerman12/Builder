@@ -301,7 +301,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
-Here's ImageNet using the builtin torchvision Dataset with a custom transform:
+Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
 ```console
 ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
