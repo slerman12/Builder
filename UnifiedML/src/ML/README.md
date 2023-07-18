@@ -389,6 +389,7 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 [```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics.
 
+#
 - By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable. However, ```Model=``` in this example demonstrates a simplified version of the full capacity of Agents, which includes muli-task learning and *generalism*.
 - [We provide many Agent/Model examples across domains, including RL and generative modeling.](Agents)
 
