@@ -113,7 +113,7 @@ class Model(nn.Module):
 ML Model=Run.Model Dataset=CIFAR10
 ```
 
-Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```, ```obs_spec```, ```action_spec```.
+Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
 
 Just include them as args to your model and UnifiedML will detect and fill them in.
 
@@ -354,14 +354,13 @@ You can include a ```train=``` boolean arg to your custom Dataset to define it f
 </h2>
 </summary>
 
-Let's look at the ```Model``` [from earlier](#architecture-shapes):
-
 ```python
 # Run.py
 
+from ML import Agent
 from torch.nn.functional import cross_entropy
 
-class Agent(Model):
+class CrossEntropyAgent(Agent):
     def learn(self, replay, logger):  # Add a learn(·) method to the Model from before
         batch = next(replay)
         
@@ -376,18 +375,16 @@ class Agent(Model):
 **Run:**
 
 ```console
-ML Agent=Run.Agent Dataset=CIFAR10
+ML Model=Run.Model Agent=Run.CrossEntropyAgent Dataset=CIFAR10
 ```
 
-We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy and passed it into ```Agent=Run.Agent```, overriding the default Agent. 
+We've now defined a basic cross-entropy loss that is applied to our ```Model``` [from earlier](#architecture-shapes).
 
 For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss. 
 
 [```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics. 
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
-
-By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable. The [default](Agents/Lermanbots/AC2.py) Agent's methods are used whenever a required method like ```learn(·)``` is missing.
 
 </details>
 
