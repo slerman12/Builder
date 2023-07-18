@@ -15,7 +15,7 @@ import numpy as np
 import torch
 from torch.utils.data import IterableDataset, Dataset, DataLoader
 
-from World.MemoryV2 import Memory, Batch
+from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
 from minihydra import instantiate, open_yaml, Args
 
