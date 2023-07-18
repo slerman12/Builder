@@ -107,8 +107,11 @@ def mass_deploy():
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
     if 'path' in [key_value.split('=')[0] for key_value in getattr(sweep, 'hyper', '').split()]:
-        os.chdir([key_value.split('=')[1] for key_value in getattr(sweep, 'hyper', '').split()
-                  if key_value.split('=')[0] == 'path'][0])
+        try:
+            os.chdir([key_value.split('=')[1] for key_value in getattr(sweep, 'hyper', '').split()
+                      if key_value.split('=')[0] == 'path'][0])
+        except FileNotFoundError:
+            pass
 
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
 
