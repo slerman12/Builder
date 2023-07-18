@@ -297,7 +297,11 @@ python Run.py task=recipe
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-# Tutorials
+<div id="user-content-toc">
+  <ul>
+    <summary><h1 style="display: inline-block;">Tutorials</h1></summary>
+  </ul>
+</div>
 
 ---
 <details>
