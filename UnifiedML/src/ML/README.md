@@ -406,4 +406,4 @@ To be continued ...
 
 By [Sam Lerman](), with support from phd advisor [Chenliang Xu]() and [XRD project team]().
 
-[MIT license Included.](MIT_LICENSE)
+[MIT license included.](MIT_LICENSE)
