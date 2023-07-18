@@ -297,6 +297,18 @@ python Run.py task=recipe
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
+# Custom datasets
+
+Paths or instances to Pytorch Datasets can be passed into the ```Dataset=``` flag.
+
+```console
+ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
+```
+
+For custom classification datasets, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedMl will automatically count unique classes, which may be different across training and evaluation sets.
+
+You can include a ```train=``` boolean arg to your custom dataset or pass in a custom test dataset via ```TestDataset=```.
+
 # How to write custom loss functions, backwards, optim, etc.
 
 Let's look at the ```Model``` [from earlier](#architecture-shapes):
