@@ -301,7 +301,9 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 <details>
 <summary>
+<h2>
 Custom datasets
+</h2>
 </summary>
 <br>
 
@@ -357,8 +359,6 @@ How to write custom loss functions, backwards, optim, etc.
 </summary>
 <br>
 
-## How to write custom loss functions, backwards, optim, etc.
-
 Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
 ```python
@@ -397,7 +397,9 @@ For more sophisticated optimization schemes, we may optimize directly within the
 #
 <details>
 <summary>
+<h2>
 Custom Environments
+</h2>
 </summary>
 <br>
 </details>
@@ -405,7 +407,9 @@ Custom Environments
 #
 <details>
 <summary>
+<h2>
 Saving & Loading
+</h2>
 </summary>
 <br>
 </details>
@@ -413,7 +417,9 @@ Saving & Loading
 #
 <details>
 <summary>
+<h2>
 Multi-Task
+</h2>
 </summary>
 <br>
 </details>
