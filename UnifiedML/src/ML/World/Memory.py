@@ -36,6 +36,7 @@ class Memory:
             warnings.warn('np_ram_capacity is still experimental.')
 
         self.save_path = save_path
+        mp.set_sharing_strategy('file_system')
 
         manager = mp.Manager()
 
