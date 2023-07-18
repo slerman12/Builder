@@ -371,6 +371,8 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
+# Custom Environments
+
 ---
 
 To be continued ...
