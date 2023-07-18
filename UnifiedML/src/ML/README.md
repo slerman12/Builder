@@ -123,7 +123,7 @@ Thus, you can pass classes to command-line, not just objects. Later, we'll see [
 
 1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
 2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
-3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#method-6-recipes) shows how to define a task/recipe.
+3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#method-6-recipes) show how to define a task/recipe.
 
 <details>
 <summary>
