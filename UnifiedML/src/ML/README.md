@@ -299,7 +299,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 # Custom datasets
 
-Paths or instances to Pytorch Datasets can be passed into the ```Dataset=``` flag.
+Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
 ```console
 ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
