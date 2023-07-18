@@ -373,6 +373,8 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 # Custom Environments
 
+# Multi-Task
+
 ---
 
 To be continued ...
