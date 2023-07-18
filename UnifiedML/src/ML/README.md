@@ -343,7 +343,7 @@ If you define your own classify Dataset, include a ```.classes``` attribute list
 You can include a ```train=``` boolean arg to your custom Dataset to use it for both training and testing s.t. it is toggled between the two or pass in a different custom test Dataset via ```TestDataset=``` and the same syntax.
 
 </details>
-
+#
 <details>
 <summary>
 How to write custom loss functions, backwards, optim, etc.
@@ -384,28 +384,28 @@ For more sophisticated optimization schemes, we may optimize directly within the
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
 </details>
-
+#
 <details>
 <summary>
 Custom Environments
 </summary>
 <br>
 </details>
-
+#
 <details>
 <summary>
 Saving & Loading
 </summary>
 <br>
 </details>
-
+#
 <details>
 <summary>
 Multi-Task
 </summary>
 <br>
 </details>
-
+#
 <details>
 <summary>
 TIMM Models
