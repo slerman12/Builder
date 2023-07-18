@@ -297,13 +297,8 @@ python Run.py task=recipe
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-<div id="user-content-toc">
-  <ul>
-    <summary><h1 style="display: inline-block;">Tutorials</h1></summary>
-  </ul>
-</div>
+# Tutorials
 
----
 <details>
 <summary>
 Custom datasets
@@ -349,7 +344,6 @@ You can include a ```train=``` boolean arg to your custom Dataset to use it for 
 
 </details>
 
----
 <details>
 <summary>
 How to write custom loss functions, backwards, optim, etc.
@@ -391,7 +385,6 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 </details>
 
----
 <details>
 <summary>
 Custom Environments
@@ -399,7 +392,6 @@ Custom Environments
 <br>
 </details>
 
----
 <details>
 <summary>
 Saving & Loading
@@ -407,15 +399,12 @@ Saving & Loading
 <br>
 </details>
 
----
 <details>
 <summary>
 Multi-Task
 </summary>
 <br>
 </details>
-
----
 
 # Examples
 
