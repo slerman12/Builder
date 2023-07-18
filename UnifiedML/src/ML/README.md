@@ -305,7 +305,6 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 Custom datasets
 </h2>
 </summary>
-<br>
 
 Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
@@ -354,7 +353,6 @@ You can include a ```train=``` boolean arg to your custom Dataset to define it f
 How to write custom loss functions, backwards, optim, etc.
 </h2>
 </summary>
-<br>
 
 Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
@@ -397,7 +395,6 @@ For more sophisticated optimization schemes, we may optimize directly within the
 Custom Environments
 </h2>
 </summary>
-<br>
 </details>
 
 <details>
@@ -406,7 +403,6 @@ Custom Environments
 Saving & Loading
 </h2>
 </summary>
-<br>
 </details>
 
 <details>
@@ -415,7 +411,6 @@ Saving & Loading
 Multi-Task
 </h2>
 </summary>
-<br>
 </details>
 
 # Examples
