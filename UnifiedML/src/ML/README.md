@@ -334,7 +334,7 @@ ML Dataset=Run.MyDataset
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
 
-You can include a ```train=``` boolean arg to your custom Dataset to use it for both training and testing s.t. it is toggled between the two or pass in a custom test Dataset via ```TestDataset=``` and the same syntax.
+You can include a ```train=``` boolean arg to your custom Dataset to use it for both training and testing s.t. it is toggled between the two or pass in a different custom test Dataset via ```TestDataset=``` and the same syntax.
 
 # How to write custom loss functions, backwards, optim, etc.
 
