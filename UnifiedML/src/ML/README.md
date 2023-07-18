@@ -306,9 +306,8 @@ Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
 from torch.nn.functional import cross_entropy
 
-# Add a learn(·) method to the Model from before
 class Agent(Model):
-    def learn(self, replay, logger):
+    def learn(self, replay, logger):  # Add a learn(·) method to the Model from before
         batch = next(replay)
         
         y = self(batch.obs)
