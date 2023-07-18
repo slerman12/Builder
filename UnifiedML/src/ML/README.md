@@ -361,7 +361,7 @@ from ML import Agent
 from torch.nn.functional import cross_entropy
 
 class CrossEntropyAgent(Agent):
-    def learn(self, replay, logger):  # Add a learn(·) method to the Model from before
+    def learn(self, replay, logger):
         batch = next(replay)
         
         y = self(batch.obs)
