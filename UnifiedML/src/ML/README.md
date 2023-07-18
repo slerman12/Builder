@@ -350,7 +350,6 @@ You can include a ```train=``` boolean arg to your custom Dataset to define it f
 
 </details>
 
-#
 <details>
 <summary>
 <h2>
@@ -358,6 +357,8 @@ How to write custom loss functions, backwards, optim, etc.
 </h2>
 </summary>
 <br>
+
+## How to write custom loss functions, backwards, optim, etc.
 
 Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
@@ -394,7 +395,6 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 </details>
 
-#
 <details>
 <summary>
 <h2>
@@ -404,7 +404,6 @@ Custom Environments
 <br>
 </details>
 
-#
 <details>
 <summary>
 <h2>
@@ -414,7 +413,6 @@ Saving & Loading
 <br>
 </details>
 
-#
 <details>
 <summary>
 <h2>
@@ -423,8 +421,6 @@ Multi-Task
 </summary>
 <br>
 </details>
-
-#
 
 # Examples
 
