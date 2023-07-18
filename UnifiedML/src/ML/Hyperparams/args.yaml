@@ -50,8 +50,8 @@ truncate_episode_steps: 1000
 action_repeat: 1
 # Replay
 capacity: 1e6  # Shorthand for replay.ram_capacity
-ram_capacity: ${capacity}
-np_ram_capacity: 0
+ram_capacity: 0
+np_ram_capacity: ${capacity}
 hd_capacity: inf
 nstep: 10
 batch_size: 256
