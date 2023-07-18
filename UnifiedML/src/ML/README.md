@@ -299,7 +299,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 # How to write custom loss functions, backwards, optim, etc.
 
-Let's look at the ```Model``` [from earlier](#architecture-shapes):
+Let's look at our ```Model``` class [from earlier](#architecture-shapes):
 
 ```python
 # Run.py
