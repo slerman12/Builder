@@ -379,6 +379,8 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 ## Multi-Task
 
+## TIMM Models
+
 # Examples
 
 ---
