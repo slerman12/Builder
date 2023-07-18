@@ -145,7 +145,7 @@ class AC2Agent(torch.nn.Module):
             actor = self.actor.ema if self.ema and not (self.RL and self.discrete) else self.actor
 
             # "See"
-            obs = encoder(obs)
+            obs = encoder(obs)  # TODO Store if explain=true
 
             # Act
             Pi = actor(obs, self.step)
