@@ -310,9 +310,9 @@ class Agent(Model):
     def learn(self, replay, logger):
         batch = next(replay)
         
-        y_pred = self(batch.obs)
+        y = self(batch.obs)
         
-        loss = cross_entropy(y_pred, batch.label)
+        loss = cross_entropy(y, batch.label)
         logger.log(loss=loss)
         
         return loss
