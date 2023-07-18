@@ -544,7 +544,8 @@ class Mem:
     def save(self):
         if not self.saved:
             mmap = np.memmap(self.path, self.dtype, 'w+', shape=self.shape)
-            mmap[...] = self.mem
+            with self.mem() as mem:
+                mmap[...] = mem
             mmap.flush()  # Write to hard disk
             self.saved = True
 
