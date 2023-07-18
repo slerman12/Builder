@@ -344,7 +344,7 @@ ML Dataset=Run.MyDataset
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
 
-You can include a ```train=``` boolean arg to your custom Dataset for training and testing, or use a different custom test Dataset via ```TestDataset=``` and the same syntax.
+You can include a ```train=``` boolean arg to your custom Dataset to define it for training and testing, or use a different custom test Dataset via ```TestDataset=``` and the same syntax.
 
 </details>
 
