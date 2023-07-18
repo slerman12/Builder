@@ -24,7 +24,7 @@ from minihydra import Args
 
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
-                 tensor_ram_capacity=1e6, ram_capacity=0, hd_capacity=inf):
+                 tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf):
         self.id = id(self)
         self.worker = 0
         self.main_worker = os.getpid()
