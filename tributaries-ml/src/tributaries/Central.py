@@ -160,9 +160,9 @@ def launch_remote(server, username, password, sweep):
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
     print('Sending command...')
-    print('Run it manually with:', 'tributaries ' + cmd)
+    print('If this takes too long, run it manually with:', 'tributaries ' + cmd)
     ssh.sendline('tributaries ' + cmd)
-    ssh.expect(['tributaries ' + cmd], timeout=500)
+    ssh.expect(['tributaries ' + cmd], timeout=200)
     ssh.prompt()
     prompt = ssh.before.decode("utf-8")
     if 'Deploying' not in str(prompt):
