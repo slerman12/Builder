@@ -135,29 +135,30 @@ Works across domains, including reinforcement learning and generative modeling.
 2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
 3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag.
 
-## Here's how to write the same program in 6 different ways.
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Here's how to write the same program in 7 different ways.
+</h2>
+</summary>
 
 Train a simple 5-layer CNN to play Atari Pong:
 
 <img src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" data-canonical-src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" width="64" height="84" alt=""/>
 
-<details>
-<summary>
-Method 1. Purely command-line
-</summary>
-<br>
+### Method 1. Purely command-line
 
 ```console
 ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ```
 
-</details>
+### Method 2. Command-line code
 
-<details>
-<summary>
-Method 2. Command line
-</summary>
-<br>
+```console
+ML task=RL Env='Atari(game="pong") Model='CNN(depth=5)'
+```
+
+### Method 3. Command line
 
 ```python
 # Run.py
@@ -174,13 +175,7 @@ if __name__ == '__main__':
 python Run.py task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ```
 
-</details>
-
-<details>
-<summary>
-Method 3. Inferred Code
-</summary>
-<br>
+### Method 4. Inferred Code
 
 ```python
 # Run.py
@@ -197,13 +192,7 @@ if __name__ == '__main__':
 python Run.py
 ```
 
-</details>
-
-<details>
-<summary>
-Method 4. Purely Code
-</summary>
-<br>
+### Method 5. Purely Code
 
 ```python
 # Run.py
@@ -222,13 +211,7 @@ if __name__ == '__main__':
 python Run.py
 ```
 
-</details>
-
-<details>
-<summary>
-Method 5. Recipes
-</summary>
-<br>
+### Method 6. Recipes
 
 Define recipes in a ```.yaml``` file like this one:
 
@@ -254,13 +237,7 @@ ML task=recipe
 
 The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
 
-</details>
-
-<details>
-<summary>
-Method 6. All of the above
-</summary>
-<br>
+### Method 7. All of the above
 
 The order of hyperparam priority is ```command-line > code > recipe```.
 
