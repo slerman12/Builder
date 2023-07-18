@@ -314,6 +314,8 @@ Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
 ```
 
+---
+
 Generally, a custom Dataset class may look like this:
 
 ```python
