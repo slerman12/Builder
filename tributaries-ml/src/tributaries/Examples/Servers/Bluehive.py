@@ -14,9 +14,9 @@ def main(group_name=None, username='slerman', env=None):  # Can pass in special 
 
     conda = f'conda activate {env or "ML"}'  # Different conda env depending on env= arg
 
-    sbatch = ''.join([f'*"{gpu}"*)\n{conda} {env}\n;;\n'
-                      for gpu, env in [('K80', env or 'CUDA10.2'),  # Conda envs w.r.t. GPU
-                                       ('', env or 'ML')]])  # Default: ML
+    sbatch = ''.join([f'*"{gpu}"*)\nconda activate {env_}\n;;\n'
+                      for gpu, env_ in [('K80', env or 'CUDA10.2'),  # Conda envs w.r.t. GPU
+                                        ('', env or 'ML')]])  # Default: ML
     sbatch = f'GPU_TYPE' \
              f'=$(nvidia-smi --query-gpu=gpu_name --format=csv | tail  -1)\ncase $GPU_TYPE in\n{sbatch}esac\n'
     sbatch += '#SBATCH -p csxu -A cxu22_lab\nmodule load gcc' if group_name == 'csxu' \
