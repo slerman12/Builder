@@ -309,9 +309,12 @@ from torch.nn.functional import cross_entropy
 class Agent(Model):
     def learn(self, replay, logger):
         batch = next(replay)
+        
         y_pred = self(batch.obs)
+        
         loss = cross_entropy(y_pred, batch.label)
         logger.log(loss=loss)
+        
         return loss
 ```
 
