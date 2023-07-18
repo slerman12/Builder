@@ -327,7 +327,7 @@ class Worker:
             # Transition
             experience.action = episode[step + 1].action
 
-            traj_r = torch.as_tensor([experience.reward
+            traj_r = torch.as_tensor([float(experience.reward)
                                       for experience in episode[step + 1:step + self.nstep + 1]])
 
             experience['next_obs'] = frame_stack(episode, 'obs', step + len(traj_r))
