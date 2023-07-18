@@ -151,6 +151,7 @@ def launch_remote(server, username, password, sweep):
     # Mass-deploy via tributaries
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
+    print('tributaries ' + cmd)
     ssh.sendline('tributaries ' + cmd)
     ssh.prompt()
     prompt = ssh.before.decode("utf-8")
