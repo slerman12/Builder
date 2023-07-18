@@ -129,6 +129,8 @@ Thus, you can pass classes to command-line, not just objects. Later, we'll see [
 
 Works across domains, including reinforcement learning and generative modeling.
 
+# What is an Agent?
+
 # Syntax
 
 1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```agent.depth=5``` (shown in [Methods 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
@@ -296,8 +298,6 @@ python Run.py task=recipe
 </details>
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
-
-# What is an Agent?
 
 ---
 
