@@ -261,13 +261,13 @@ from ML import main
 from ML.World.Environments.Atari import Atari
 
 if __name__ == '__main__':
-    main(Env=Atari(game='pong'))
+    main(Env=Atari)
 ```
 
 **Run:**
 
 ```console
-python Run.py task=recipe 
+python Run.py task=recipe env.game=pong
 ```
 
 </details>
