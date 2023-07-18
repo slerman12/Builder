@@ -387,6 +387,8 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
+By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable.
+
 </details>
 
 <details>
