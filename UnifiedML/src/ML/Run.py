@@ -9,6 +9,7 @@ from Utils import init, MT, MP, save, load
 
 @get_args(source='Hyperparams/args.yaml')  # Hyper-param arg files located in ./Hyperparams
 def main(args):
+    print(args)
     if args.multi_task:
         return MT.launch(args.multi_task)  # Handover to multi-task launcher
 
