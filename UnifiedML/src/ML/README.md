@@ -138,7 +138,7 @@ Works across domains, including reinforcement learning and generative modeling.
 <details>
 <summary>
 <h3>
-&nbsp;&nbsp;&nbsp;Here's how to write the same program in 7 different ways.
+Here's how to write the same program in 7 different ways.
 </h3>
 </summary>
 
