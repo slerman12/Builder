@@ -387,7 +387,7 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
-By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable. The [default Agent's](Agents/Lermanbots/AC2.py) methods are used whenever a required method like ```learn(·)``` is missing.
+By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable. The [default](Agents/Lermanbots/AC2.py) Agent's methods are used whenever a required method like ```learn(·)``` is missing.
 
 </details>
 
