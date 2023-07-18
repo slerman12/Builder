@@ -354,14 +354,15 @@ You can include a ```train=``` boolean arg to your custom Dataset to define diff
 </h2>
 </summary>
 
+Let's look at the ```Model``` [from earlier](#architecture-shapes):
+
 ```python
 # Run.py
 
-from ML import Agent
 from torch.nn.functional import cross_entropy
 
-class CrossEntropyAgent(Agent):
-    def learn(self, replay, logger):
+class Model_(Model):
+    def learn(self, replay, logger):  # Add a learn(·) method to the Model from before
         batch = next(replay)
         
         y = self(batch.obs)
@@ -375,16 +376,14 @@ class CrossEntropyAgent(Agent):
 **Run:**
 
 ```console
-ML Model=Run.Model Agent=Run.CrossEntropyAgent Dataset=CIFAR10
+ML Model=Run.Model_ Dataset=CIFAR10
 ```
 
-We've now defined a basic cross-entropy loss that is applied to our ```Model``` [from earlier](#architecture-shapes).
+We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy.
 
-For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss. 
+For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss.
 
-[```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics. 
-
-[We provide many Agent examples across domains, including RL and generative modeling.](Agents)
+[```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics.
 
 </details>
 
