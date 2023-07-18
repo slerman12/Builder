@@ -238,7 +238,7 @@ Define recipes in a ```.yaml``` file like this one:
 imports:
   - RL
   - self
-Env: Atari 
+Env: Atari
 env:
   game: pong
 Model: CNN
@@ -296,6 +296,41 @@ python Run.py task=recipe
 </details>
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
+
+# How to write my own custom loss functions, backwards passes, optimizations, etc.
+
+Just use your ```Model``` as an ```Agent``` and give it a ```learn(·)``` method. Let's look at the ```Model``` from earlier:
+
+```python
+# Run.py
+
+from torch import nn
+from torch.nn.functional import cross_entropy
+
+class Model(nn.Module):
+    def __init__(self, in_features, out_features):
+        super().__init__()
+
+        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
+
+    def forward(self, x):
+        return self.model(x)
+
+    def learn(self, replay, logger):
+        batch = next(replay)
+        y_pred = self(batch.obs)
+        loss = cross_entropy(y_pred, batch.label)
+        logger.log(loss=loss)
+        return loss
+```
+
+**Run:**
+
+```console
+ML Agent=Run.Model Dataset=CIFAR10
+```
+
+We've now added a custom ```learn(·)``` method that does basic cross entropy and passed our ```Model``` into ```Agent=Run.Model```. For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method and not return a loss. ```replay``` allows us to sample batches. ```logger``` allows us to keep track of metrics. 
 
 ---
 
