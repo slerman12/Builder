@@ -158,7 +158,7 @@ ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ML task=RL Env='Atari(game="pong") Model='CNN(depth=5)'
 ```
 
-### Method 3. Command line
+### Method 3. Command-line
 
 ```python
 # Run.py
