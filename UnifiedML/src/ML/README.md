@@ -350,17 +350,11 @@ You can include a ```train=``` boolean arg to your custom Dataset to define it f
 
 #
 <details>
+<h2>
 <summary>
-
-[//]: # (<div id="user-content-toc">)
-
-[//]: # (  <ul>)
-    <h2 >How to write custom loss functions, backwards, optim, etc.</h2>
-
-[//]: # (  </ul>)
-
-[//]: # (</div>)
+How to write custom loss functions, backwards, optim, etc.
 </summary>
+</h2>
 <br>
 
 ## How to write custom loss functions, backwards, optim, etc.
