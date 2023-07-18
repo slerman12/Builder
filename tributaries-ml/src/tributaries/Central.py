@@ -24,7 +24,7 @@ from minihydra import just_args, instantiate, interpolate, Args, recursive_updat
 
 def sbatch_deploy(hyperparams, deploy_config):
     sys.argv = sys.argv[:1] + shlex.split(hyperparams) + \
-               (deploy_config.hyper.split() if getattr(deploy_config, 'hyper', None) else [])
+               (deploy_config.hyper.split() if deploy_config.hyper else [])
 
     args = just_args(os.path.dirname(__file__) + '/Hyperparams/args.yaml')
 
@@ -61,7 +61,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 {commands}
 {'wandb login ' + deploy_config.wandb_key if deploy_config.wandb_key else ''}
 {'python ' + deploy_config.app_name_paths[deploy_config.app] if deploy_config.app_name_paths and deploy_config.app
-    else 'ML'} {' '.join(hyperparams.split())} {getattr(deploy_config, 'hyper', '') or ''}
+    else 'ML'} {' '.join(hyperparams.split())} {deploy_config.hyper or ''}
 """
 
     # Write script
@@ -106,9 +106,9 @@ def mass_deploy():
     defaults = Args(**my_sweep, **{'app_name_paths': None, 'commands': [], 'sbatch': ''})
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
-    if 'path' in [key_value.split('=')[0] for key_value in getattr(sweep, 'hyper', '').split()]:
+    if 'path' in [key_value.split('=')[0] for key_value in (sweep.hyper or '').split()]:
         try:
-            os.chdir([key_value.split('=')[1] for key_value in getattr(sweep, 'hyper', '').split()
+            os.chdir([key_value.split('=')[1] for key_value in (sweep.hyper or '').split()
                       if key_value.split('=')[0] == 'path'][0])
         except FileNotFoundError:
             pass
