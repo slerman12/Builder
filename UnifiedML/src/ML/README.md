@@ -347,7 +347,7 @@ If you define your own classify Dataset, include a ```.classes``` attribute list
 
 You can include a ```train=``` boolean arg to your custom Dataset to define different behaviors for training and testing, or use a different custom test Dataset via ```TestDataset=```.
 
-All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=``` as ```transform=``` runs on CPU at runtime and ```Aug=``` runs on GPU and assumes a batch-vectorized augmentation at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
+All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
 
 </details>
 
