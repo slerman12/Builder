@@ -106,6 +106,10 @@ def mass_deploy():
     defaults = Args(**my_sweep, **{'app_name_paths': None, 'commands': [], 'sbatch': ''})
     sweep.update({key: value for key, value in defaults.items() if key not in sweep})
 
+    if 'path' in [key_value.split('=')[0] for key_value in getattr(sweep, 'hyper', '').split()]:
+        os.chdir([key_value.split('=')[1] for key_value in getattr(sweep, 'hyper', '').split()
+                  if key_value.split('=')[0] == 'path'][0])
+
     print(f'Deploying {len(sweep.hyperparams)} set(s) of hyperparams.')
 
     for i, hyperparams in enumerate(sweep.pop('hyperparams')):
