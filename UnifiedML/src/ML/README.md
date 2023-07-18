@@ -329,7 +329,7 @@ class MyDataset(Dataset):
 **Run:**
 
 ```console
-ML Model=Run.Model Dataset=Run.MyDataset
+ML Dataset=Run.MyDataset
 ```
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
