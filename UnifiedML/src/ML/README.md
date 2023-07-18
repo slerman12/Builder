@@ -128,7 +128,7 @@ Thus, you can pass classes to command-line, not just objects. Later, we'll see [
 <details>
 <summary>
 <h3>
-Here's how to write the same program in 7 different ways.
+Here's how to write the same program in 7 different ways. (Click to expand)
 </h3>
 </summary>
 
