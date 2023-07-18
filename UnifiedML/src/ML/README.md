@@ -307,8 +307,6 @@ Custom datasets
 </summary>
 <br>
 
-## Custom datasets
-
 Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
@@ -357,8 +355,6 @@ How to write custom loss functions, backwards, optim, etc.
 </h2>
 </summary>
 <br>
-
-## How to write custom loss functions, backwards, optim, etc.
 
 Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
