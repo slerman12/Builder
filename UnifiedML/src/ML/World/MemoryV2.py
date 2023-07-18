@@ -36,7 +36,7 @@ class Memory:
             warnings.warn('np_ram_capacity is still experimental.')
 
         self.save_path = save_path
-        mp.set_sharing_strategy('file_system')
+        # mp.set_sharing_strategy('file_system')
 
         manager = mp.Manager()
 
@@ -562,4 +562,4 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
-mp.set_sharing_strategy('file_system')
+# mp.set_sharing_strategy('file_system')
