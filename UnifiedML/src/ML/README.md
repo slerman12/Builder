@@ -297,7 +297,7 @@ python Run.py task=recipe
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-# How to write my own custom loss functions, backwards passes, optimizations, etc.
+# How to write custom loss functions, backwards, optim, etc.
 
 Just use your ```Model``` as an ```Agent``` and give it a ```learn(·)``` method. Let's look at the ```Model``` from earlier:
 
