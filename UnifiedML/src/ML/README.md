@@ -2,7 +2,7 @@
 
 # Welcome
 
-See our library [Tributaries](../../../tributaries/src/tributaries) for mass-deploying UnifiedML apps on remote servers.
+See our library [Tributaries](../../../tributaries-ml/src/tributaries) for mass-deploying UnifiedML apps on remote servers.
 
 Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
 
