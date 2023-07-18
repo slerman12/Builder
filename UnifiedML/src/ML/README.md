@@ -301,13 +301,40 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
+Here's ImageNet using the builtin torchvision Dataset with a custom transform:
+
 ```console
 ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
 ```
 
-For custom classification datasets, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedMl will automatically count unique classes, which may be different across training and evaluation sets.
+Generally, a custom Dataset class may look like this:
 
-You can include a ```train=``` boolean arg to your custom dataset or pass in a custom test dataset via ```TestDataset=```.
+```python
+# Run.py
+
+from torch.utils.data import Dataset
+
+class MyDataset(Dataset):
+    def __init__(self, train=True):
+        self.classes = ['dog', 'cat']
+        ...
+    
+    def __getitem__(self, item):
+        ...
+    
+    def __len__(self):
+        ...
+```
+
+**Run:**
+
+```console
+ML Dataset=Run.MyDataset
+```
+
+If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
+
+You can include a ```train=``` boolean arg to your custom Dataset to use it for both training and testing and toggle between the two or pass in a custom test Dataset via ```TestDataset=``` and the same syntax.
 
 # How to write custom loss functions, backwards, optim, etc.
 
