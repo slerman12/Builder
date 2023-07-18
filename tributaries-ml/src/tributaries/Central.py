@@ -156,10 +156,11 @@ def launch_remote(server, username, password, sweep):
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
-    print('Sending command...')
     # Mass-deploy via tributaries
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
+    print('Sending command...')
+    print('Run it manually with:', 'tributaries ' + cmd)
     ssh.sendline('tributaries ' + cmd)
     ssh.expect(['tributaries ' + cmd], timeout=500)
     ssh.prompt()
