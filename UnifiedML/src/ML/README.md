@@ -324,7 +324,11 @@ Since the default task is ```task=classify```, the above script will learn class
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
 
+**Test dataset**
+
 You can include a ```train=``` boolean arg to your custom Dataset to define different behaviors for training and testing, or use a different custom test Dataset via ```TestDataset=```.
+
+**Transforms & augmentations**
 
 All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
 
