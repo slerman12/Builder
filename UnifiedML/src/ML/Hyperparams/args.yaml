@@ -50,8 +50,8 @@ truncate_episode_steps: 1000
 action_repeat: 1
 # Replay
 capacity: 1e6  # Shorthand for replay.ram_capacity
-ram_capacity: 0
-np_ram_capacity: ${capacity}
+ram_capacity: ${capacity}
+tensor_ram_capacity: 0
 hd_capacity: inf
 nstep: 10
 batch_size: 256
@@ -143,8 +143,8 @@ replay:
   stream: ${stream}
   gpu_capacity: 0
   pinned_capacity: 0
+  tensor_ram_capacity: ${tensor_ram_capacity}
   ram_capacity: ${ram_capacity}
-  np_ram_capacity: ${np_ram_capacity}
   hd_capacity: ${hd_capacity}
   save: ${offline}
 #  load: ${load}  # TODO For Online, might want to overwrite
