@@ -299,11 +299,9 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 # Tutorials
 
-## Custom datasets
-
 <details>
 <summary>
-Click to expand
+Custom datasets
 </summary>
 <br>
 
@@ -346,11 +344,9 @@ You can include a ```train=``` boolean arg to your custom Dataset to use it for 
 
 </details>
 
-## How to write custom loss functions, backwards, optim, etc.
-
 <details>
 <summary>
-Click to expand
+How to write custom loss functions, backwards, optim, etc.
 </summary>
 <br>
 
@@ -389,11 +385,26 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 </details>
 
-## Custom Environments
+<details>
+<summary>
+Custom Environments
+</summary>
+<br>
+</details>
 
-## Saving & Loading
+<details>
+<summary>
+Saving & Loading
+</summary>
+<br>
+</details>
 
-## Multi-Task
+<details>
+<summary>
+Multi-Task
+</summary>
+<br>
+</details>
 
 # Examples
 
