@@ -304,7 +304,7 @@ Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
 ```console
-ML Model=Run.Model Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
+ML Dataset=torchvision.datasets.ImageNet dataset.root='./' dataset.transform=transforms.Resize(64)
 ```
 
 Generally, a custom Dataset class may look like this:
@@ -329,7 +329,7 @@ class MyDataset(Dataset):
 **Run:**
 
 ```console
-ML Model=Run.Model Dataset=Run.MyDataset
+ML Dataset=Run.MyDataset
 ```
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
