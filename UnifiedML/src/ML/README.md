@@ -332,6 +332,8 @@ ML Agent=Run.Model Dataset=CIFAR10
 
 We've now added a custom ```learn(·)``` method that does basic cross-entropy and passed our ```Model``` into ```Agent=Run.Model```, overriding the default Agent. For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method and not return a loss. ```replay``` allows us to sample batches. ```logger``` allows us to keep track of metrics. 
 
+We provide many [Agent examples](Agents) across domains, including RL and generative modeling.
+
 ---
 
 To be continued ...
