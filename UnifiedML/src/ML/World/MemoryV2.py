@@ -32,11 +32,7 @@ class Memory:
 
         self.capacities = [gpu_capacity, pinned_capacity, ram_capacity, np_ram_capacity, hd_capacity]
 
-        if np_ram_capacity:
-            warnings.warn('np_ram_capacity is still experimental.')
-
         self.save_path = save_path
-        # mp.set_sharing_strategy('file_system')
 
         manager = mp.Manager()
 
@@ -382,12 +378,9 @@ class Mem:
     def mem(self):
         if self.mode == 'shared':
             shm = SharedMemory(name=self.name)
-            b = np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
-            # print(b)
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()
         else:
-            # print(self._mem)
             yield self._mem
 
     def __getstate__(self):
@@ -464,7 +457,6 @@ class Mem:
                     shm = SharedMemory(create=True, size=mem.nbytes)
                     self.name = shm.name
                     mem_ = np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
-                    # print(mem)
                     mem_[...] = mem
                     self._mem = None
                     shm.close()
@@ -563,4 +555,3 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
-# mp.set_sharing_strategy('file_system')
