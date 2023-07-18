@@ -299,23 +299,14 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 # How to write custom loss functions, backwards, optim, etc.
 
-Just use your ```Model``` as an ```Agent``` and give it a ```learn(·)``` method. Let's look at the ```Model``` from earlier:
+Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
 ```python
 # Run.py
 
-from torch import nn
 from torch.nn.functional import cross_entropy
 
-class Model(nn.Module):
-    def __init__(self, in_features, out_features):
-        super().__init__()
-
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-
+class Agent(Model):
     def learn(self, replay, logger):
         batch = next(replay)
         y_pred = self(batch.obs)
@@ -327,10 +318,10 @@ class Model(nn.Module):
 **Run:**
 
 ```console
-ML Agent=Run.Model Dataset=CIFAR10
+ML Agent=Run.Agent Dataset=CIFAR10
 ```
 
-We've now added a custom ```learn(·)``` method that does basic cross-entropy and passed our ```Model``` into ```Agent=Run.Model```, overriding the default Agent. For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss. ```replay``` allows us to sample batches. ```logger``` allows us to keep track of metrics. 
+We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy and passed it into ```Agent=Run.Agent```, overriding the default Agent. For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss. ```replay``` allows us to sample batches. ```logger``` allows us to keep track of metrics. 
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
