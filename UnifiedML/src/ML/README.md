@@ -297,7 +297,7 @@ python Run.py task=recipe
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-### What is an Agent?
+# What is an Agent?
 
 ---
 
