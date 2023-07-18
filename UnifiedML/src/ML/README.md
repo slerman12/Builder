@@ -272,7 +272,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 * Automatic 16-bit mixed precision with ```mixed_precision=true```.
 * Multi-GPU automatic detection and parallel training with ```parallel=true```.
 
-Works across domains, including reinforcement learning and generative modeling.
+Fully supported across domains, including reinforcement learning and generative modeling.
 
 # Tutorials
 
