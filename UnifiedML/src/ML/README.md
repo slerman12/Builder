@@ -119,16 +119,6 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects. Later, we'll see [how to instantiate them with custom arguments](#syntax).
 
-### Acceleration
-
-* Hard disk memory mapping.
-* Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
-* Shared-RAM parallelism.
-* Automatic 16-bit mixed precision with ```mixed_precision=true```.
-* Multi-GPU automatic detection and parallel training with ```parallel=true```.
-
-Works across domains, including reinforcement learning and generative modeling.
-
 ### Syntax
 
 1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
@@ -273,6 +263,16 @@ python Run.py task=recipe env.game=pong
 </details>
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
+
+## Acceleration
+
+* Hard disk memory mapping.
+* Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
+* Shared-RAM parallelism.
+* Automatic 16-bit mixed precision with ```mixed_precision=true```.
+* Multi-GPU automatic detection and parallel training with ```parallel=true```.
+
+Works across domains, including reinforcement learning and generative modeling.
 
 # Tutorials
 
