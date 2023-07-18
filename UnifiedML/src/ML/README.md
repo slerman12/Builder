@@ -34,11 +34,11 @@ Wherever you run ```ML```, it'll search the current directory for any specified 
 
 Paths to architectures, agents, environments, etc. via dot notation:
 ```console
-ML Eyes=MyFile.model
+ML Agent=MyFile.model
 ``` 
 or regular directory paths:
 ```console
-ML Eyes=./MyFile.py.model
+ML Agent=./MyFile.py.model
 ```
 
 ### Training example
@@ -54,7 +54,7 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 **Run:**
 
 ```console
-ML Model=Run.model Dataset=CIFAR10
+ML Agent=Run.model Dataset=CIFAR10
 ```
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
@@ -71,7 +71,7 @@ from ML import main
 model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 
 if __name__ == '__main__':
-    main(Model=model, Dataset='CIFAR10')
+    main(Agent=model, Dataset='CIFAR10')
 ```
 
 **Run:**
@@ -85,7 +85,7 @@ python Run.py
 Not exactly scalable, but:
 
 ```console
-ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
+ML Agent='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
 ### Architecture shapes
@@ -110,7 +110,7 @@ class Model(nn.Module):
 **Run:**
 
 ```console
-ML Model=Run.Model Dataset=CIFAR10
+ML Agent=Run.Model Dataset=CIFAR10
 ```
 
 Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
@@ -131,7 +131,7 @@ Works across domains, including reinforcement learning and generative modeling.
 
 # Syntax
 
-1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```eyes.depth=5``` (shown in [Methods 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
+1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```agent.depth=5``` (shown in [Methods 1, 2, and 4 below](#heres-how-to-write-the-same-program-in-5-different-ways)).
 2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes.
 3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag.
 
@@ -148,7 +148,7 @@ Method 1. Purely command-line
 <br>
 
 ```console
-ML task=RL Env=Atari env.game=pong Eyes=CNN eyes.depth=5
+ML task=RL Env=Atari env.game=pong Agent=CNN agent.depth=5
 ```
 
 </details>
@@ -171,14 +171,14 @@ if __name__ == '__main__':
 **Run:**
 
 ```console
-python Run.py task=RL Env=Atari env.game=pong Eyes=CNN eyes.depth=5
+python Run.py task=RL Env=Atari env.game=pong Agent=CNN agent.depth=5
 ```
 
 </details>
 
 <details>
 <summary>
-Method 3. Purely Code
+Method 3. Inferred Code
 </summary>
 <br>
 
@@ -186,11 +186,9 @@ Method 3. Purely Code
 # Run.py
 
 from ML import main
-from ML.Architectures import CNN
-from ML.Environments import Atari
 
 if __name__ == '__main__':
-    main(task='RL', Env=Atari(game='pong'), Eyes=CNN(depth=5))
+    main('env.game=pong', 'agent.depth=5', task='RL', Env='Atari', Agent='CNN')
 ```
 
 **Run:**
@@ -203,7 +201,7 @@ python Run.py
 
 <details>
 <summary>
-Method 4. Inferred Code
+Method 4. Purely Code
 </summary>
 <br>
 
@@ -211,9 +209,11 @@ Method 4. Inferred Code
 # Run.py
 
 from ML import main
+from ML.Blocks.Architectures import CNN
+from ML.World.Environments import Atari
 
 if __name__ == '__main__':
-    main('env.game=pong', 'eyes.depth=5', task='RL', Env='Atari', Eyes='CNN')
+    main(task='RL', Env=Atari(game='pong'), Agent=CNN(depth=5))
 ```
 
 **Run:**
@@ -241,8 +241,8 @@ imports:
 Env: Atari 
 env:
   game: pong
-Eyes: CNN
-eyes:
+Agent: CNN
+agent:
   depth: 5
 ```
 
@@ -272,8 +272,8 @@ Here's a combined example:
 imports:
   - RL
   - self
-Eyes: CNN
-eyes:
+Agent: CNN
+agent:
   depth: 5
 ```
 
