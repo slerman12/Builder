@@ -168,7 +168,6 @@ def open_yaml(source, return_path=False):
     for path in yaml_search_paths + ['']:
         try:
             with open(path + '/' + source.strip('/'), 'r') as file:
-                print(path + '/' + source.strip('/'))
                 args = yaml.safe_load(file)
             return (recursive_Args(args), path + '/' + source.strip('/')) if return_path else recursive_Args(args)
         except FileNotFoundError:

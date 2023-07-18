@@ -21,7 +21,8 @@ def connect_vpn(username='slerman'):
             p.expect('VPN>')
         except Exception:
             pass
-        print(f'Connected to VPN\nFor Bluehive: ssh {username}@bluehive.circ.rochester.edu')
+        print(f'Connected to VPN\nFor Bluehive: ssh {username}@bluehive.circ.rochester.edu\n'
+              f'If issues, try restarting your Cisco AnyConnect app.')
     return _connect_vpn
 
 
