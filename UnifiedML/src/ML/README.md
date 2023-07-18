@@ -299,6 +299,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 # Tutorials
 
+---
 <details>
 <summary>
 Custom datasets
@@ -410,15 +411,15 @@ Multi-Task
 <br>
 </details>
 
-[//]: # (---)
-
-[//]: # ()
-[//]: # (To be continued ...)
-
-[//]: # ()
-[//]: # (---)
+---
 
 # Examples
+
+---
+
+To be continued ...
+
+---
 
 #
 
