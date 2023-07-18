@@ -117,7 +117,8 @@ def launch_remote(server, username, password, sweep):
     # SSH login
     ssh = pxssh.pxssh()
     ssh.login(server, username, password)
-    # ssh.setwinsize(10000, 10000)  # Allow longer-length commands
+    ssh.setwinsize(20, ssh.maxread)  # Allow longer-length commands
+    ssh.prompt()
     # Go to app
     if sweep.app_name_paths and sweep.app:
         ssh.sendline(f'cd {sweep.app_name_paths[sweep.app].rsplit("/", 1)[0]}')
@@ -148,10 +149,12 @@ def launch_remote(server, username, password, sweep):
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
+    print('Sending command...')
     # Mass-deploy via tributaries
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
     ssh.sendline('tributaries ' + cmd)
+    ssh.expect(['tributaries ' + cmd], timeout=100)
     ssh.prompt()
     prompt = ssh.before.decode("utf-8")
     if 'Deploying' not in str(prompt):
