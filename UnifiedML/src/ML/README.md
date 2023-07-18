@@ -302,7 +302,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 <details>
 <summary>
 <h2>
-Custom datasets
+&nbsp;&nbsp;&nbsp;Custom datasets
 </h2>
 </summary>
 
@@ -350,7 +350,7 @@ You can include a ```train=``` boolean arg to your custom Dataset to define it f
 <details>
 <summary>
 <h2>
-How to write custom loss functions, backwards, optim, etc.
+&nbsp;&nbsp;&nbsp;How to write custom loss functions, backwards, optim, etc.
 </h2>
 </summary>
 
@@ -392,7 +392,7 @@ For more sophisticated optimization schemes, we may optimize directly within the
 <details>
 <summary>
 <h2>
-Custom Environments
+&nbsp;&nbsp;&nbsp;Custom Environments
 </h2>
 </summary>
 </details>
@@ -400,7 +400,7 @@ Custom Environments
 <details>
 <summary>
 <h2>
-Saving & Loading
+&nbsp;&nbsp;&nbsp;Saving & Loading
 </h2>
 </summary>
 </details>
@@ -408,7 +408,7 @@ Saving & Loading
 <details>
 <summary>
 <h2>
-Multi-Task
+&nbsp;&nbsp;&nbsp;Multi-Task
 </h2>
 </summary>
 </details>
