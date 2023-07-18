@@ -275,6 +275,11 @@ def read(source, recurse=False):
 
     # Command-line task import
     if 'task' in args and args.task not in [None, 'null']:
+        added = None
+        path = os.path.dirname(path)
+        if path not in sys.path:
+            added = path
+            yaml_search_paths.append(path)
         try:
             task = read('task/' + args.task + '.yaml', recurse=True)
         except FileNotFoundError as e:
@@ -282,6 +287,8 @@ def read(source, recurse=False):
                 task = read(args.task + '.yaml', recurse=True)
             except FileNotFoundError:
                 raise e
+        if added:
+            yaml_search_paths.pop(yaml_search_paths.index(added))
         recursive_update(args, task)
 
     return args
