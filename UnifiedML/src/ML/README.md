@@ -367,7 +367,7 @@ We've now added a custom ```learn(·)``` method to our original ```Model``` that
 
 For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss. 
 
-```replay``` allows us to sample batches. ```logger``` allows us to keep track of metrics. 
+[```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics. 
 
 [We provide many Agent examples across domains, including RL and generative modeling.](Agents)
 
