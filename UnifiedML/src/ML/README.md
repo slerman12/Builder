@@ -412,6 +412,6 @@ To be continued ...
 
 #
 
-By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Professor Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and the [XRD modeling project team](https://www.github.com/AGI-init/XRDs).
+By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and [XRD project team](https://www.github.com/AGI-init/XRDs).
 
-[This code is licensed under the MIT license.](MIT_LICENSE)
+[MIT license included.](MIT_LICENSE)
