@@ -50,7 +50,7 @@ class Replay:
 
         self.rewrite_shape = rewrite_shape  # For rewritable memory
 
-        self.add_lock = Lock()  # For adding to memory in concurrency
+        self.add_lock = Lock() if hd_capacity == inf else None  # For adding to memory in concurrency
 
         dataset_config = dataset
         dataset_config['capacities'] = sum(self.memory.capacities)
@@ -218,7 +218,12 @@ class Replay:
                     with self.add_lock:
                         self.memory.add(batch)  # Add to memory
 
-                Thread(target=add).start()  # Threading
+                # Don't thread if hd_capacity < inf,
+                #  TODO fix asynchronous add-induced deletion conflicting with worker __getitem__ of deleted index
+                if self.add_lock is None:
+                    self.memory.add(batch)  # Add to memory
+                else:
+                    Thread(target=add).start()  # Threading
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]

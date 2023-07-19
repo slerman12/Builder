@@ -410,6 +410,22 @@ For more sophisticated optimization schemes, we may optimize directly within the
 
 # Examples
 
+[//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
+
+[//]: # (Step 2. ...)
+
+[//]: # (Step N. Put all of it into a [recipe]&#40;&#41;. Let's call it ```dcgan```.)
+
+[//]: # ()
+[//]: # (**Run:**)
+
+[//]: # ()
+[//]: # (```console)
+
+[//]: # (ML task=dcgan)
+
+[//]: # (```)
+
 To be continued ...
 
 ---
