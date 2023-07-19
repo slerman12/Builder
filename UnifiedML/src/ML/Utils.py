@@ -168,36 +168,36 @@ def launch(**args):
 
 
 # Saves model + args + selected attributes
-def save(path, model, args, *attributes):
-    root, name = path.rsplit('/', 1)
-    Path(root).mkdir(exist_ok=True, parents=True)
-    torch.save(args, Path(root) / f'{name.replace(".pt", "")}.args')  # Save args
+def save(path, model, args=None, *attributes):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    with open(f'{root}/{name.replace(".pt", "")}.class', 'w') as f:
-        pickle.dump((model.__name__, model.__bases__, model.__dict__), f)  # Save class
+    def _type(m):
+        return m.__name__, tuple(map(_type, m.__bases__)), m.__dict__
 
-    torch.save({'state_dict': model.state_dict(), **{attr: getattr(model, attr)
-                                                     for attr in attributes}}, path)  # Save params + attributes
+    torch.save({'state_dict': model.state_dict(),
+                'attr': {attr: getattr(model, attr) for attr in attributes},
+                'args': args,
+                'type': _type(type(model))}, path)
     print(f'Model successfully saved to {path}')
 
 
 # Loads model or part of model
 def load(path, device='cuda', args=None, preserve=(), distributed=False, attr='', **kwargs):
-    root, name = path.replace('.pt', '').rsplit('/', 1)
-
     while True:
         try:
             to_load = torch.load(path, map_location=device)  # Load
-            # args = args or Args({})
-            # args.update(torch.load(f'{root}/{name}.args'))
-            original_args = torch.load(f'{root}/{name}.args')  # Note: loading without args uses path of original args
-            args = args or original_args  # Note: Could instead use original_args, but support _override_ for overriding
+            original_args = to_load['args']
+
+            args = args or original_args or {}  # Note: Could instead use original_args, but support _override_
             if 'obs_spec' in original_args:
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
                 args['recipes'] = original_args['recipes']  # Since assumed
-            with open(f'{root}/{name}.class', 'r') as f:
-                args['_target_'] = type(*pickle.load(f))  # Same class/_target_ as original
+
+            def _type(m):
+                return type(m[0], _type(m[1]), m[2]) if len(m) else ()
+
+            args['_target_'] = _type(to_load['type'])
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
             if not distributed:
