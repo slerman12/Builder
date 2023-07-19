@@ -26,7 +26,7 @@ If you're on Linux, you must first manually install [Pytorch + CUDA via pip](htt
 </a>
 </p>
 
-UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.[^1]
+UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.
 
 ## Quick start
 
@@ -414,4 +414,4 @@ To be continued ...
 
 [MIT license included.](MIT_LICENSE)
 
-[^1]: By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and [XRD project team](https://www.github.com/AGI-init/XRDs).
+[]: By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and [XRD project team](https://www.github.com/AGI-init/XRDs).
