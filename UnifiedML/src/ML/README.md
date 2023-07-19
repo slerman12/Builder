@@ -403,18 +403,124 @@ For more sophisticated optimization schemes, we may optimize directly within the
 <details>
 <summary>
 <h2>
+&nbsp;&nbsp;&nbsp;Plotting 
+</h2>
+</summary>
+</details>
+
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Built-In Learning Modes, Models, Datasets, Envs, & Agents
+</h2>
+</summary>
+</details>
+
+<details>
+<summary>
+<h2>
 &nbsp;&nbsp;&nbsp;Multi-Task
+</h2>
+</summary>
+</details>
+
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Multi-Modal
+</h2>
+</summary>
+</details>
+
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Built-In Features of Default Agent-Learn
 </h2>
 </summary>
 </details>
 
 # Examples
 
+<details>
+
+<summary>
+
+<h2>
+
+&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU
+
+</h2>
+
+</summary>
+
+</details>
+
+
+<details>
+
+<summary>
+
+<h2>
+
+&nbsp;&nbsp;&nbsp;Imagen: text to image
+
+</h2>
+
+</summary>
+
+</details>
+
+
+<details>
+
+<summary>
+
+<h2>
+
+&nbsp;&nbsp;&nbsp;Stable Diffusion
+
+</h2>
+
+</summary>
+
+</details>
+
+
+<details>
+
+<summary>
+
+<h2>
+
+&nbsp;&nbsp;&nbsp;Humanoid from pixels
+
+</h2>
+
+</summary>
+
+</details>
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
 [//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
 
 [//]: # (Step 2. ...)
 
-[//]: # (Step N. Put all of it into a [recipe]&#40;&#41;. Let's call it ```dcgan```.)
+[//]: # (Step N.These are all the parts that are pointed to in the [```dcgan recipe```]&#40;&#41;.)
 
 [//]: # ()
 [//]: # (**Run:**)
