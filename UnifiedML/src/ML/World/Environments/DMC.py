@@ -96,16 +96,16 @@ class DMC:
         obs_shape[0] *= frame_stack
 
         self.obs_spec = Args({'shape': obs_shape,
-                         'mean': None,
-                         'stddev': None,
-                         'low': 0,
-                         'high': 255})
+                              'mean': None,
+                              'stddev': None,
+                              'low': 0,
+                              'high': 255})
 
         self.action_spec = Args({'shape': self.env.action_spec().shape,
-                            'discrete_bins': None,  # Should be None for continuous
-                            'low': -1,
-                            'high': 1,
-                            'discrete': False})
+                                 'discrete_bins': None,  # Should be None for continuous
+                                 'low': -1,
+                                 'high': 1,
+                                 'discrete': False})
 
         self.exp = None  # Experience
 
