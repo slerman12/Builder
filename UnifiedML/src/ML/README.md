@@ -399,13 +399,19 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 </summary>
 </details>
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Plotting 
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Plotting )
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
 
 <details>
 <summary>
@@ -423,21 +429,34 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 </summary>
 </details>
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Multi-Modal
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Cheatsheet of built-in features
-</h2>
-</summary>
-</details>
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Multi-Modal)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet of built-in learning modes & features)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
 
 [//]: # (<details>)
 
@@ -453,71 +472,146 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 
 [//]: # (</details>)
 
-# Examples
+[//]: # (# Examples)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Imagen: Text to image
-</h2>
-</summary>
-</details>
+[//]: # (<summary>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Stable Diffusion
-</h2>
-</summary>
-</details>
+[//]: # (<h2>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Humanoid from pixels
-</h2>
-</summary>
-</details>
+[//]: # (&nbsp;&nbsp;&nbsp;CIFAR10 in 10 seconds)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL
-</h2>
-</summary>
-</details>
+[//]: # (</h2>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Image Segmentation
-</h2>
-</summary>
-</details>
+[//]: # (</summary>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Atari
-</h2>
-</summary>
-</details>
+[//]: # (</details>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Text prediction
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Imagen: Text to image)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Stable Diffusion)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Humanoid from pixels)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Image Segmentation)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Atari)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Text prediction)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (# Apps built with UnifiedML)
+
+[//]: # ()
+[//]: # (- [XRDs modeling project]&#40;https://www.github.com/AGI-init/XRDs&#41;)
 
 [//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
 
@@ -534,6 +628,15 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 [//]: # (ML task=dcgan)
 
 [//]: # (```)
+
+[//]: # (# What is novel about UnifiedML?)
+
+[//]: # ()
+[//]: # (- Adaptive accelerations)
+
+[//]: # (- Multi-block framework)
+
+[//]: # (- Universal generalism)
 
 To be continued ...
 

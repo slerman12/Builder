@@ -36,6 +36,7 @@ class Replay:
         if self.stream:
             return
 
+        self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
         self.trajectory_flag = Flag()  # Tell worker to include experience trajectories as well
 
         # CPU workers
@@ -133,6 +134,7 @@ class Replay:
 
         worker = create_worker(memory=self.memory,
                                fetch_per=None if offline else fetch_per,
+                               begin_flag=self.begin_flag,
                                transform=transform,
                                frame_stack=frame_stack or 1,
                                nstep=self.nstep,
@@ -178,6 +180,9 @@ class Replay:
 
     # Allows iteration via "next" (e.g. batch = next(replay))
     def __next__(self):
+        if not self.begin_flag:
+            self.begin_flag.set()
+
         if self.stream:
             # Environment streaming
             sample = self.stream
@@ -220,12 +225,12 @@ class Replay:
 
                 # Don't thread if hd_capacity < inf,
                 #  TODO fix asynchronous add-induced deletion conflicting with worker __getitem__ of deleted index
-                if self.add_lock is None:
-                    self.memory.add(batch)  # Add to memory
-                else:
-                    Thread(target=add).start()  # Threading
-                #     TODO Does a Lock block its own process; should fine since that's the purpose of Thread lock
-                # self.memory.add(batch)  # Add to memory
+                # if self.add_lock is None:
+                #     self.memory.add(batch)  # Add to memory
+                # else:
+                #     Thread(target=add).start()  # Threading
+                #     TODO Does a Lock block its own process; should be fine since that's the purpose of Thread lock
+                self.memory.add(batch)  # Add to memory
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]
@@ -240,9 +245,10 @@ class Replay:
 
 
 class Worker:
-    def __init__(self, memory, fetch_per, transform, frame_stack, nstep, trajectory_flag, discount):
+    def __init__(self, memory, fetch_per, begin_flag, transform, frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per
+        self.begin_flag = begin_flag
 
         self.samples_since_last_fetch = 0
 
@@ -267,7 +273,8 @@ class Worker:
             self.memory.set_worker(self.worker)
             self.initialized = True
 
-        # TODO Do a freeze loop until seed steps is over; can use Flag and next/sample to toggle Flag
+        while not self.begin_flag:
+            pass
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
