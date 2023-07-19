@@ -1,4 +1,8 @@
-<img width="20%" src="https://github.com/AGI-init/Assets/assets/92597756/f3df44c8-b989-4951-9443-d2b4203b5c4e"><br><br>
+<picture>
+  <source width="20%" media="(prefers-color-scheme: dark)" srcset="https://github.com/AGI-init/Assets/assets/92597756/2b9202a5-60bb-41bd-8cc0-ab0f2c96dae2">
+  <img width="20%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/Assets/assets/92597756/f3df44c8-b989-4951-9443-d2b4203b5c4e">
+<br><br>
+</picture>
 
 # Welcome
 
