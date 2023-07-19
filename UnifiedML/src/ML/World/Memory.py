@@ -101,6 +101,8 @@ class Memory:
             assert self.save_path is not None, \
                 f'Memory save_path must be set to add memory-mapped memories on hard disk.'
 
+            os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
+
         batch = Batch({key: Mem(batch[key], f'{self.save_path}{self.num_batches}_{key}_{self.id}').to(mode)
                        for key in batch})  # TODO A meta key for special save_path
 
@@ -226,8 +228,7 @@ class Memory:
 
         if self.num_batches > 0:
 
-            if not os.path.exists(self.save_path):
-                os.makedirs(self.save_path, exist_ok=True)
+            os.makedirs(self.save_path, exist_ok=True)
 
             for trace in tqdm(self.traces, desc=desc, total=self.num_traces, position=0):
                 for batch in (tqdm(trace, desc='Saving Batches in Episode Trace.',
@@ -373,7 +374,7 @@ class Mem:
 
     @contextlib.contextmanager
     def mem(self):
-        if self.mode == 'shared':
+        if self.mode == 'shared':  # TODO Same for mmap!
             shm = SharedMemory(name=self.name)
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()

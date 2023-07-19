@@ -82,7 +82,7 @@ class Replay:
                 # Load Memory from path
                 if os.path.exists(dataset):
                     self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
-                    card = open_yaml(dataset + 'card.yaml')
+                    card = open_yaml(dataset + 'card.yaml')  # TODO Doesn't exist for unsaved mmap'd Online
             else:
                 batches = DataLoader(dataset, batch_size=mem_size or batch_size)
 
@@ -117,7 +117,7 @@ class Replay:
 
         card['capacities'] = sum(self.memory.capacities)
 
-        # Save Online replay on terminate  TODO Maybe delete if not save
+        # Save Online replay on terminate  TODO Delete if not save! Since no card, will try to load, crash on next run
         if not offline and save:
             self.memory.set_save_path('World/ReplayBuffer/Online/' + path)
             atexit.register(lambda: (self.memory.save(desc='Saving Replay Memory...', card=card),
