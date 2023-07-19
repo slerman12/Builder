@@ -273,14 +273,11 @@ class Worker:
             self.memory.set_worker(self.worker)
             self.initialized = True
 
-        while not self.begin_flag:
-            pass
-
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
             self.memory.update()
 
-            if len(self.memory):
+            if len(self.memory) and self.begin_flag:
                 break
 
         self.samples_since_last_fetch += 1
