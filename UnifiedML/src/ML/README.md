@@ -16,8 +16,6 @@ Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
 pip install UnifiedML
 ```
 
-If you're on Linux, you must first manually install [Pytorch + CUDA via pip](https://pytorch.org/get-started/locally/) e.g. ```pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118```.
-
 ## What is UnifiedML?
 
 <p align="center">

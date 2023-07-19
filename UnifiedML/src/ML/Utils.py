@@ -6,6 +6,7 @@ import ast
 import inspect
 import math
 import os
+import pickle
 import sys
 import random
 from functools import cached_property
@@ -172,6 +173,9 @@ def save(path, model, args, *attributes):
     Path(root).mkdir(exist_ok=True, parents=True)
     torch.save(args, Path(root) / f'{name.replace(".pt", "")}.args')  # Save args
 
+    with open(f'{root}/{name.replace(".pt", "")}.class', 'w') as f:
+        pickle.dump((model.__name__, model.__bases__, model.__dict__), f)  # Save class
+
     torch.save({'state_dict': model.state_dict(), **{attr: getattr(model, attr)
                                                      for attr in attributes}}, path)  # Save params + attributes
     print(f'Model successfully saved to {path}')
@@ -192,6 +196,8 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
                 args['recipes'] = original_args['recipes']  # Since assumed
+            with open(f'{root}/{name}.class', 'r') as f:
+                args['_target_'] = type(*pickle.load(f))  # Same class/_target_ as original
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
             if not distributed:
