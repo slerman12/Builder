@@ -92,7 +92,7 @@ Not exactly scalable, but:
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
-## Architecture shapes
+### Architecture shapes
 
 UnifiedML automatically detects the shape signature of your model.
 
@@ -123,7 +123,7 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects. Later, we'll see [how to instantiate them with custom arguments](#syntax).
 
-## Syntax
+### Syntax
 
 1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
 2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
