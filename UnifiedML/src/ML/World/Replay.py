@@ -220,11 +220,12 @@ class Replay:
 
                 # Don't thread if hd_capacity < inf,
                 #  TODO fix asynchronous add-induced deletion conflicting with worker __getitem__ of deleted index
-                # if self.add_lock is None:
-                #     self.memory.add(batch)  # Add to memory
-                # else:
-                #     Thread(target=add).start()  # Threading  TODO Does a Lock block its own process; need to block own
-                self.memory.add(batch)  # Add to memory
+                if self.add_lock is None:
+                    self.memory.add(batch)  # Add to memory
+                else:
+                    Thread(target=add).start()  # Threading
+                #     TODO Does a Lock block its own process; should fine since that's the purpose of Thread lock
+                # self.memory.add(batch)  # Add to memory
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]
@@ -265,6 +266,8 @@ class Worker:
         if not self.initialized:
             self.memory.set_worker(self.worker)
             self.initialized = True
+
+        # TODO Do a freeze loop until seed steps is over; can use Flag and next/sample to toggle Flag
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:

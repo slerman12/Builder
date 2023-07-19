@@ -374,7 +374,7 @@ class Mem:
 
     @contextlib.contextmanager
     def mem(self):
-        if self.mode == 'shared':  # TODO Same for mmap!
+        if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
             shm = SharedMemory(name=self.name)
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()
