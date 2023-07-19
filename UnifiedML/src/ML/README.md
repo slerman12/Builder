@@ -434,7 +434,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 <details>
 <summary>
 <h2>
-&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in learning modes, models, datasets, envs, & agents
+&nbsp;&nbsp;&nbsp;Cheatsheet of built-in features
 </h2>
 </summary>
 </details>
