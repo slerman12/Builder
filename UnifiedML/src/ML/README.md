@@ -326,7 +326,7 @@ ML Dataset=Run.MyDataset
 
 **Classification**
 
-Since the default task is ```task=classify```, the above script will start learning classification on ```MyDataset```.
+Since the default task is ```task=classify```, the above script will launch classification on ```MyDataset```.
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your Dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
 
