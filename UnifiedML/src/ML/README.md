@@ -439,13 +439,19 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 </summary>
 </details>
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
 
 # Examples
 
