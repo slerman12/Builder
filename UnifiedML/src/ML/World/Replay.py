@@ -360,7 +360,8 @@ class Worker:
             # Cumulative discounted reward
             discounts = self.discount ** np.arange(len(traj_r) + 1)
             experience.reward = np.dot(discounts[:-1], traj_r).astype('float32')
-            experience['discount'] = 0 if episode[step + len(traj_r)].done else discounts[-1].astype('float32')
+            # experience['discount'] = 0 if episode[step + len(traj_r)].done else discounts[-1].astype('float32')
+            experience['discount'] = discounts[-1].astype('float32')  # TODO Use above
         else:
             experience['discount'] = 1
 
