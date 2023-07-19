@@ -171,13 +171,9 @@ def launch(**args):
 def save(path, model, args=None, *attributes):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    def _type(m):
-        return m.__name__, tuple(map(_type, m.__bases__)), m.__dict__
-
     torch.save({'state_dict': model.state_dict(),
                 'attr': {attr: getattr(model, attr) for attr in attributes},
-                'args': args,
-                'type': _type(type(model))}, path)
+                'args': args}, path)
     print(f'Model successfully saved to {path}')
 
 
@@ -193,11 +189,6 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
                 args['recipes'] = original_args['recipes']  # Since assumed
-
-            def _type(m):
-                return type(m[0], _type(m[1]), m[2]) if len(m) else ()
-
-            args['_target_'] = _type(to_load['type'])
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
             if not distributed:
@@ -218,9 +209,9 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
     model.device = device
 
     # Load saved attributes as well
-    for key in to_load:
+    for key, value in to_load['attr'].items():
         if hasattr(model, key) and key not in ['state_dict', *preserve]:
-            setattr(model, key, to_load[key])
+            setattr(model, key, value)
 
     # Can also load part of a model. Useful for recipes,
     # e.g. python Run.py Eyes=load +eyes.path=<Path To Agent Checkpoint> +eyes.attr=encoder.Eyes +eyes.device=<device>
