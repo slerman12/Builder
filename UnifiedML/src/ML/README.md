@@ -382,6 +382,13 @@ For more sophisticated optimization schemes, we may optimize directly within the
 - By the way, there's no difference between ```Model=``` and ```Agent=```. The two are interchangeable. However, ```Model=``` in this example demonstrates a simplified version of the full capacity of Agents, which includes multi-task learning and *generalism*.
 - [We provide many Agent/Model examples across domains, including RL and generative modeling.](Agents)
 
+#
+Use ```Optim=``` to define a custom optimizer:
+
+```console
+ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
+```
+
 </details>
 
 <details>
@@ -443,78 +450,44 @@ For more sophisticated optimization schemes, we may optimize directly within the
 # Examples
 
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;ImageNet on 1 GPU
-
 </h2>
-
 </summary>
-
 </details>
 
-
 <details>
-
 <summary>
-
 <h2>
-
-&nbsp;&nbsp;&nbsp;Imagen: text to image
-
+&nbsp;&nbsp;&nbsp;Imagen: Text to image
 </h2>
-
 </summary>
-
 </details>
 
-
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;Stable Diffusion
-
 </h2>
-
 </summary>
-
 </details>
-
 
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;Humanoid from pixels
-
 </h2>
-
 </summary>
-
 </details>
 
-[//]: # ()
-[//]: # (<details>)
-
-[//]: # (<summary>)
-
-[//]: # (<h2>)
-
-[//]: # (&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL)
-
-[//]: # (</h2>)
-
-[//]: # (</summary>)
-
-[//]: # (</details>)
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL
+</h2>
+</summary>
+</details>
 
 [//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
 
