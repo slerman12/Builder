@@ -402,14 +402,6 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 <details>
 <summary>
 <h2>
-&nbsp;&nbsp;&nbsp;Saving & Loading
-</h2>
-</summary>
-</details>
-
-<details>
-<summary>
-<h2>
 &nbsp;&nbsp;&nbsp;Plotting 
 </h2>
 </summary>
@@ -418,7 +410,15 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 <details>
 <summary>
 <h2>
-&nbsp;&nbsp;&nbsp;Built-In Learning Modes, Models, Datasets, Envs, & Agents
+&nbsp;&nbsp;&nbsp;Saving & Loading
+</h2>
+</summary>
+</details>
+
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Built-in learning modes, models, datasets, envs, & agents
 </h2>
 </summary>
 </details>
@@ -442,7 +442,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 <details>
 <summary>
 <h2>
-&nbsp;&nbsp;&nbsp;Built-In Features of Default Agent-Learn
+&nbsp;&nbsp;&nbsp;Built-in features of default Agent-learn
 </h2>
 </summary>
 </details>
