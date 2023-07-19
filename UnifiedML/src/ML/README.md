@@ -386,7 +386,13 @@ For more sophisticated optimization schemes, we may optimize directly within the
 Use ```Optim=``` or ```Scheduler=``` to define a custom optimizer or scheduler:
 
 ```console
-ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2 Scheduler=CosineAnnealingLR scheduler.T_max=1000
+ML Model=Run.Model_ Dataset=CIFAR10 Optim=Adam optim.lr=1e2 Scheduler=CosineAnnealingLR scheduler.T_max=1000
+```
+
+or one of the existing shorthands:
+
+```console
+ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 ```
 
 </details>
