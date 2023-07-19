@@ -39,6 +39,9 @@ class Replay:
         self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
         self.trajectory_flag = Flag()  # Tell worker to include experience trajectories as well
 
+        if self.offline:
+            self.begin_flag.set()
+
         # CPU workers
         num_workers = max(1, min(num_workers, os.cpu_count()))
 
@@ -275,7 +278,7 @@ class Worker:
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
-            self.memory.update()
+            self.memory.update()  # Can make Online only
 
             if len(self.memory) and self.begin_flag:
                 break

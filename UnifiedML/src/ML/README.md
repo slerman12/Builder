@@ -383,10 +383,10 @@ For more sophisticated optimization schemes, we may optimize directly within the
 - [We provide many Agent/Model examples across domains, including RL and generative modeling.](Agents)
 
 #
-Use ```Optim=``` to define a custom optimizer:
+Use ```Optim=``` or ```Scheduler=``` to define a custom optimizer or scheduler:
 
 ```console
-ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
+ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2 Scheduler=CosineAnnealingLR scheduler.T_max=1000
 ```
 
 </details>
