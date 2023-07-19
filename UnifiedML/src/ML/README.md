@@ -511,6 +511,14 @@ ML Model=Run.Model_ Dataset=CIFAR10 Optim=SGD optim.lr=1e2
 </summary>
 </details>
 
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Text prediction
+</h2>
+</summary>
+</details>
+
 [//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
 
 [//]: # (Step 2. ...)
