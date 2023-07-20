@@ -400,22 +400,27 @@ class Flag:
 
 # Sampling w/o replacement of online distributions
 class Sampler:
-    def __init__(self, memory, offline=True, recency_factor=0.5):
-        self.memory = memory
+    def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag=True):
+        self.data_source = data_source
         self.offline = offline
         self.recency_factor = recency_factor
 
         self.recency_queue = deque()
         self.recency_set = set()
 
+        self.begin_flag = begin_flag
+
     def recency_capacity(self, size):
         return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
 
     def __iter__(self):
+        size = len(self)
+
         if self.offline:
-            yield from torch.randperm(len(self))
+            yield from torch.randperm(size)
         else:
-            size = len(self)
+            while not size or not self.begin_flag:
+                size = len(self)
             index = random.randint(0, size - 1)
             while index in self.recency_set:
                 index = random.randint(0, size - 1)
@@ -427,4 +432,4 @@ class Sampler:
             yield index
 
     def __len__(self):
-        return len(self.memory)
+        return len(self.data_source)
