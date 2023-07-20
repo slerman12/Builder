@@ -122,10 +122,12 @@ def mass_deploy():
 
 def launch_remote(server, username, password, sweep):
     # SSH login
+    print('\nConnecting to remote server', end=" ")
     ssh = pxssh.pxssh(timeout=100, maxread=200000)
     ssh.login(server, username, password)
     ssh.setwinsize(60000, 60000)  # Allow longer-length commands
     ssh.prompt()
+    print('- Connected! ✓\n')
     # Go to app
     if sweep.app_name_paths and sweep.app:
         ssh.sendline(f'cd {sweep.app_name_paths[sweep.app].rsplit("/", 1)[0]}')
