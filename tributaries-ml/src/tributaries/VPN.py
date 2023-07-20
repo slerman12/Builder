@@ -10,6 +10,7 @@ from tributaries.SafePass import get_pass
 def connect_vpn(username='slerman'):
     def _connect_vpn():
         try:
+            print('Connecting...')
             password = get_pass('bluehive')
             p = spawn('/opt/cisco/anyconnect/bin/vpn connect vpnconnect.rochester.edu')
             p.expect('Username: ')
@@ -17,14 +18,18 @@ def connect_vpn(username='slerman'):
             p.expect('Password: ')
             p.sendline(password)
             p.expect('Second Password: ')
+            print('A Duo two-factor authentication push notification may have been sent.')
             p.sendline('push')
             p.expect('VPN>')
         except Exception:
             pass
         print(f'Connected to VPN\n'
-              f'For Bluehive: ssh {username}@bluehive.circ.rochester.edu\n'
-              f'If issues, try restarting Cisco AnyConnect.\n'
-              f'Or read the instructions for installing the Cisco AnyConnect client:\n'
+              f'If needed, log into Bluehive manually with:\n'
+              f'\tssh {username}@bluehive.circ.rochester.edu\n'
+              f'and approve the Duo two-factor authentication push notification that\'s sent.\n'
+              f'If issues, try restarting Cisco AnyConnect,\n'
+              f'or read the instructions for installing the Cisco AnyConnect client '
+              f'for connecting to the University of Rochester VPN:\n'
               f'https://tech.rochester.edu/services/remote-access-vpn/')
     return _connect_vpn
 
