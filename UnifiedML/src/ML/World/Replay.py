@@ -134,25 +134,32 @@ class Replay:
 
         # Parallel worker for batch loading
 
-        create_worker = Offline if offline else Online
+        worker = Worker(memory=self.memory,
+                        fetch_per=None if offline else fetch_per,
+                        begin_flag=self.begin_flag,
+                        transform=transform,
+                        frame_stack=frame_stack or 1,
+                        nstep=self.nstep,
+                        trajectory_flag=self.trajectory_flag,
+                        discount=discount)
 
-        worker = create_worker(memory=self.memory,
-                               fetch_per=None if offline else fetch_per,
-                               begin_flag=self.begin_flag,
-                               transform=transform,
-                               frame_stack=frame_stack or 1,
-                               nstep=self.nstep,
-                               trajectory_flag=self.trajectory_flag,
-                               discount=discount)
+        # Sampler
+
+        sampler = Sampler(data_source=self.memory,
+                          offline=self.offline,
+                          recency_factor=0.5,
+                          begin_flag=self.begin_flag)
 
         # Batch loading
 
         self.batches = torch.utils.data.DataLoader(dataset=worker,
                                                    batch_size=batch_size,
                                                    num_workers=num_workers,
-                                                   pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory,
+                                                   pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
+                                                   # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   shuffle=shuffle and offline,
+                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -248,7 +255,7 @@ class Replay:
         return int(9e9) if self.stream else len(self.memory)
 
 
-class Worker:
+class Worker(Dataset):
     def __init__(self, memory, fetch_per, begin_flag, transform, frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per
@@ -299,7 +306,7 @@ class Worker:
         nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
         if len(episode) < nstep + 1:  # Make sure at least one nstep is present if nstep
-            return self.sample(_index, update=True)
+            return self.sample(None, update=True)
 
         step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
         experience = Args(episode[step])
@@ -368,19 +375,11 @@ class Worker:
 
         return experience
 
-    def __len__(self):
-        return len(self.memory)
-
-
-class Offline(Worker, Dataset):
     def __getitem__(self, index):
         return self.sample(index)  # Retrieve a single experience by index
 
-
-class Online(Worker, IterableDataset):
-    def __iter__(self):
-        while True:
-            yield self.sample()  # Yields a single experience
+    def __len__(self):
+        return len(self.memory)
 
 
 # Quick parallel one-time flag
@@ -398,9 +397,9 @@ class Flag:
         return self._flag
 
 
-# Sampling w/o replacement of online distributions
+# Sampling approximately w/o replacement of offline or dynamic distributions
 class Sampler:
-    def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag=True):
+    def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
         self.data_source = data_source
         self.offline = offline
         self.recency_factor = recency_factor
@@ -410,22 +409,23 @@ class Sampler:
 
         self.begin_flag = begin_flag
 
-    def recency_capacity(self, size):
+        if self.offline:
+            self.size = len(self.data_source)
+
+    def recency_capacity(self, size):  # TODO Account for recency_factor edge cases
         return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
 
     def __iter__(self):
-        size = len(self)
-
         if self.offline:
-            yield from torch.randperm(size)
+            yield from torch.randperm(self.size)
         else:
-            while not size or not self.begin_flag:
-                size = len(self)
-            index = random.randint(0, size - 1)
+            size = len(self)
+            index = random.randint(0, size - 1) if size else None
             while index in self.recency_set:
                 index = random.randint(0, size - 1)
-            self.recency_queue.append(index)
-            self.recency_set.add(index)
+            if index is not None:
+                self.recency_queue.append(index)  # TODO What if capacity = size?
+                self.recency_set.add(index)
             while len(self.recency_set) > self.recency_capacity(size) > 0:
                 popped = self.recency_queue.popleft()
                 self.recency_set.remove(popped)
