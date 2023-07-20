@@ -150,6 +150,7 @@ replay:
 #  load: ${load}  # TODO For Online, might want to overwrite
   mem_size: null
   fetch_per: 1
+  recency_factor: 0.5
   prefetch_factor: 3
   pin_memory: false
   pin_device_memory: false

@@ -24,7 +24,7 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
-                 save=False, mem_size=None, fetch_per=1,
+                 save=False, mem_size=None, fetch_per=1, recency_factor=0.5,
                  prefetch_factor=3, pin_memory=False, pin_device_memory=False, shuffle=True, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
@@ -147,7 +147,7 @@ class Replay:
 
         sampler = Sampler(data_source=self.memory,
                           offline=self.offline,
-                          recency_factor=0.5,
+                          recency_factor=recency_factor,
                           begin_flag=self.begin_flag)
 
         # Batch loading
@@ -296,7 +296,7 @@ class Worker(Dataset):
         _index = index
 
         # Sample index
-        if index is None:
+        if index is None or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
 
         # Retrieve from Memory
