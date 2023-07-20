@@ -10,4 +10,7 @@ for build in builds:
 
 builds = glob.glob('*/dist/*')
 
-os.system(f'pip install {" ".join(builds)} --force-reinstall --no-dependencies')
+if '--from-scratch' in sys.argv:
+    os.system(f'pip install {" ".join(builds)} --force-reinstall')
+else:
+    os.system(f'pip install {" ".join(builds)} --force-reinstall --no-dependencies')
