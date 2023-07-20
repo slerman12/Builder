@@ -158,7 +158,7 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
 
     try:
         iter(module)
-    except TypeError:
+    except Exception:
         return module
     else:
         return module if _i_ is None else module[_i_]  # Allow sub-indexing (if specified)

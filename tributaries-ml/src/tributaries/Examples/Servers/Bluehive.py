@@ -12,7 +12,7 @@ def main(group_name, username, env):  # Accepts custom args
     vpn = connect_vpn(username)  # Returns a func that connects to VPN when called
     app_name_paths = {'XRDs': f"/scratch/{username}/XRDs/XRD.py"}  # Defines the name and location of apps
 
-    # First create a Conda env on Bluehive with tributaries:
+    # Before running, install tributaries on Bluehive:
 
     #   module load tmux
     #   tmux new -s Install
