@@ -19,9 +19,16 @@ def main(group_name, username, env):  # Accepts custom args
     #   module load miniforge3/22.11.1-2
     #   conda create -n ML python=3.11.3 pip
     #   conda activate ML
-    #   pip install tributaries --no-cache-dir
+    #   pip install tributaries --no-cache-dir --user
+    #   pip install tributaries --force-reinstall --no-dependencies
+    #   pip install UnifiedML --force-reinstall --no-dependencies
 
-    # If you need help logging into Bluehive, run 'python VPN.py'cop-
+    # If you get kicked out, you can log back into Bluehive and return to your persistent session with:
+
+    #   module load tmux
+    #   tmux attach -t Install
+
+    # If you need help logging into Bluehive, run 'python VPN.py'
 
     commands = ['module load git',
                 'module load miniforge3/22.11.1-2',

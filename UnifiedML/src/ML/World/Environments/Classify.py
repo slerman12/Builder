@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from World.Dataset import load_dataset, worker_init_fn, compute_stats
 from minihydra import Args
 
-import torchvision.datasets
+
 class Classify:
     """
     A general-purpose environment:
@@ -53,8 +53,8 @@ class Classify:
     An "evaluate_episodes" attribute divides evaluation across batches since batch=episode in this environment.
 
     """
-    def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False,
-                 batch_size=8, num_workers=1, low=None, high=None, device='cpu', **kwargs):
+    def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False, batch_size=8,
+                 num_workers=1, low=None, high=None, standardize=False, norm=False, device='cpu', **kwargs):
         self.episode_done = False
 
         if not train:
@@ -99,7 +99,7 @@ class Classify:
                               'high': high})
 
         # Fill in necessary obs_spec and action_spc stats from dataset  TODO Only when norm or standardize
-        if train and (offline or generate):
+        if train and (offline or generate) and (standardize or norm):
             self.obs_spec.update(compute_stats(self.batches))
 
         # TODO Alt, load_dataset can output Args of recollected stats as well; maybe specify what to save in card replay

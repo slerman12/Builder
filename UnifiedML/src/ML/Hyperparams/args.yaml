@@ -29,6 +29,8 @@ Env: ???  # To be specified later, defaults per respective task
 env:
   _target_: ${Env}
   transform: null
+  standardize: ${standardize}
+  norm: ${norm}
 Dataset: null  # Defaults per respective Classify task
 TestDataset: null
 dataset:
