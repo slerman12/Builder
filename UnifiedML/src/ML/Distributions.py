@@ -2,19 +2,21 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import math
+
 import torch
-from torch.distributions import Normal, Categorical
+from torch.distributions import Categorical
 from torch.distributions.utils import _standard_normal
 
 import Utils
 
 
-class TruncatedNormal(Normal):
+class TruncatedNormal:
     """
     A Gaussian Normal distribution generalized to multi-action sampling and the option to clip standard deviation.
     """
     def __init__(self, loc, scale, low=None, high=None, eps=1e-6, stddev_clip=None):
-        super().__init__(loc, scale)
+        self.loc, self.scale = loc, scale
 
         # Clip range of samples
         self.low, self.high = low, high  # Ranges
@@ -23,13 +25,37 @@ class TruncatedNormal(Normal):
         # Clip range of standard deviation
         self.stddev_clip = stddev_clip  # -low, high
 
+    def entropy(self):
+        return 0.5 + 0.5 * math.log(2 * math.pi) + torch.log(self.scale)
+
+    @property
+    def mean(self):
+        return self.loc
+
+    @property
+    def mode(self):
+        return self.loc
+
+    @property
+    def stddev(self):
+        return self.scale
+
+    @property
+    def variance(self):
+        return self.stddev.pow(2)
+
+    def _log_prob(self, value):
+        var = (self.scale ** 2)
+        log_scale = self.scale.log() if isinstance(self.scale, torch.Tensor) else math.log(self.scale)
+        return -((value - self.loc) ** 2) / (2 * var) - log_scale - math.log(math.sqrt(2 * math.pi))
+
     def log_prob(self, value):
         if value.shape[-len(self.loc.shape):] == self.loc.shape:
-            return super().log_prob(value)  # Inherit log_prob(•)
+            return self._log_prob(value)  # Inherit log_prob(•)
         else:
             # To account for batch_first=True
             b, *shape = self.loc.shape  # Assumes a single batch dim
-            return super().log_prob(value.view(b, -1, *shape).transpose(0, 1)).transpose(0, 1).view(value.shape)
+            return self._log_prob(value.view(b, -1, *shape).transpose(0, 1)).transpose(0, 1).view(value.shape)
 
     def sample(self, sample_shape=1, to_clip=False, batch_first=True, keepdim=True):
         with torch.no_grad():
@@ -40,10 +66,13 @@ class TruncatedNormal(Normal):
             sample_shape = torch.Size((sample_shape,))
 
         # Draw multiple samples
-        shape = self._extended_shape(sample_shape)
+        if not isinstance(sample_shape, torch.Size):
+            sample_shape = torch.Size(sample_shape)
+        shape = torch.Size(sample_shape + self.loc.shape)
 
         rand = _standard_normal(shape, dtype=self.loc.dtype, device=self.loc.device)  # Explore
-        dev = rand * self.scale.expand(shape)  # Deviate
+        scale = self.scale.expand(shape) if isinstance(self.scale, torch.Tensor) else self.scale
+        dev = rand * scale  # Deviate
 
         if to_clip:
             dev = Utils.rclamp(dev, -self.stddev_clip, self.stddev_clip)  # Don't explore /too/ much, clip std
