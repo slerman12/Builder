@@ -409,7 +409,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 [//]: # (<h2>)
 
-[//]: # (&nbsp;&nbsp;&nbsp;Plotting )
+[//]: # (&nbsp;&nbsp;&nbsp;Plotting, Logging, Stats, & Media )
 
 [//]: # (</h2>)
 

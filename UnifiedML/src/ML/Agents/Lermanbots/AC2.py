@@ -146,6 +146,7 @@ class AC2Agent(torch.nn.Module):
 
             # "See"
             obs = encoder(obs)
+            # features, thought = encoder(obs, output_features=True)  # TODO
 
             # Act
             Pi = actor(obs, self.step)

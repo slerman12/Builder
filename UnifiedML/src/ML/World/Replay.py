@@ -5,6 +5,7 @@
 import atexit
 import random
 from collections import deque
+from pathlib import PosixPath
 from threading import Thread, Lock
 from math import inf
 import os
@@ -57,7 +58,10 @@ class Replay:
 
         self.add_lock = Lock() if hd_capacity == inf else None  # For adding to memory in concurrency
 
-        dataset_config = dataset
+        if isinstance(path, PosixPath):
+            path = path.as_posix()  # TODO Probably better to use PosixPath universally
+
+        dataset_config = dataset or Args(_target_=None)
         dataset_config['capacities'] = sum(self.memory.capacities)
         card = Args({'_target_': dataset_config}) if isinstance(dataset_config, str) else dataset_config
         # Perhaps if Online, include whether discrete -> continuous, since action shape changes in just that case
@@ -225,6 +229,8 @@ class Replay:
     def add(self, trace):
         if trace is None:
             trace = []
+        elif isinstance(trace, (Args, dict)):
+            trace = [trace]
 
         for batch in trace:
             if self.stream:
@@ -397,7 +403,7 @@ class Flag:
         return self._flag
 
 
-# Sampling approximately w/o replacement of offline or dynamic distributions
+# Sampling approximately w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
     def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
         self.data_source = data_source

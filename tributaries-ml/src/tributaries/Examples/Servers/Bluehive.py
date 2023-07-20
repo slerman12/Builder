@@ -12,7 +12,17 @@ def main(group_name, username, env):  # Can pass in special args by command line
     vpn = connect_vpn(username)  # Returns a func that connects to VPN when called
     app_name_paths = {'XRDs': f"/scratch/{username}/XRDs/XRD.py"}  # Defines the name and location of apps
 
-    conda = f'conda activate {env or "ML"}'  # Different conda env depending on env= arg
+    # First create a Conda env on Bluehive with tributaries:
+
+    #   module load miniforge3/22.11.1-2
+    #   conda create -n ML python=3.11.3 pip
+    #   conda activate ML
+    #   pip install tributaries --no-cache-dir --user
+
+    # If you need help logging into Bluehive, run 'python VPN.py'cop-
+
+    conda = ['module load miniforge3/22.11.1-2',
+             f'conda activate {env or "ML"}']  # Different conda env depending on env= arg
 
     sbatch = '#SBATCH -p csxu -A cxu22_lab\nmodule load gcc' if group_name == 'csxu' \
         else '#SBATCH -p acmml2 -A acmml2\nmodule load gcc' if group_name == 'acmml' \
