@@ -147,7 +147,7 @@ ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ### Way 2. Command-line code
 
 ```console
-ML task=RL Env='Atari(game="pong") Model='CNN(depth=5)'
+ML task=RL Env='Atari(game="pong")' Model='CNN(depth=5)'
 ```
 
 ### Way 3. Command-line
@@ -285,7 +285,7 @@ Fully supported across domains, including reinforcement learning and generative 
 </h2>
 </summary>
 
-Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
+Paths or instances to Pytorch Datasets or [accelerated Memories](#acceleration) can be fed to the ```Dataset=``` flag.
 
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
@@ -324,7 +324,7 @@ ML Dataset=Run.MyDataset
 
 **Classification**
 
-Since the default task is ```task=classify```, the above script will learn to classify ```MyDataset``` with ```Model```.
+Since the default task is ```task=classify```, the above script will learn to classify ```MyDataset``` with the default model.
 
 If you define your own classify Dataset, include a ```.classes``` attribute listing the classes in your Dataset. Otherwise, UnifiedML will automatically count unique classes, which may be different across training and test sets.
 
@@ -387,7 +387,7 @@ Use ```Optim=``` or ```Scheduler=``` to define a custom optimizer or scheduler:
 ML Model=Run.Model_ Dataset=CIFAR10 Optim=Adam optim.lr=1e2 Scheduler=CosineAnnealingLR scheduler.T_max=1000
 ```
 
-or one of the existing shorthands:
+or one of the existing shorthands for the above-equivalent:
 
 ```console
 ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
