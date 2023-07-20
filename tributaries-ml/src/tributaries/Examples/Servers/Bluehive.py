@@ -19,9 +19,7 @@ def main(group_name, username, env):  # Accepts custom args
     #   module load miniforge3/22.11.1-2
     #   conda create -n ML python=3.11.3 pip
     #   conda activate ML
-    #   pip install tributaries --no-cache-dir --user
-    #   pip install tributaries --force-reinstall --no-dependencies
-    #   pip install UnifiedML --force-reinstall --no-dependencies
+    #   pip install tributaries --no-cache-dir
 
     # If you need help logging into Bluehive, run 'python VPN.py'cop-
 
