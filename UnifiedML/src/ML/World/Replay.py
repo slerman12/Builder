@@ -35,10 +35,11 @@ class Replay:
         self.nstep = nstep or 0  # Future steps to compute cumulative reward from
         self.stream = stream
 
+        self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
+
         if self.stream:
             return
 
-        self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
         self.trajectory_flag = Flag()  # Tell worker to include experience trajectories as well
 
         if self.offline:
