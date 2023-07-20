@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import atexit
 import random
+from collections import deque
 from threading import Thread, Lock
 from math import inf
 import os
@@ -13,7 +14,7 @@ from tqdm import tqdm
 import numpy as np
 
 import torch
-from torch.utils.data import IterableDataset, Dataset, DataLoader
+from torch.utils.data import IterableDataset, Dataset, DataLoader, RandomSampler
 
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
@@ -395,3 +396,35 @@ class Flag:
         if not self._flag:
             self._flag = bool(self.flag)
         return self._flag
+
+
+# Sampling w/o replacement of online distributions
+class Sampler:
+    def __init__(self, memory, offline=True, recency_factor=0.5):
+        self.memory = memory
+        self.offline = offline
+        self.recency_factor = recency_factor
+
+        self.recency_queue = deque()
+        self.recency_set = set()
+
+    def recency_capacity(self, size):
+        return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
+
+    def __iter__(self):
+        if self.offline:
+            yield from torch.randperm(len(self))
+        else:
+            size = len(self)
+            index = random.randint(0, size - 1)
+            while index in self.recency_set:
+                index = random.randint(0, size - 1)
+            self.recency_queue.append(index)
+            self.recency_set.add(index)
+            while len(self.recency_set) > self.recency_capacity(size) > 0:
+                popped = self.recency_queue.popleft()
+                self.recency_set.remove(popped)
+            yield index
+
+    def __len__(self):
+        return len(self.memory)
