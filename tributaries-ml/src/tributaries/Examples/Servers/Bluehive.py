@@ -20,6 +20,8 @@ def main(group_name, username, env):  # Accepts custom args
     #   conda create -n ML python=3.11.3 pip
     #   conda activate ML
     #   pip install tributaries --no-cache-dir --user
+    #   pip install tributaries --force-reinstall --no-dependencies
+    #   pip install UnifiedML --force-reinstall --no-dependencies
 
     # If you need help logging into Bluehive, run 'python VPN.py'cop-
 

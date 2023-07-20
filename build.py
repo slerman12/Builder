@@ -1,5 +1,5 @@
 import glob
-import os
+import os, sys
 
 os.system(f'git pull')
 
