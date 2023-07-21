@@ -148,13 +148,22 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     setattr(dataset, 'classes', tuple(classes))
 
+    # TODO Ideally dataset could append classes to ones already saved and update the existing card
+    #  Analogously regarding datums saved dataset.datums=, and MultiModal APi allowing Label=datum_name for example
     # Can select a subset of classes
     if subset is not None:
         dataset = ClassSubset(dataset, classes, train)
 
+    # TODO It would then have to do this as a runtime transform
+    #  And memory loader would have to selectively load files and save their class label in file name
     # Map unique classes to integers
     dataset = ClassToIdx(dataset, classes)
 
+    # TODO Ideally dataset would be cached (saved / card ID'd) before dataset.transform and dataset.transform would be
+    #  applied on the batches during pre-loading/saving before training (or as transform if not save) but not cached
+    #  and always applied in classify as transform/env.transform
+    #  Perhaps dataset.cache=true would allow loading this way and then caching as new Memory w/ that specific transform
+    #  Perhaps even transform lists instead of Compose, and allowing them to build on each other like data pipes
     # Add transforms to dataset
     dataset = Transform(dataset, instantiate(transform))
 
@@ -294,7 +303,8 @@ def datums_as_batch(datums):
         # else:
         #     dtype = {}
 
-        # Note: need to parse label TODO
+        # TODO Automatically parse if not already dict/Args
+        #   e.g. inspect.getsource(dataset.__getitem__) and then parse the return variable names, or assume the first 2
         obs = torch.as_tensor(obs)
         label = torch.as_tensor(label)
 

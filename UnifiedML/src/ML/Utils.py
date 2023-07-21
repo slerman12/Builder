@@ -275,6 +275,7 @@ class MultiTask:
         self.multi_task_enabled = False
         self.num_tasks = 0
         self.agents = []
+        # TODO Support unify=False to just effectively multirun
         self.union = {'encoder': {'Eyes': [], 'pool': []},
                       'actor': {'trunk': [], 'Pi_head': []}, 'critic': {'trunk': [], 'Q_head': []}}
         self.unified_parts = set()

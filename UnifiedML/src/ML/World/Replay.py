@@ -300,16 +300,14 @@ class Worker(Dataset):
 
         self.samples_since_last_fetch += 1
 
-        _index = index
-
         # Sample index
         if index is None or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
-        self.partition_workers = True
+        self.partition_workers = False
         if self.partition_workers:
-            while index == 0 and self.worker != 0 or index != 0 and len(self.memory.queues) % index != self.worker:
+            while index == 0 and self.worker != 0 or index != 0 and index % len(self.memory.queues) != self.worker:
                 index = (index + 1) % len(self.memory)
 
         # Retrieve from Memory
@@ -335,13 +333,17 @@ class Worker(Dataset):
         experience['episode_index'] = index
         experience['episode_step'] = step
 
-        for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            # if getattr(experience[key], 'dtype', None) == torch.int64:
-                # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
-                # experience[key] = experience[key].to(torch.float32)
-            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)
+        experience = experience.to_dict()
 
-        return experience.to_dict()
+        for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
+            if getattr(experience[key], 'dtype', None) == torch.int64:
+                # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
+                experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
+            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+            # TODO In collate fn, just have a default tensor memory block to map everything to,
+            #  maybe converts int64 to int32
+
+        return experience
 
     def compute_RL(self, episode, experience, step):
         # TODO Just apply nstep and frame stack as transforms nstep, frame_stack, transform
@@ -413,49 +415,48 @@ class Flag:
 
 # TODO Can also have two permuted index lists, with periodic updating and merging and the most recent can be sampled
 # Sampling approximately w/o replacement of offline or dynamically-growing online distributions
-# class Sampler:
-#     def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
-#         self.data_source = data_source
-#         self.offline = offline
-#         self.recency_factor = recency_factor
-#
-#         self.recency_queue = deque()
-#         self.recency_set = set()
-#
-#         self.begin_flag = begin_flag
-#
-#         if self.offline:
-#             self.size = len(self.data_source)
-#
-#     def recency_capacity(self, size):  # TODO Account for recency_factor edge cases
-#         return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
-#
-#     def __iter__(self):
-#         if self.offline:
-#             yield from torch.randperm(self.size)
-#         else:
-#             size = len(self)
-#             index = random.randint(0, size - 1) if size else None
-#             while index in self.recency_set:
-#                 index = random.randint(0, size - 1)
-#             if index is not None and self.recency_factor > 0:
-#                 self.recency_queue.append(index)  # TODO What if capacity = size?
-#                 self.recency_set.add(index)
-#             while len(self.recency_set) > self.recency_capacity(size) > 0:
-#                 popped = self.recency_queue.popleft()
-#                 self.recency_set.remove(popped)
-#             # yield index
-#             yield None
-#
-#     def __len__(self):
-#         return len(self.data_source)
+class Sampler:
+    def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
+        self.data_source = data_source
+        self.offline = offline
+        self.recency_factor = recency_factor
+
+        self.recency_queue = deque()
+        self.recency_set = set()
+
+        self.begin_flag = begin_flag
+
+        if self.offline:
+            self.size = len(self.data_source)
+
+    def recency_capacity(self, size):  # TODO Account for recency_factor edge cases
+        return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
+
+    def __iter__(self):
+        if self.offline:
+            yield from torch.randperm(self.size)
+        else:
+            size = len(self)
+            index = random.randint(0, size - 1) if size else None
+            while index in self.recency_set:
+                index = random.randint(0, size - 1)
+            if index is not None and self.recency_factor > 0:
+                self.recency_queue.append(index)  # TODO What if capacity = size?
+                self.recency_set.add(index)
+            while len(self.recency_set) > self.recency_capacity(size) > 0:
+                popped = self.recency_queue.popleft()
+                self.recency_set.remove(popped)
+            yield index
+
+    def __len__(self):
+        return len(self.data_source)
 
 
-class Sampler(RandomSampler):
-    def __init__(self, data_source, replacement: bool = False,
-                 num_samples=None, generator=None, **kwargs) -> None:
-        super().__init__(data_source, replacement, num_samples, generator)
-
-    @property
-    def num_samples(self) -> int:
-        return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
+# class Sampler(RandomSampler):
+#     def __init__(self, data_source, replacement: bool = False,
+#                  num_samples=None, generator=None, **kwargs) -> None:
+#         super().__init__(data_source, replacement, num_samples, generator)
+#
+#     @property
+#     def num_samples(self) -> int:
+#         return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
