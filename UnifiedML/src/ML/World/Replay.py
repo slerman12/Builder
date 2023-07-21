@@ -164,8 +164,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   # sampler=sampler,
+                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -339,30 +339,14 @@ class Worker(Dataset):
         experience['episode_index'] = np.array(index)
         experience['episode_step'] = np.array(step)
 
-        if not hasattr(self, 'shapes'):
-            self.shapes = {}
-        else:
-            for key in experience:
-                assert key in self.shapes, key
-
-        i = 0
-
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            i += 1
             # if getattr(experience[key], 'dtype', None) == torch.int64:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
                 # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
-            if isinstance(experience[key], np.ndarray):
-                experience[key] = experience[key].copy()
-            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
-            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
+            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
-            if key not in self.shapes:
-                self.shapes[key] = experience[key].shape
-            else:
-                assert self.shapes[key] == experience[key].shape, (key, self.shapes[key], experience[key].shape)
-        assert i
 
         return experience
 

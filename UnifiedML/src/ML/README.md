@@ -285,7 +285,7 @@ Fully supported across domains, including reinforcement learning and generative 
 </h2>
 </summary>
 
-Paths or instances to Pytorch Datasets or [accelerated Memories](#acceleration) can be fed to the ```Dataset=``` flag.
+Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
@@ -338,11 +338,11 @@ All passed-in Datasets will support the ```dataset.transform=``` argument. ```da
 
 **Standardization & normalization**
 
-Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. Learn about the difference [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset.
+Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer/```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. Learn about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
 
 **Subsets**
 
-Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0, 5, and 2``` will be used for training and evaluation.
+Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0, 5```, and ```2``` will be used for training and evaluation.
 
 </details>
 

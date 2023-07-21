@@ -412,7 +412,7 @@ class Mem:
         with self.mem() as mem:
             mem = mem[ind] if self.shape else mem
             if self.mode == 'shared':
-                mem = torch.as_tensor(mem).clone()  # shm gets closed if shared, so make copy
+                mem = torch.as_tensor(mem).detach().clone()  # shm gets closed if shared, so make copy
             return mem
 
     def __setitem__(self, ind, value):
@@ -428,7 +428,7 @@ class Mem:
     def datums(self):
         with self.mem() as mem:
             # shm gets closed, so make copy if shared
-            return torch.as_tensor(mem).clone() if self.mode == 'shared' else mem
+            return torch.as_tensor(mem).detach().clone() if self.mode == 'shared' else mem
 
     def tensor(self):
         with self.mem() as mem:
