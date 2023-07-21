@@ -175,7 +175,7 @@ class Replay:
                          or obs_spec.low is None or obs_spec.high is None) \
                     or standardize and ('mean' not in obs_spec or 'stddev' not in obs_spec
                                         or obs_spec.mean is None or obs_spec.stddev is None):
-                if 'stats' not in card:
+                if 'stats' not in card:  # TODO Store back to card if card already exists!
                     card['stats'] = compute_stats(self.batches)  # TODO Lock this after checking if card exists in path
                 if obs_spec is not None:
                     obs_spec.update(card.stats)

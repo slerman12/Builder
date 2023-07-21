@@ -6,12 +6,10 @@ import ast
 import inspect
 import math
 import os
-import pickle
 import sys
 import random
 from functools import cached_property
 import re
-from pathlib import Path
 from multiprocessing.pool import ThreadPool
 
 from torch.nn import Identity, Flatten  # For direct accessibility via command line
@@ -188,7 +186,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             if 'obs_spec' in original_args:
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
-                args['recipes'] = original_args['recipes']  # Since assumed
+                args['recipes'] = original_args['recipes']  # Since assumed TODO Default to these where current are null
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
             if not distributed:

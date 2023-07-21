@@ -312,7 +312,10 @@ def datums_as_batch(datums):
         if len(label.shape) == 1:
             label = label.view(-1, 1)
 
-        return Batch({'obs': obs, 'label': label, 'done': True})  # TODO Allow manually selecting among datums
+        # TODO Allow manually selecting among datums
+        #   Stats can be provided for each but will default to the ones provided in the training dataset
+        #   Auto-discrete for non-numbers and low/high otherwise. Can be specified by dataset.low/high or self.stats
+        return Batch({'obs': obs, 'label': label, 'done': True})
 
 
 # # Map class labels to Tensor integers
@@ -412,6 +415,3 @@ def worker_init_fn(worker_id):
     np.random.seed(seed)
     random.seed(int(seed))
     mp.set_sharing_strategy('file_system')
-
-
-mp.set_sharing_strategy('file_system')
