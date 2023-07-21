@@ -296,7 +296,7 @@ class Worker(Dataset):
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
-            self.memory.update()  # Can make Online only
+            # self.memory.update()  # Can make Online only  TODO commented out for test, uncomment-out!
 
             if len(self.memory) and self.begin_flag:
                 break
