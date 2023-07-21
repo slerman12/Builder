@@ -175,11 +175,11 @@ class Replay:
                     or standardize and ('mean' not in obs_spec or 'stddev' not in obs_spec
                                         or obs_spec.mean is None or obs_spec.stddev is None):
                 if 'stats' not in card:
-                    card['stats'] = compute_stats(self.batches)
+                    card['stats'] = compute_stats(self.batches)  # TODO Lock this after checking if card exists in path
                 if obs_spec is not None:
                     obs_spec.update(card.stats)
 
-        # Save to hard disk if Offline
+        # Save to hard disk if Offline  TODO Lock this after checking if card exists in path
         if isinstance(dataset, Dataset) and offline:
             # if accelerate and self.memory.num_batches <= sum(self.memory.capacities[:-1]):
             #     root = 'World/ReplayBuffer/Offline/'
@@ -306,6 +306,12 @@ class Worker(Dataset):
         if index is None or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
 
+        # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
+        self.partition_workers = True
+        if self.partition_workers:
+            while index == 0 and self.worker != 0 or index != 0 and len(self.memory.queues) % index != self.worker:
+                index = (index + 1) % len(self.memory)
+
         # Retrieve from Memory
         episode = self.memory[index]
 
@@ -330,9 +336,10 @@ class Worker(Dataset):
         experience['episode_step'] = step
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            if getattr(experience[key], 'dtype', None) == torch.int64:
-                # For some reason, casting to int32 can throw collate_fn errors
-                experience[key] = experience[key].to(torch.float32)
+            # if getattr(experience[key], 'dtype', None) == torch.int64:
+                # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
+                # experience[key] = experience[key].to(torch.float32)
+            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)
 
         return experience.to_dict()
 
@@ -404,6 +411,7 @@ class Flag:
         return self._flag
 
 
+# TODO Can also have two permuted index lists, with periodic updating and merging and the most recent can be sampled
 # Sampling approximately w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
     def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
@@ -430,13 +438,74 @@ class Sampler:
             index = random.randint(0, size - 1) if size else None
             while index in self.recency_set:
                 index = random.randint(0, size - 1)
-            if index is not None:
+            if index is not None and self.recency_factor > 0:
                 self.recency_queue.append(index)  # TODO What if capacity = size?
                 self.recency_set.add(index)
             while len(self.recency_set) > self.recency_capacity(size) > 0:
                 popped = self.recency_queue.popleft()
                 self.recency_set.remove(popped)
-            yield index
+            # yield index
+            yield None
 
     def __len__(self):
         return len(self.data_source)
+
+
+
+
+
+# class RandomSampler(Sampler[int]):
+#     r"""Samples elements randomly. If without replacement, then sample from a shuffled dataset.
+#     If with replacement, then user can specify :attr:`num_samples` to draw.
+#
+#     Args:
+#         data_source (Dataset): dataset to sample from
+#         replacement (bool): samples are drawn on-demand with replacement if ``True``, default=``False``
+#         num_samples (int): number of samples to draw, default=`len(dataset)`.
+#         generator (Generator): Generator used in sampling.
+#     """
+#     data_source: Sized
+#     replacement: bool
+#
+#     def __init__(self, data_source: Sized, replacement: bool = False,
+#                  num_samples: Optional[int] = None, generator=None) -> None:
+#         self.data_source = data_source
+#         self.replacement = replacement
+#         self._num_samples = num_samples
+#         self.generator = generator
+#
+#         if not isinstance(self.replacement, bool):
+#             raise TypeError("replacement should be a boolean value, but got "
+#                             "replacement={}".format(self.replacement))
+#
+#         if not isinstance(self.num_samples, int) or self.num_samples <= 0:
+#             raise ValueError("num_samples should be a positive integer "
+#                              "value, but got num_samples={}".format(self.num_samples))
+#
+#     @property
+#     def num_samples(self) -> int:
+#         # dataset size might change at runtime
+#         if self._num_samples is None:
+#             return len(self.data_source)
+#         return self._num_samples
+#
+#     def __iter__(self) -> Iterator[int]:
+#         n = len(self.data_source)
+#         if self.generator is None:
+#             seed = int(torch.empty((), dtype=torch.int64).random_().item())
+#             generator = torch.Generator()
+#             generator.manual_seed(seed)
+#         else:
+#             generator = self.generator
+#
+#         if self.replacement:
+#             for _ in range(self.num_samples // 32):
+#                 yield from torch.randint(high=n, size=(32,), dtype=torch.int64, generator=generator).tolist()
+#             yield from torch.randint(high=n, size=(self.num_samples % 32,), dtype=torch.int64, generator=generator).tolist()
+#         else:
+#             for _ in range(self.num_samples // n):
+#                 yield from torch.randperm(n, generator=generator).tolist()
+#             yield from torch.randperm(n, generator=generator).tolist()[:self.num_samples % n]
+#
+#     def __len__(self) -> int:
+#         return self.num_samples

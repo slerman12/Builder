@@ -12,11 +12,14 @@ my_sweep.hyperparams = [
     save_per_steps=1e5
     dataset.sources='["/gpfs/fs2/scratch/public/jsalgad2/Data/Generated/XRDs_ICSD/","./Data/Generated/XRDs_RRUFF/"]'
     dataset.train_eval_splits='[1, 0.5]'
-    Dataset=XRD.XRD""" for num_classes in (7, 230)
+    Dataset=XRD.XRD
+    stream=false""" for num_classes in (7, 230)
 ]
 
 my_sweep.app = 'XRDs'
 my_sweep.branch = 'Dev'
+
+my_sweep.mem = 80
 
 # Plotting
 
