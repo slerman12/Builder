@@ -15,6 +15,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import Dataset
+from torch import multiprocessing as mp
 
 from PIL.Image import Image
 
@@ -410,3 +411,7 @@ def worker_init_fn(worker_id):
     seed = np.random.get_state()[1][0] + worker_id
     np.random.seed(seed)
     random.seed(int(seed))
+    mp.set_sharing_strategy('file_system')
+
+
+mp.set_sharing_strategy('file_system')

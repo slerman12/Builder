@@ -52,6 +52,8 @@ class Memory:
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
 
+        mp.set_sharing_strategy('file_system')
+
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
         while not self.queue.empty():
@@ -171,10 +173,8 @@ class Memory:
     def cleanup(self):
         for batch in self.batches:
             for mem in batch.mems:
-                if mem.mode == 'shared':
-                    shm = SharedMemory(name=mem.name)
-                    shm.close()
-                    shm.unlink()
+                with mem.cleanup():
+                    pass
 
     def set_save_path(self, save_path):
         self.save_path = save_path
@@ -553,3 +553,4 @@ if mp.current_process().name == 'MainProcess':
         mp.set_start_method('spawn')
     except RuntimeError:
         pass
+mp.set_sharing_strategy('file_system')

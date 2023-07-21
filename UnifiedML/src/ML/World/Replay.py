@@ -296,7 +296,7 @@ class Worker(Dataset):
 
         # Periodically update memory
         while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
-            # self.memory.update()  # Can make Online only  TODO commented out for test, uncomment-out!
+            self.memory.update()  # Can make Online only
 
             if len(self.memory) and self.begin_flag:
                 break
@@ -341,6 +341,8 @@ class Worker(Dataset):
             # if getattr(experience[key], 'dtype', None) == torch.int64:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
                 # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
+            if isinstance(experience[key], np.ndarray):
+                experience[key] = experience[key].copy()
             experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
@@ -389,7 +391,7 @@ class Worker(Dataset):
             # experience['discount'] = 0 if episode[step + len(traj_r)].done else discounts[-1].astype('float32')
             experience['discount'] = discounts[-1].astype('float32')  # TODO Use above
         else:
-            experience['discount'] = 1
+            experience['discount'] = 1  # TODO just add via collate, not here
 
         return experience
 
