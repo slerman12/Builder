@@ -392,7 +392,7 @@ class Mem:
     @contextlib.contextmanager
     def mem(self):
         if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
-            self.Lock.acquire()  # In case of two processes allocating to the same file descriptor, rare edge case
+            self.Lock.acquire()  # In case of two processes allocating to the same file descriptor TODO Ablate
             shm = SharedMemory(name=self.name)
             self.Lock.release()
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
