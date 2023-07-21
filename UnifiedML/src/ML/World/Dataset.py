@@ -301,7 +301,7 @@ def datums_as_batch(datums):
         if len(label.shape) == 1:
             label = label.view(-1, 1)
 
-        return Batch({'obs': obs, 'label': label, 'done': True})
+        return Batch({'obs': obs, 'label': label, 'done': True})  # TODO Allow manually selecting among datums
 
 
 # # Map class labels to Tensor integers

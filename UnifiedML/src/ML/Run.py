@@ -78,9 +78,9 @@ def main(args):
         training = training or agent.step > args.seed_steps and len(replay) or replay.offline
 
         # Train agent
-        # if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
-        if training and (env.episode_done or converged):
-            args.learn_steps = env.last_episode_len // 2
+        if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
+        # if training and (env.episode_done or converged):
+        #     args.learn_steps = env.last_episode_len // 2
 
             for _ in range(args.learn_steps_after if converged else args.learn_steps):
                 logs = agent.learn(replay)  # Learn

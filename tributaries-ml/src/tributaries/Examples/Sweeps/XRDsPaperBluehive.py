@@ -13,6 +13,7 @@ my_sweep.hyperparams = [
     dataset.sources='["/gpfs/fs2/scratch/public/jsalgad2/Data/Generated/XRDs_ICSD/","./Data/Generated/XRDs_RRUFF/"]'
     dataset.train_eval_splits='[1, 0.5]'
     Dataset=XRD.XRD
+    ram_capacity=2e6
     stream=false""" for num_classes in (7, 230)
 ]
 
