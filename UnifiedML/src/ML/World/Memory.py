@@ -7,18 +7,17 @@ import atexit
 import contextlib
 import os
 import warnings
+from multiprocessing.shared_memory import SharedMemory
 import resource
 from pathlib import Path
-
-import multiprocessing as mp
-from multiprocessing.shared_memory import SharedMemory
-
 import yaml
+
 from tqdm import tqdm
 
 import numpy as np
 
 import torch
+import multiprocessing as mp
 
 from minihydra import Args
 
@@ -52,6 +51,8 @@ class Memory:
 
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
+
+        torch.multiprocessing.set_sharing_strategy('file_system')
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -352,6 +353,21 @@ def as_numpy(data):
         else np.array(data)
 
 
+# A multiprocessing Lock that can be stored and restored via __getstate__ and __setstate__
+# Need to know num workers to make proper, to make sure all others False, otherwise coin toss
+class Lock:
+    def __init__(self):
+        self.Lock = torch.tensor(False, dtype=torch.bool).share_memory_()
+
+    def acquire(self):
+        while self.Lock:
+            pass
+        self.Lock[...] = True
+
+    def release(self):
+        self.Lock[...] = False
+
+
 class Mem:
     def __init__(self, mem, path=None):
         self._mem = None if mem is None else as_numpy(mem)
@@ -369,32 +385,34 @@ class Mem:
 
         self.name = None
 
+        self.Lock = Lock()
+
         self.main_worker = os.getpid()
 
     @contextlib.contextmanager
     def mem(self):
         if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
-            # Perhaps needs a Lock for the rare edge case that two get assigned the same FD location at the same time?
-            # Python presumably handles that
+            self.Lock.acquire()  # In case of two processes allocating to the same file descriptor
             shm = SharedMemory(name=self.name)
+            self.Lock.release()
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()
         else:
             yield self._mem
 
     def __getstate__(self):
-        return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, \
+        return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, self.Lock, \
             self._mem if self.mode in ('pinned', 'shared_tensor', 'gpu') else None
 
     def __setstate__(self, state):
-        self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, mem = state
+        self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, self.Lock, mem = state
         self._mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape) if self.mode == 'mmap' else mem
 
     def __getitem__(self, ind):
         with self.mem() as mem:
             mem = mem[ind] if self.shape else mem
             if self.mode == 'shared':
-                mem = mem.copy()  # shm gets closed if shared, so make copy  TODO replace all .copy with as_tensor?
+                mem = torch.as_tensor(mem).clone()  # shm gets closed if shared, so make copy
             return mem
 
     def __setitem__(self, ind, value):
@@ -410,7 +428,7 @@ class Mem:
     def datums(self):
         with self.mem() as mem:
             # shm gets closed, so make copy if shared
-            return mem.copy() if self.mode == 'shared' else mem
+            return torch.as_tensor(mem).clone() if self.mode == 'shared' else mem
 
     def tensor(self):
         with self.mem() as mem:
@@ -554,3 +572,4 @@ if torch.multiprocessing.current_process().name == 'MainProcess':
         torch.multiprocessing.set_start_method('spawn')
     except RuntimeError:
         pass
+torch.multiprocessing.set_sharing_strategy('file_system')
