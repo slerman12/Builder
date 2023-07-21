@@ -7,17 +7,18 @@ import atexit
 import contextlib
 import os
 import warnings
-from multiprocessing.shared_memory import SharedMemory
 import resource
 from pathlib import Path
-import yaml
 
+import multiprocessing as mp
+from multiprocessing.shared_memory import SharedMemory
+
+import yaml
 from tqdm import tqdm
 
 import numpy as np
 
 import torch
-import torch.multiprocessing as mp
 
 from minihydra import Args
 
@@ -51,8 +52,6 @@ class Memory:
 
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descr
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
-
-        mp.set_sharing_strategy('file_system')
 
     def rewrite(self):  # TODO Thread w sync?
         # Before enforce_capacity changes index
@@ -375,6 +374,8 @@ class Mem:
     @contextlib.contextmanager
     def mem(self):
         if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
+            # Perhaps needs a Lock for the rare edge case that two get assigned the same FD location at the same time?
+            # Python presumably handles that
             shm = SharedMemory(name=self.name)
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()
@@ -548,9 +549,8 @@ class Mem:
         self.saved = False
 
 
-if mp.current_process().name == 'MainProcess':
+if torch.multiprocessing.current_process().name == 'MainProcess':
     try:
-        mp.set_start_method('spawn')
+        torch.multiprocessing.set_start_method('spawn')
     except RuntimeError:
         pass
-mp.set_sharing_strategy('file_system')

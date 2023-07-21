@@ -306,6 +306,8 @@ class Worker(Dataset):
         # Sample index
         if index is None or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
+        else:
+            index = int(index)  # If index is a shared tensor, pytorch can bug when returning
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
@@ -331,11 +333,14 @@ class Worker(Dataset):
         if self.transform is not None:
             experience.obs = self.transform(experience.obs)
 
-        # Add metadata
-        experience['episode_index'] = index
-        experience['episode_step'] = step
-
         experience = experience.to_dict()
+
+        # Add metadata
+        experience['episode_index'] = np.array(index)
+        experience['episode_step'] = np.array(step)
+
+        if not hasattr(self, 'shapes'):
+            self.shapes = {}
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
             # if getattr(experience[key], 'dtype', None) == torch.int64:
@@ -344,8 +349,13 @@ class Worker(Dataset):
             if isinstance(experience[key], np.ndarray):
                 experience[key] = experience[key].copy()
             experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
+            if key not in self.shapes:
+                self.shapes[key] = experience[key].shape
+            else:
+                assert self.shapes[key] == experience[key].shape, (key, self.shapes[key], experience[key].shape)
 
         return experience
 
@@ -391,7 +401,7 @@ class Worker(Dataset):
             # experience['discount'] = 0 if episode[step + len(traj_r)].done else discounts[-1].astype('float32')
             experience['discount'] = discounts[-1].astype('float32')  # TODO Use above
         else:
-            experience['discount'] = 1  # TODO just add via collate, not here
+            experience['discount'] = 1  # TODO just add via collate, not here, or check if exists in Q_learning
 
         return experience
 
