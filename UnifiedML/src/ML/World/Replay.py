@@ -25,7 +25,7 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
-                 save=False, mem_size=None, fetch_per=1, recency_factor=0.5,
+                 save=False, mem_size=None, fetch_per=1, partition_workers=False, recency_factor=0,
                  prefetch_factor=3, pin_memory=False, pin_device_memory=False, shuffle=True, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
@@ -141,6 +141,7 @@ class Replay:
 
         worker = Worker(memory=self.memory,
                         fetch_per=None if offline else fetch_per,
+                        partition_workers=partition_workers,
                         begin_flag=self.begin_flag,
                         transform=transform,
                         frame_stack=frame_stack or 1,
@@ -263,9 +264,11 @@ class Replay:
 
 
 class Worker(Dataset):
-    def __init__(self, memory, fetch_per, begin_flag, transform, frame_stack, nstep, trajectory_flag, discount):
+    def __init__(self, memory, fetch_per, partition_workers, begin_flag, transform,
+                 frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per
+        self.partition_workers = partition_workers
         self.begin_flag = begin_flag
 
         self.samples_since_last_fetch = 0
@@ -305,7 +308,6 @@ class Worker(Dataset):
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
-        self.partition_workers = False
         if self.partition_workers:
             while index == 0 and self.worker != 0 or index != 0 and index % len(self.memory.queues) != self.worker:
                 index = (index + 1) % len(self.memory)
@@ -336,10 +338,10 @@ class Worker(Dataset):
         experience = experience.to_dict()
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            if getattr(experience[key], 'dtype', None) == torch.int64:
+            # if getattr(experience[key], 'dtype', None) == torch.int64:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
-                experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
-            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+                # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
+            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
 
@@ -413,6 +415,7 @@ class Flag:
         return self._flag
 
 
+# TODO Random-insert queue data structure?
 # TODO Can also have two permuted index lists, with periodic updating and merging and the most recent can be sampled
 # Sampling approximately w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
