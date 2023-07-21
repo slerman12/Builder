@@ -394,7 +394,7 @@ class Mem:
         with self.mem() as mem:
             mem = mem[ind] if self.shape else mem
             if self.mode == 'shared':
-                mem = mem.copy()  # shm gets closed if shared, so make copy
+                mem = mem.copy()  # shm gets closed if shared, so make copy  TODO replace all .copy with as_tensor?
             return mem
 
     def __setitem__(self, ind, value):
