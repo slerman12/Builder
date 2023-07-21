@@ -149,6 +149,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     setattr(dataset, 'classes', tuple(classes))
 
+    # TODO Allow Dataset= to be a list s.t. dataset.arg= is list and include dataset.train_eval_split as a default arg.
+
     # TODO Ideally dataset could append classes to ones already saved and update the existing card
     #  Analogously regarding datums saved dataset.datums=, and MultiModal APi allowing Label=datum_name for example
     # Can select a subset of classes

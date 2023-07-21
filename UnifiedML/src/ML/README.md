@@ -338,7 +338,7 @@ All passed-in Datasets will support the ```dataset.transform=``` argument. ```da
 
 **Standardization & normalization**
 
-Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer/```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. Learn about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
+Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. Learn about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
 
 **Subsets**
 
@@ -380,7 +380,7 @@ ML Model=Run.Model_ Dataset=CIFAR10
 
 We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy.
 
-For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); self.optim.step()```) and not return a loss.
+For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss.
 
 [```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics.
 

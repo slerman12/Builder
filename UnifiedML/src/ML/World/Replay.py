@@ -164,8 +164,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   sampler=sampler,
+                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   # sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
