@@ -139,7 +139,9 @@ class Replay:
 
         # Sampler
 
-        sampler = None if partition_workers else Sampler(data_source=self.memory)
+        sampler = Sampler(data_source=self.memory,
+                          offline=offline,
+                          done_episodes_only=not offline)
 
         # Parallel worker for batch loading
 
@@ -164,8 +166,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   # sampler=sampler,
+                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   sampler=sampler if offline else None,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -308,7 +310,7 @@ class Worker(Dataset):
         if self.sampler is not None:
             index = next(self.sampler)
 
-        done_episodes_only = self.partition_workers
+        done_episodes_only = self.partition_workers  # TODO Check last_episode.done
 
         # Sample index
         if index is None or index > len(self.memory) - 1:
@@ -341,11 +343,14 @@ class Worker(Dataset):
         if self.transform is not None:
             experience.obs = self.transform(experience.obs)
 
-        experience = experience.to_dict()
-
         # Add metadata
-        experience['episode_index'] = np.array(index)
-        experience['episode_step'] = np.array(step)
+        # TODO Don't store these unless needed
+        # experience['episode_index'] = index
+        # experience['episode_step'] = step
+        if 'step' in experience:
+            experience.pop('step')
+        if 'done' in experience:
+            experience.pop('done')
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
             if getattr(experience[key], 'dtype', None) in [torch.int64, torch.float64]:
@@ -356,9 +361,7 @@ class Worker(Dataset):
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
 
-        # print({key: value.shape for key, value in experience.items()})
-
-        return experience
+        return experience.to_dict()
 
     def compute_RL(self, episode, experience, step):
         # TODO Just apply nstep and frame stack as transforms nstep, frame_stack, transform
@@ -487,30 +490,44 @@ class OnlineSampler:
                     return index
 
 
+# class NullSampler:
+#     def __iter__(self):
+#         yield None
+#
+#     def __len__(self):
+#         return 0
+
+
 # Sampling w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
-    def __init__(self, data_source):
+    def __init__(self, data_source, offline=True, done_episodes_only=False):
         self.data_source = data_source
+        self.offline = offline
 
-        self.size = len(self.data_source)
+        self.done_episodes_only = done_episodes_only  # TODO Check last_episode.done with Episode having done attr
+
+        self.size = len(self.data_source) - self.done_episodes_only
 
         self.indices = []
 
     def __iter__(self):
-        size = len(self)
-        if size:
-            if not len(self.indices):
-                self.indices = list(range(size))
-            elif size > self.size:
-                self.indices.extend(list(range(self.size, size)))
-            self.size = size
-            sample = random.randint(0, len(self.indices) - 1)
-            last = self.indices[-1]
-            self.indices[-1] = self.indices[sample]
-            self.indices[sample] = last
-            yield self.indices.pop()
+        if self.offline:
+            yield from torch.randperm(self.size).tolist()
         else:
-            yield None
+            size = len(self) - self.done_episodes_only
+            if size > 0:
+                if not len(self.indices):
+                    self.indices = list(range(size))
+                elif size > self.size:
+                    self.indices.extend(list(range(self.size, size)))
+                self.size = size
+                sample = random.randint(0, len(self.indices) - 1)
+                last = self.indices[-1]
+                self.indices[-1] = self.indices[sample]
+                self.indices[sample] = last
+                yield self.indices.pop()
+            else:
+                yield None
 
     def __len__(self):
-        return len(self.data_source)
+        return self.size if self.offline else len(self.data_source)
