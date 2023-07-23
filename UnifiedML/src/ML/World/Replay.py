@@ -417,7 +417,7 @@ class Flag:
 
 
 # TODO Algorithm: Append/extend updates. Sample index in list. Switch that index with the last item and pop. O(1)
-# Sampling approximately w/o replacement of offline or dynamically-growing online distributions
+# Sampling w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
     def __init__(self, data_source, offline=True):
         self.data_source = data_source
@@ -448,7 +448,7 @@ class Sampler:
                 yield None
 
     def __len__(self):
-        return len(self.data_source)
+        return self.size if self.offline else len(self.data_source)
 
 
 # class Sampler(RandomSampler):
