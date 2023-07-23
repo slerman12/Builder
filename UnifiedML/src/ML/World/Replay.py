@@ -139,7 +139,7 @@ class Replay:
 
         # Sampler
 
-        sampler = Sampler(data_source=self.memory, offline=self.offline)
+        sampler = None if partition_workers else Sampler(data_source=self.memory)
 
         # Parallel worker for batch loading
 
@@ -436,109 +436,6 @@ class Flag:
         return self._flag
 
 
-# class Sampler:
-#     def __init__(self, data_source):
-#         self.size = len(data_source)
-#
-#     def __iter__(self):
-#         yield None
-#
-#     def __len__(self):
-#         return self.size
-
-
-# I think in all likelihood this kind of sampler is fully treated as a generator up to given length and length
-# isn't updated until each later exhaustion
-# TODO Algorithm: Append/extend updates. Sample index in list. Switch that index with the last item and pop. O(1)
-# Sampling w/o replacement of offline or dynamically-growing online distributions
-class Sampler:
-    def __init__(self, data_source, offline=True):
-        self.data_source = data_source
-        self.offline = offline
-
-        self.size = len(self.data_source)
-
-        # if not offline:
-        self.indices = list(range(self.size))
-
-    def __iter__(self):
-        # if self.offline:
-        #     yield from torch.randperm(self.size).tolist()
-        # else:
-            size = len(self)
-            if size:
-                if not len(self.indices):
-                    self.indices = list(range(size))
-                elif size > self.size:
-                    self.indices.extend(list(range(self.size, size)))
-                self.size = size
-                sample = random.randint(0, len(self.indices) - 1)
-                last = self.indices[-1]
-                self.indices[-1] = self.indices[sample]
-                self.indices[sample] = last
-                yield self.indices.pop()
-            else:
-                yield None
-
-    def __len__(self):
-        return self.size if self.offline else len(self.data_source)
-
-
-# class Sampler(RandomSampler):
-#     def __init__(self, data_source, replacement: bool = False,
-#                  num_samples=None, generator=None, **kwargs) -> None:
-#         super().__init__(data_source, replacement, num_samples, generator)
-#
-#     @property
-#     def num_samples(self) -> int:
-#         return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
-
-
-# # Index sampler works in multiprocessing
-# class Sampler:
-#     def __init__(self, size):
-#         self.size = size
-#
-#         self.main_worker = os.getpid()
-#
-#         self.index = torch.zeros([], dtype=torch.int64).share_memory_()  # Int64
-#
-#         self.read_lock = mp.Lock()
-#         self.read_condition = mp.Condition()
-#         self.index_condition = mp.Condition()
-#
-#         self.iterator = iter(torch.randperm(self.size))
-#
-#         Thread(target=self.publish).start()
-#
-#     # Sample index publisher
-#     def publish(self):
-#         assert os.getpid() == self.main_worker, 'Only main worker can feed sample indices.'
-#
-#         while True:
-#             with self.read_condition:
-#                 self.read_condition.wait()  # Wait until read is called in a process
-#                 with self.index_condition:
-#                     self.index[...] = self.next()
-#                     self.index_condition.notify()  # Notify that index has been updated
-#
-#     # Sample index subscriber
-#     def get_index(self):
-#         with self.read_lock:
-#             with self.read_condition:
-#                 self.read_condition.notify()  # Notify that read has been called
-#             with self.index_condition:
-#                 self.index_condition.wait()  # Wait until index has been updated
-#                 return self.index
-#
-#     def next(self):
-#         try:
-#             return next(self.iterator)
-#         except StopIteration:
-#             self.iterator = iter(torch.randperm(self.size))
-#         return next(self.iterator)
-
-
 # Allows Pytorch Dataset workers to read from a sampler non-redundantly in real-time
 class OnlineSampler:
     def __init__(self, sampler):
@@ -585,5 +482,35 @@ class OnlineSampler:
             # Wait until index has been updated
             while True:
                 if self.index_condition:
+                    index = int(self.index)
                     self.index_condition[...] = False
-                    return int(self.index)
+                    return index
+
+
+# Sampling w/o replacement of offline or dynamically-growing online distributions
+class Sampler:
+    def __init__(self, data_source):
+        self.data_source = data_source
+
+        self.size = len(self.data_source)
+
+        self.indices = []
+
+    def __iter__(self):
+        size = len(self)
+        if size:
+            if not len(self.indices):
+                self.indices = list(range(size))
+            elif size > self.size:
+                self.indices.extend(list(range(self.size, size)))
+            self.size = size
+            sample = random.randint(0, len(self.indices) - 1)
+            last = self.indices[-1]
+            self.indices[-1] = self.indices[sample]
+            self.indices[sample] = last
+            yield self.indices.pop()
+        else:
+            yield None
+
+    def __len__(self):
+        return len(self.data_source)
