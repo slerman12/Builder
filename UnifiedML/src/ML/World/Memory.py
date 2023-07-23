@@ -2,6 +2,8 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import logging
+import signal
 from math import inf
 import atexit
 import contextlib
@@ -144,9 +146,9 @@ class Memory:
             if next(iter(batch.values())).mode == 'mmap':
                 self.num_experiences_mmapped -= batch_size
 
-            del self.episodes[0][0]
+            del self.episodes[0][0]  # Remove one batch
             if not len(self.episodes[0]):
-                del self.episodes[:batch_size]
+                del self.episodes[:batch_size]  # Clean up if traces empty
                 self.num_episodes_deleted += batch_size  # getitem ind = mem.index - self.num_episodes_deleted
 
     def trace(self, ind):
@@ -330,6 +332,9 @@ class Experience:
     def __iter__(self):
         return iter(self.episode_trace[self.step].keys())
 
+    def __repr__(self):
+        return str({key: value for key, value in self.items()})
+
 
 class Batch(Args):
     @property
@@ -353,6 +358,22 @@ def as_numpy(data):
         else np.array(data)
 
 
+# https://stackoverflow.com/questions/842557/how-to-prevent-a-block-of-code-from-being-interrupted-by-keyboardinterrupt-in-py
+class DelayedKeyboardInterrupt:
+    def __enter__(self):
+        self.signal_received = False
+        self.old_handler = signal.signal(signal.SIGINT, self.handler)
+
+    def handler(self, sig, frame):
+        self.signal_received = (sig, frame)
+        logging.debug('SIGINT received. Delaying KeyboardInterrupt.')
+
+    def __exit__(self, type, value, traceback):
+        signal.signal(signal.SIGINT, self.old_handler)
+        if self.signal_received:
+            self.old_handler(*self.signal_received)
+
+
 class Mem:
     def __init__(self, mem, path=None):
         self._mem = None if mem is None else as_numpy(mem)
@@ -372,14 +393,17 @@ class Mem:
 
         self.main_worker = os.getpid()
 
+        # atexit.register(self.cleanup)
+
     @contextlib.contextmanager
     def mem(self):
-        if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
-            shm = SharedMemory(name=self.name)
-            yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
-            shm.close()
-        else:
-            yield self._mem
+        with DelayedKeyboardInterrupt():
+            if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
+                shm = SharedMemory(name=self.name)
+                yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
+                shm.close()
+            else:
+                yield self._mem
 
     def __getstate__(self):
         return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, \

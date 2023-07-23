@@ -4,7 +4,6 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import atexit
 import random
-from collections import deque
 from pathlib import PosixPath
 from threading import Thread, Lock
 from math import inf
@@ -15,7 +14,8 @@ from tqdm import tqdm
 import numpy as np
 
 import torch
-from torch.utils.data import IterableDataset, Dataset, DataLoader
+from torch.utils.data import IterableDataset, Dataset, DataLoader, RandomSampler
+from torch import multiprocessing as mp
 
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
@@ -137,21 +137,24 @@ class Replay:
 
         transform = instantiate(transform)
 
-        # Parallel worker for batch loading
-
-        worker = Worker(memory=self.memory,
-                        fetch_per=None if offline else fetch_per,
-                        partition_workers=partition_workers,
-                        begin_flag=self.begin_flag,
-                        transform=transform,
-                        frame_stack=frame_stack or 1,
-                        nstep=self.nstep,
-                        trajectory_flag=self.trajectory_flag,
-                        discount=discount)
-
         # Sampler
 
         sampler = Sampler(data_source=self.memory, offline=self.offline)
+
+        # Parallel worker for batch loading
+
+        create_worker = Offline if offline else Online
+
+        worker = create_worker(memory=self.memory,
+                               fetch_per=None if offline else fetch_per,
+                               sampler=None if offline else sampler,
+                               partition_workers=partition_workers,
+                               begin_flag=self.begin_flag,
+                               transform=transform,
+                               frame_stack=frame_stack or 1,
+                               nstep=self.nstep,
+                               trajectory_flag=self.trajectory_flag,
+                               discount=discount)
 
         # Batch loading
 
@@ -161,8 +164,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   sampler=sampler,
+                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   # sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -262,13 +265,14 @@ class Replay:
 
 
 class Worker(Dataset):
-    def __init__(self, memory, fetch_per, partition_workers, begin_flag, transform,
+    def __init__(self, memory, fetch_per, sampler, partition_workers, begin_flag, transform,
                  frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per
         self.partition_workers = partition_workers
         self.begin_flag = begin_flag
 
+        self.sampler = None if sampler is None else OnlineSampler(sampler)
         self.samples_since_last_fetch = 0
 
         self.transform = transform
@@ -301,9 +305,14 @@ class Worker(Dataset):
 
         self.samples_since_last_fetch += 1
 
+        if self.sampler is not None:
+            index = next(self.sampler)
+
+        done_episodes_only = self.partition_workers
+
         # Sample index
         if index is None or index > len(self.memory) - 1:
-            index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
+            index = random.randint(0, len(self.memory) - 1 - done_episodes_only)  # Random sample an episode
         else:
             index = int(index)  # If index is a shared tensor, pytorch can bug when returning
 
@@ -319,11 +328,8 @@ class Worker(Dataset):
         nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
         if len(episode) < nstep + 1:  # Make sure at least one nstep is present if nstep
-            return self.sample(None, update=True)
-
-        # TODO Can try re-sampling if episode len is less than 500 for drqv2 debug
-        if len(episode) < 500:  # Make sure at least one nstep is present if nstep
-            return self.sample(None)
+            #  TODO Note if partition workers and not enough seed steps, need to wait till replay has num workers len
+            return self.sample(update=True)
 
         step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
         experience = Args(episode[step])
@@ -342,13 +348,15 @@ class Worker(Dataset):
         experience['episode_step'] = np.array(step)
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            # if getattr(experience[key], 'dtype', None) == torch.int64:
+            if getattr(experience[key], 'dtype', None) in [torch.int64, torch.float64]:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
-                # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
-            experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+                experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
+            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
             # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
+
+        # print({key: value.shape for key, value in experience.items()})
 
         return experience
 
@@ -398,11 +406,19 @@ class Worker(Dataset):
 
         return experience
 
+    def __len__(self):
+        return len(self.memory)
+
+
+class Offline(Worker, Dataset):
     def __getitem__(self, index):
         return self.sample(index)  # Retrieve a single experience by index
 
-    def __len__(self):
-        return len(self.memory)
+
+class Online(Worker, IterableDataset):
+    def __iter__(self):
+        while True:
+            yield self.sample()  # Yields a single experience
 
 
 # Quick parallel one-time flag
@@ -420,6 +436,19 @@ class Flag:
         return self._flag
 
 
+# class Sampler:
+#     def __init__(self, data_source):
+#         self.size = len(data_source)
+#
+#     def __iter__(self):
+#         yield None
+#
+#     def __len__(self):
+#         return self.size
+
+
+# I think in all likelihood this kind of sampler is fully treated as a generator up to given length and length
+# isn't updated until each later exhaustion
 # TODO Algorithm: Append/extend updates. Sample index in list. Switch that index with the last item and pop. O(1)
 # Sampling w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
@@ -429,13 +458,13 @@ class Sampler:
 
         self.size = len(self.data_source)
 
-        if not offline:
-            self.indices = list(range(self.size))
+        # if not offline:
+        self.indices = list(range(self.size))
 
     def __iter__(self):
-        if self.offline:
-            yield from torch.randperm(self.size).tolist()
-        else:
+        # if self.offline:
+        #     yield from torch.randperm(self.size).tolist()
+        # else:
             size = len(self)
             if size:
                 if not len(self.indices):
@@ -463,3 +492,98 @@ class Sampler:
 #     @property
 #     def num_samples(self) -> int:
 #         return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
+
+
+# # Index sampler works in multiprocessing
+# class Sampler:
+#     def __init__(self, size):
+#         self.size = size
+#
+#         self.main_worker = os.getpid()
+#
+#         self.index = torch.zeros([], dtype=torch.int64).share_memory_()  # Int64
+#
+#         self.read_lock = mp.Lock()
+#         self.read_condition = mp.Condition()
+#         self.index_condition = mp.Condition()
+#
+#         self.iterator = iter(torch.randperm(self.size))
+#
+#         Thread(target=self.publish).start()
+#
+#     # Sample index publisher
+#     def publish(self):
+#         assert os.getpid() == self.main_worker, 'Only main worker can feed sample indices.'
+#
+#         while True:
+#             with self.read_condition:
+#                 self.read_condition.wait()  # Wait until read is called in a process
+#                 with self.index_condition:
+#                     self.index[...] = self.next()
+#                     self.index_condition.notify()  # Notify that index has been updated
+#
+#     # Sample index subscriber
+#     def get_index(self):
+#         with self.read_lock:
+#             with self.read_condition:
+#                 self.read_condition.notify()  # Notify that read has been called
+#             with self.index_condition:
+#                 self.index_condition.wait()  # Wait until index has been updated
+#                 return self.index
+#
+#     def next(self):
+#         try:
+#             return next(self.iterator)
+#         except StopIteration:
+#             self.iterator = iter(torch.randperm(self.size))
+#         return next(self.iterator)
+
+
+# Allows Pytorch Dataset workers to read from a sampler non-redundantly in real-time
+class OnlineSampler:
+    def __init__(self, sampler):
+        self.main_worker = os.getpid()
+
+        self.index = torch.zeros([], dtype=torch.int64).share_memory_()  # Int64
+
+        self.read_lock = mp.Lock()
+        self.read_condition = torch.tensor(False, dtype=torch.bool).share_memory_()
+        self.index_condition = torch.tensor(False, dtype=torch.bool).share_memory_()
+
+        self.sampler = sampler
+        self.iterator = None
+
+        Thread(target=self.publish, daemon=True).start()
+
+    # Sample index publisher
+    def publish(self):
+        assert os.getpid() == self.main_worker, 'Only main worker can feed sample indices.'
+
+        while True:
+            # Wait until read is called in a process
+            if self.read_condition:
+                if self.iterator is None:
+                    self.iterator = iter(self.sampler)
+                try:
+                    self.index[...] = next(self.iterator)
+                except StopIteration:
+                    self.iterator = iter(self.sampler)
+                    self.index[...] = next(self.iterator)
+
+                # Notify that index has been updated
+                self.read_condition[...] = False
+                self.index_condition[...] = True
+
+    def __iter__(self):
+        yield from self
+
+    def __next__(self):
+        with self.read_lock:
+            # Notify that read has been called
+            self.read_condition[...] = True
+
+            # Wait until index has been updated
+            while True:
+                if self.index_condition:
+                    self.index_condition[...] = False
+                    return int(self.index)
