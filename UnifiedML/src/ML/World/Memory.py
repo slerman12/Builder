@@ -382,11 +382,11 @@ class Mem:
             yield self._mem
 
     def __getstate__(self):
-        return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, self.Lock, \
+        return self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, \
             self._mem if self.mode in ('pinned', 'shared_tensor', 'gpu') else None
 
     def __setstate__(self, state):
-        self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, self.Lock, mem = state
+        self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, mem = state
         self._mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape) if self.mode == 'mmap' else mem
 
     def __getitem__(self, ind):

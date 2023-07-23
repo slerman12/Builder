@@ -164,8 +164,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   # sampler=sampler,
+                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -419,8 +419,7 @@ class Flag:
         return self._flag
 
 
-# TODO Random-insert queue data structure?
-# TODO Can also have two permuted index lists, with periodic updating and merging and the most recent can be sampled
+# TODO Algorithm: Append/extend updates. Sample index in list. Switch that index with the last item and pop. O(1)
 # Sampling approximately w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
     def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
