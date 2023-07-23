@@ -141,6 +141,7 @@ class Replay:
 
         sampler = Sampler(data_source=self.memory,
                           offline=offline,
+                          with_replacement=False,
                           done_episodes_only=not offline)
 
         # Parallel worker for batch loading
@@ -310,11 +311,9 @@ class Worker(Dataset):
         if self.sampler is not None:
             index = next(self.sampler)
 
-        done_episodes_only = self.partition_workers  # TODO Check last_episode.done
-
         # Sample index
         if index is None or index > len(self.memory) - 1:
-            index = random.randint(0, len(self.memory) - 1 - done_episodes_only)  # Random sample an episode
+            index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
         else:
             index = int(index)  # If index is a shared tensor, pytorch can bug when returning
 
@@ -500,18 +499,23 @@ class OnlineSampler:
 
 # Sampling w/o replacement of offline or dynamically-growing online distributions
 class Sampler:
-    def __init__(self, data_source, offline=True, done_episodes_only=False):
+    def __init__(self, data_source, offline=True, with_replacement=False, done_episodes_only=False):
         self.data_source = data_source
         self.offline = offline
 
-        self.done_episodes_only = done_episodes_only  # TODO Check last_episode.done with Episode having done attr
+        self.with_replacement = with_replacement
+
+        #  TODO Check last_episode.doneTODO Check last_episode.done with Episode having done attr
+        self.done_episodes_only = done_episodes_only  # This is crucial for some reason
 
         self.size = len(self.data_source) - self.done_episodes_only
 
         self.indices = []
 
     def __iter__(self):
-        if self.offline:
+        if self.with_replacement:
+            yield None
+        elif self.offline:
             yield from torch.randperm(self.size).tolist()
         else:
             size = len(self) - self.done_episodes_only
