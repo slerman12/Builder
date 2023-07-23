@@ -441,7 +441,7 @@ class Sampler:
 
     def __iter__(self):
         if self.offline:
-            yield from torch.randperm(self.size)
+            yield from torch.randperm(self.size).tolist()
         else:
             size = len(self)
             index = random.randint(0, size - 1) if size else None
