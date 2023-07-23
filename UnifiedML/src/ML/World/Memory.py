@@ -353,21 +353,6 @@ def as_numpy(data):
         else np.array(data)
 
 
-# A multiprocessing Lock that can be stored and restored via __getstate__ and __setstate__
-# Need to know num workers to make proper, to make sure all others False, otherwise coin toss
-class Lock:
-    def __init__(self):
-        self.Lock = torch.tensor(False, dtype=torch.bool).share_memory_()
-
-    def acquire(self):
-        while self.Lock:
-            pass
-        self.Lock[...] = True
-
-    def release(self):
-        self.Lock[...] = False
-
-
 class Mem:
     def __init__(self, mem, path=None):
         self._mem = None if mem is None else as_numpy(mem)
@@ -385,16 +370,12 @@ class Mem:
 
         self.name = None
 
-        self.Lock = Lock()
-
         self.main_worker = os.getpid()
 
     @contextlib.contextmanager
     def mem(self):
         if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
-            self.Lock.acquire()  # In case of two processes allocating to the same file descriptor TODO Ablate
             shm = SharedMemory(name=self.name)
-            self.Lock.release()
             yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
             shm.close()
         else:

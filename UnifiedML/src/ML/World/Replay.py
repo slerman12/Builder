@@ -169,6 +169,7 @@ class Replay:
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
+        # TODO Note: if loading agent with stats saved, this is unnecessary/redundant/perhaps the wrong stats
         # Fill in necessary obs_spec and action_spec stats from dataset
         if offline:
             if norm and ('low' not in obs_spec or 'high' not in obs_spec
