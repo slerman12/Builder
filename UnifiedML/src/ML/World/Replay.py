@@ -164,8 +164,8 @@ class Replay:
                                                    pin_memory=pin_memory and 'cuda' in device,  # or pin_device_memory
                                                    # pin_memory_device=device if pin_device_memory else '',
                                                    prefetch_factor=prefetch_factor if num_workers else 2,
-                                                   shuffle=shuffle and offline,  # Not compatible with Sampler
-                                                   # sampler=sampler,
+                                                   # shuffle=shuffle and offline,  # Not compatible with Sampler
+                                                   sampler=sampler,
                                                    worker_init_fn=worker_init_fn,
                                                    persistent_workers=bool(num_workers))
 
@@ -421,48 +421,49 @@ class Flag:
 
 # TODO Algorithm: Append/extend updates. Sample index in list. Switch that index with the last item and pop. O(1)
 # Sampling approximately w/o replacement of offline or dynamically-growing online distributions
-class Sampler:
-    def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
-        self.data_source = data_source
-        self.offline = offline
-        self.recency_factor = recency_factor
-
-        self.recency_queue = deque()
-        self.recency_set = set()
-
-        self.begin_flag = begin_flag
-
-        if self.offline:
-            self.size = len(self.data_source)
-
-    def recency_capacity(self, size):  # TODO Account for recency_factor edge cases
-        return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
-
-    def __iter__(self):
-        if self.offline:
-            yield from torch.randperm(self.size)
-        else:
-            size = len(self)
-            index = random.randint(0, size - 1) if size else None
-            while index in self.recency_set:
-                index = random.randint(0, size - 1)
-            if index is not None and self.recency_factor > 0:
-                self.recency_queue.append(index)  # TODO What if capacity = size?
-                self.recency_set.add(index)
-            while len(self.recency_set) > self.recency_capacity(size) > 0:
-                popped = self.recency_queue.popleft()
-                self.recency_set.remove(popped)
-            yield index
-
-    def __len__(self):
-        return len(self.data_source)
-
-
-# class Sampler(RandomSampler):
-#     def __init__(self, data_source, replacement: bool = False,
-#                  num_samples=None, generator=None, **kwargs) -> None:
-#         super().__init__(data_source, replacement, num_samples, generator)
+# TODO Causes huge slowdown on Macula! And crashes locally. Perhaps due to memory as data_source? Share a len tensor?
+# class Sampler:
+#     def __init__(self, data_source, offline=True, recency_factor=0.5, begin_flag: Flag = True):
+#         self.data_source = data_source
+#         self.offline = offline
+#         self.recency_factor = recency_factor
 #
-#     @property
-#     def num_samples(self) -> int:
-#         return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
+#         self.recency_queue = deque()
+#         self.recency_set = set()
+#
+#         self.begin_flag = begin_flag
+#
+#         if self.offline:
+#             self.size = len(self.data_source)
+#
+#     def recency_capacity(self, size):  # TODO Account for recency_factor edge cases
+#         return round(size * self.recency_factor) if self.recency_factor < 1 else self.recency_factor
+#
+#     def __iter__(self):
+#         if self.offline:
+#             yield from torch.randperm(self.size)
+#         else:
+#             size = len(self)
+#             index = random.randint(0, size - 1) if size else None
+#             while index in self.recency_set:
+#                 index = random.randint(0, size - 1)
+#             if index is not None and self.recency_factor > 0:
+#                 self.recency_queue.append(index)  # TODO What if capacity = size?
+#                 self.recency_set.add(index)
+#             while len(self.recency_set) > self.recency_capacity(size) > 0:
+#                 popped = self.recency_queue.popleft()
+#                 self.recency_set.remove(popped)
+#             yield index
+#
+#     def __len__(self):
+#         return len(self.data_source)
+
+
+class Sampler(RandomSampler):
+    def __init__(self, data_source, replacement: bool = False,
+                 num_samples=None, generator=None, **kwargs) -> None:
+        super().__init__(data_source, replacement, num_samples, generator)
+
+    @property
+    def num_samples(self) -> int:
+        return len(self.data_source) or 1 if self._num_samples is None else self._num_samples
