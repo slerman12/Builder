@@ -153,7 +153,6 @@ replay:
   mem_size: null
   fetch_per: 1
   partition_workers: false
-  recency_factor: 0
   prefetch_factor: 3
   pin_memory: false
   pin_device_memory: false

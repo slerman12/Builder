@@ -15,7 +15,7 @@ from tqdm import tqdm
 import numpy as np
 
 import torch
-from torch.utils.data import IterableDataset, Dataset, DataLoader, RandomSampler
+from torch.utils.data import IterableDataset, Dataset, DataLoader
 
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
@@ -25,7 +25,7 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
-                 save=False, mem_size=None, fetch_per=1, partition_workers=False, recency_factor=0,
+                 save=False, mem_size=None, fetch_per=1, partition_workers=False,
                  prefetch_factor=3, pin_memory=False, pin_device_memory=False, shuffle=True, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
@@ -320,6 +320,10 @@ class Worker(Dataset):
 
         if len(episode) < nstep + 1:  # Make sure at least one nstep is present if nstep
             return self.sample(None, update=True)
+
+        # TODO Can try re-sampling if episode len is less than 500 for drqv2 debug
+        if len(episode) < 500:  # Make sure at least one nstep is present if nstep
+            return self.sample(None)
 
         step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
         experience = Args(episode[step])
