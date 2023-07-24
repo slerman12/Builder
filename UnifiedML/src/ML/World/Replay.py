@@ -14,7 +14,7 @@ from tqdm import tqdm
 import numpy as np
 
 import torch
-from torch.utils.data import IterableDataset, Dataset, DataLoader, RandomSampler
+from torch.utils.data import IterableDataset, Dataset, DataLoader
 from torch import multiprocessing as mp
 
 from World.Memory import Memory, Batch
@@ -25,8 +25,9 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
-                 save=False, mem_size=None, fetch_per=1, partition_workers=False,
-                 prefetch_factor=3, pin_memory=False, pin_device_memory=False, shuffle=True, rewrite_shape=None,
+                 save=False, mem_size=None,
+                 partition_workers=False, with_replacement=False, done_episodes_only=None, shuffle=True,
+                 fetch_per=1, prefetch_factor=3, pin_memory=False, pin_device_memory=False, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
         self.device = device
@@ -140,9 +141,10 @@ class Replay:
         # Sampler
 
         sampler = Sampler(data_source=self.memory,
+                          shuffle=shuffle,
                           offline=offline,
-                          with_replacement=False,
-                          done_episodes_only=not offline)
+                          with_replacement=with_replacement,
+                          done_episodes_only=done_episodes_only)
 
         # Parallel worker for batch loading
 
@@ -469,7 +471,7 @@ class OnlineSampler:
                     self.iterator = iter(self.sampler)
                     self.index[...] = next(self.iterator)
 
-                # Notify that index has been updated
+                # Notify that index has been updated  Since Iterable Dataset sequential, currently not needed
                 self.read_condition[...] = False
                 self.index_condition[...] = True
 
@@ -497,16 +499,20 @@ class OnlineSampler:
 #         return 0
 
 
-# Sampling w/o replacement of offline or dynamically-growing online distributions
+# Sampling w/o replacement of Offline or dynamically-growing Online distributions
 class Sampler:
-    def __init__(self, data_source, offline=True, with_replacement=False, done_episodes_only=False):
+    def __init__(self, data_source, shuffle=True, offline=True, with_replacement=False, done_episodes_only=None):
         self.data_source = data_source
+        self.shuffle = shuffle
         self.offline = offline
-
         self.with_replacement = with_replacement
 
-        #  TODO Check last_episode.doneTODO Check last_episode.done with Episode having done attr
-        self.done_episodes_only = done_episodes_only  # This is crucial for some reason
+        if not self.offline and not self.with_replacement:
+            assert shuffle, 'Online Sampler doesn\'t support not shuffling, got shuffle=False.'
+
+        # TODO Check last_episode.done and give Episode done attr
+        # Whether to sample in-progress episodes. This is crucial for some reason for Online RL. Defaults False Offline
+        self.done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
 
         self.size = len(self.data_source) - self.done_episodes_only
 
@@ -516,7 +522,7 @@ class Sampler:
         if self.with_replacement:
             yield None
         elif self.offline:
-            yield from torch.randperm(self.size).tolist()
+            yield from torch.randperm(self.size).tolist() if self.shuffle else list(range(self.size))
         else:
             size = len(self) - self.done_episodes_only
             if size > 0:

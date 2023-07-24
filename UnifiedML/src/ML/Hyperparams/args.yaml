@@ -151,12 +151,14 @@ replay:
   save: ${offline}
 #  load: ${load}  # TODO For Online, might want to overwrite
   mem_size: null
-  fetch_per: 1
   partition_workers: false
+  with_replacement: false
+  done_episodes_only: null
+  shuffle: true
+  fetch_per: 1
   prefetch_factor: 3
   pin_memory: false
   pin_device_memory: false
-  shuffle: true
   dataset: ${dataset}
   transform: ${transform}
   frame_stack: ${frame_stack}
