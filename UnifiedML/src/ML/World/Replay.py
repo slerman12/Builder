@@ -284,7 +284,7 @@ class Worker:
         self.partition_workers = partition_workers
         self.begin_flag = begin_flag
 
-        self.done_episodes_only = getattr(sampler, 'done_episodes_only', False)
+        self.done_episodes_only = done_episodes_only
         self.sampler = None if sampler is None else OnlineSampler(sampler)
         self.samples_since_last_fetch = 0
 
@@ -304,13 +304,13 @@ class Worker:
         except AttributeError:
             return 0
 
-    def sample(self, index=-1, update=False):
+    def sample(self, index=-1, dynamic=False):
         if not self.initialized:
             self.memory.set_worker(self.worker)
             self.initialized = True
 
         # Periodically update memory
-        while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per or update:
+        while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per:
             self.memory.update()  # Can make Online only
 
             if len(self.memory) and self.begin_flag:
@@ -333,13 +333,13 @@ class Worker:
         # Retrieve from Memory
         episode = self.memory[index]
 
-        if update:
+        if dynamic:
             nstep = bool(self.nstep)  # Allows dynamic nstep if necessary
         else:
             nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
         if len(episode) < nstep + 1:  # Try to make sure at least one nstep is present if nstep
-            return self.sample(update=True)
+            return self.sample(dynamic=True)
 
         step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
         experience = Args(episode[step])

@@ -1,4 +1,4 @@
-from tributaries import my_sweep, my_plots
+from tributaries import my_sweep, my_plots, my_checkpoints
 
 
 # Launching
@@ -25,4 +25,8 @@ my_sweep.mem = 80
 
 my_plots.plots.append(['NPCNN'])  # Lists of experiments to plot together
 my_plots.title = 'Disjoint 50% RRUFF - NPCNN - Trained on synthetic + 50% RRUFF'
+
+# Checkpoints
+
+my_checkpoints.experiments = my_plots.plots[0]
 

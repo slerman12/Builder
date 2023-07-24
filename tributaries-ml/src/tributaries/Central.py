@@ -195,8 +195,6 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     experiments = set().union(*plots, checkpoints)
 
     cwd = os.getcwd()
-    os.makedirs('./Benchmarking', exist_ok=True)
-    os.chdir('./Benchmarking')
 
     # SFTP
     print(f'SFTP\'ing: {", ".join(experiments)}')
@@ -211,6 +209,10 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
+        os.makedirs('./Benchmarking', exist_ok=True)
+        os.chdir('./Benchmarking')
+        p.sendline(f'lcd {cwd}/Benchmarking')
+        p.expect('sftp> ', timeout=None)
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
             p.sendline(f'get -r ./Benchmarking/{experiment.replace(".*", "*")}')  # Some regex compatibility
@@ -218,6 +220,10 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
     if checkpoints:
+        os.makedirs(f'{cwd}/Checkpoints', exist_ok=True)
+        os.chdir(f'{cwd}/Checkpoints')
+        p.sendline(f'lcd {cwd}/Checkpoints')
+        p.expect('sftp> ', timeout=None)
         p.sendline(f'cd ~/')
         p.expect('sftp> ', timeout=None)
         p.sendline(f'cd {os.path.dirname(original_path) if ".py" in original_path else original_path}')
