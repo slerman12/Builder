@@ -319,10 +319,12 @@ class Worker:
         if index == -1 or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
 
+        self.done_episodes_only = True
+
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
             while index == 0 and self.worker != 0 or index != 0 and index % len(self.memory.queues) != self.worker:
-                index = (index + 1) % len(self.memory)
+                index = (index + 1) % (len(self.memory) - self.done_episodes_only)
 
         # Retrieve from Memory
         episode = self.memory[index]
