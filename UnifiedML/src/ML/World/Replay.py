@@ -255,13 +255,14 @@ class Replay:
                         self.memory.add(batch)  # Add to memory
 
                 # Don't thread if hd_capacity < inf,
+                # TODO Has to be Queued, otherwise no guarentee of sequential
                 #  TODO fix asynchronous add-induced deletion conflicting with worker __getitem__ of deleted index
-                if self.add_lock is None:
-                    self.memory.add(batch)  # Add to memory
-                else:
-                    Thread(target=add).start()  # Threading
+                # if self.add_lock is None:
+                #     self.memory.add(batch)  # Add to memory
+                # else:
+                #     Thread(target=add).start()  # Threading
                 #     TODO Does a Lock block its own process; should be fine since that's the purpose of Thread lock
-                # self.memory.add(batch)  # Add to memory
+                self.memory.add(batch)  # Add to memory
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]
