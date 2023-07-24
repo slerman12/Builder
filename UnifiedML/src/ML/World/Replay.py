@@ -323,7 +323,7 @@ class Worker:
 
         # Sample index
         if index == -1 or index > len(self.memory) - 1:
-            index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
+            index = random.randint(0, len(self.memory) - 1 - self.done_episodes_only)  # Random sample an episode
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
@@ -518,8 +518,7 @@ class Sampler:
             assert shuffle, 'Online Sampler doesn\'t support not shuffling, got shuffle=False.'
 
         # TODO Check last_episode.done and Episode should have done attr
-        # Whether to sample in-progress episodes. This is crucial for some reason for Online RL. Defaults False Offline
-        self.done_episodes_only = done_episodes_only
+        self.done_episodes_only = done_episodes_only  # Whether to sample in-progress episodes
 
         self.size = len(self.data_source) - self.done_episodes_only
 
