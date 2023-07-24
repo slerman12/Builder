@@ -150,13 +150,14 @@ class Replay:
 
         create_worker = Offline if offline else Online
 
-        self.partitions = num_workers if partition_workers else 1
+        self.partitions = (num_workers if partition_workers else 1) + done_episodes_only
 
         worker = create_worker(memory=self.memory,
                                fetch_per=None if offline else fetch_per,
                                sampler=None if offline else sampler,
                                partition_workers=partition_workers,
                                begin_flag=self.begin_flag,
+                               done_episodes_only=done_episodes_only,
                                transform=transform,
                                frame_stack=frame_stack or 1,
                                nstep=self.nstep,
@@ -272,13 +273,14 @@ class Replay:
 
 
 class Worker:
-    def __init__(self, memory, fetch_per, sampler, partition_workers, begin_flag, transform,
+    def __init__(self, memory, fetch_per, sampler, partition_workers, begin_flag, done_episodes_only, transform,
                  frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per
         self.partition_workers = partition_workers
         self.begin_flag = begin_flag
 
+        self.done_episodes_only = getattr(sampler, 'done_episodes_only', False)
         self.sampler = None if sampler is None else OnlineSampler(sampler)
         self.samples_since_last_fetch = 0
 
@@ -318,8 +320,6 @@ class Worker:
         # Sample index
         if index == -1 or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
-
-        self.done_episodes_only = True
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
