@@ -140,6 +140,9 @@ class Replay:
 
         # Sampler
 
+        # This is crucial for Online RL for some reason. Defaults True for Online, otherwise defaults False Offline
+        done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
+
         sampler = Sampler(data_source=self.memory,
                           shuffle=shuffle,
                           offline=offline,
@@ -504,7 +507,7 @@ class OnlineSampler:
 
 # Sampling w/o replacement of Offline or dynamically-growing Online distributions
 class Sampler:
-    def __init__(self, data_source, shuffle=True, offline=True, with_replacement=False, done_episodes_only=None):
+    def __init__(self, data_source, shuffle=True, offline=True, with_replacement=False, done_episodes_only=False):
         self.data_source = data_source
         self.shuffle = shuffle
         self.offline = offline
@@ -515,7 +518,7 @@ class Sampler:
 
         # TODO Check last_episode.done and Episode should have done attr
         # Whether to sample in-progress episodes. This is crucial for some reason for Online RL. Defaults False Offline
-        self.done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
+        self.done_episodes_only = done_episodes_only
 
         self.size = len(self.data_source) - self.done_episodes_only
 
