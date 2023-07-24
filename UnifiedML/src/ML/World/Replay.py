@@ -150,7 +150,7 @@ class Replay:
 
         create_worker = Offline if offline else Online
 
-        self.partitions = (num_workers if partition_workers else 1) + done_episodes_only
+        self.partitions = (num_workers if partition_workers else 1) + bool(done_episodes_only)
 
         worker = create_worker(memory=self.memory,
                                fetch_per=None if offline else fetch_per,
