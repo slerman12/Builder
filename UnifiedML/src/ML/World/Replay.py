@@ -322,7 +322,7 @@ class Worker:
             index = next(self.sampler)
 
         # Sample index
-        if index == -1 or index > len(self.memory) - 1:
+        if index == -1 or index > len(self.memory) - 1 - self.done_episodes_only:
             index = random.randint(0, len(self.memory) - 1 - self.done_episodes_only)  # Random sample an episode
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
