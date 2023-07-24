@@ -358,7 +358,7 @@ def as_numpy(data):
         else np.array(data)
 
 
-# https://stackoverflow.com/questions/842557/how-to-prevent-a-block-of-code-from-being-interrupted-by-keyboardinterrupt-in-py
+# https://stackoverflow.com/a/21919644/22002059
 class DelayedKeyboardInterrupt:
     def __enter__(self):
         self.signal_received = False

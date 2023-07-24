@@ -150,7 +150,7 @@ class Replay:
 
         create_worker = Offline if offline else Online
 
-        self.partitions = num_workers - 1 if partition_workers else False
+        self.partitions = num_workers if partition_workers else 1
 
         worker = create_worker(memory=self.memory,
                                fetch_per=None if offline else fetch_per,
@@ -252,12 +252,12 @@ class Replay:
 
                 # Don't thread if hd_capacity < inf,
                 #  TODO fix asynchronous add-induced deletion conflicting with worker __getitem__ of deleted index
-                # if self.add_lock is None:
-                #     self.memory.add(batch)  # Add to memory
-                # else:
-                #     Thread(target=add).start()  # Threading
+                if self.add_lock is None:
+                    self.memory.add(batch)  # Add to memory
+                else:
+                    Thread(target=add).start()  # Threading
                 #     TODO Does a Lock block its own process; should be fine since that's the purpose of Thread lock
-                self.memory.add(batch)  # Add to memory
+                # self.memory.add(batch)  # Add to memory
 
     def set_tape(self, shape):
         self.rewrite_shape = shape or [0]
@@ -271,7 +271,7 @@ class Replay:
         return int(9e9) if self.stream else len(self.memory)
 
 
-class Worker(Dataset):
+class Worker:
     def __init__(self, memory, fetch_per, sampler, partition_workers, begin_flag, transform,
                  frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
@@ -318,8 +318,6 @@ class Worker(Dataset):
         # Sample index
         if index == -1 or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
-        else:
-            index = int(index)  # If index is a shared tensor, pytorch can bug when returning
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
@@ -330,12 +328,11 @@ class Worker(Dataset):
         episode = self.memory[index]
 
         if update:
-            nstep = bool(self.nstep)  # Allows dynamic nstep
+            nstep = bool(self.nstep)  # Allows dynamic nstep if necessary
         else:
             nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
-        if len(episode) < nstep + 1:  # Make sure at least one nstep is present if nstep
-            #  TODO Note if partition workers and not enough seed steps, need to wait till replay has num workers len
+        if len(episode) < nstep + 1:  # Try to make sure at least one nstep is present if nstep
             return self.sample(update=True)
 
         step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
@@ -497,7 +494,7 @@ class OnlineSampler:
 
 # class NullSampler:
 #     def __iter__(self):
-#         yield None
+#         yield -1
 #
 #     def __len__(self):
 #         return 0
@@ -514,7 +511,7 @@ class Sampler:
         if not self.offline and not self.with_replacement:
             assert shuffle, 'Online Sampler doesn\'t support not shuffling, got shuffle=False.'
 
-        # TODO Check last_episode.done and give Episode done attr
+        # TODO Check last_episode.done and Episode should have done attr
         # Whether to sample in-progress episodes. This is crucial for some reason for Online RL. Defaults False Offline
         self.done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
 
@@ -530,6 +527,7 @@ class Sampler:
         else:
             size = len(self) - self.done_episodes_only
             if size > 0:
+                # TODO Not compatible with deletions
                 if not len(self.indices):
                     self.indices = list(range(size))
                 elif size > self.size:

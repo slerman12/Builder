@@ -60,7 +60,7 @@ def main(args):
                 vlogger.dump(vlogs, f'{agent.step}')
 
         if args.plot_per_steps and (agent.step + 1) % args.plot_per_steps == 0 and not args.generate or converged:
-            instantiate(args.plotting)  # TODO show=converged with web browser
+            instantiate(args.plotting)  # TODO show=converged + web browser
 
         if converged:
             break
@@ -75,7 +75,7 @@ def main(args):
                 logger.log(logs, 'Train' if training else 'Seed', dump=True)
 
         converged = agent.step >= train_steps
-        training = training or agent.step > args.seed_steps and len(replay) > replay.partitions or replay.offline
+        training = training or agent.step > args.seed_steps and len(replay) > replay.partitions - 1 or replay.offline
 
         # Train agent
         if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
