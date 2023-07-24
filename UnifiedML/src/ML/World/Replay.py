@@ -141,6 +141,8 @@ class Replay:
         # Sampler
 
         # This is crucial for Online RL for some reason. Defaults True for Online, otherwise defaults False Offline
+        # Perhaps because in-progress episode is shorter, thus sampling it disproportionately and over-fitting
+        #   TODO Per-step index
         done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
 
         sampler = Sampler(data_source=self.memory,
@@ -321,14 +323,16 @@ class Worker:
         if self.sampler is not None:
             index = next(self.sampler)
 
+        cap = len(self.memory) - 1 - self.done_episodes_only  # Max episode index
+
         # Sample index
-        if index == -1 or index > len(self.memory) - 1 - self.done_episodes_only:
-            index = random.randint(0, len(self.memory) - 1 - self.done_episodes_only)  # Random sample an episode
+        if index == -1 or index > cap:
+            index = random.randint(0, cap)  # Random sample an episode
 
         # Each worker can round index to their nearest allocated reciprocal to reproduce DrQV2 divide
         if self.partition_workers:
             while index == 0 and self.worker != 0 or index != 0 and index % len(self.memory.queues) != self.worker:
-                index = (index + 1) % (len(self.memory) - 1 - self.done_episodes_only)
+                index = (index + 1) % (cap + 1)
 
         # Retrieve from Memory
         episode = self.memory[index]
