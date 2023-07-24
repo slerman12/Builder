@@ -150,6 +150,8 @@ class Replay:
 
         create_worker = Offline if offline else Online
 
+        self.partitions = num_workers - 1 if partition_workers else False
+
         worker = create_worker(memory=self.memory,
                                fetch_per=None if offline else fetch_per,
                                sampler=None if offline else sampler,
@@ -296,7 +298,7 @@ class Worker(Dataset):
         except AttributeError:
             return 0
 
-    def sample(self, index=None, update=False):
+    def sample(self, index=-1, update=False):
         if not self.initialized:
             self.memory.set_worker(self.worker)
             self.initialized = True
@@ -314,7 +316,7 @@ class Worker(Dataset):
             index = next(self.sampler)
 
         # Sample index
-        if index is None or index > len(self.memory) - 1:
+        if index == -1 or index > len(self.memory) - 1:
             index = random.randint(0, len(self.memory) - 1)  # Random sample an episode
         else:
             index = int(index)  # If index is a shared tensor, pytorch can bug when returning
@@ -327,8 +329,10 @@ class Worker(Dataset):
         # Retrieve from Memory
         episode = self.memory[index]
 
-        # nstep = bool(self.nstep)  # Allows dynamic nstep
-        nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
+        if update:
+            nstep = bool(self.nstep)  # Allows dynamic nstep
+        else:
+            nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
         if len(episode) < nstep + 1:  # Make sure at least one nstep is present if nstep
             #  TODO Note if partition workers and not enough seed steps, need to wait till replay has num workers len
@@ -520,7 +524,7 @@ class Sampler:
 
     def __iter__(self):
         if self.with_replacement:
-            yield None
+            yield random.randint(0, len(self) - self.done_episodes_only - 1)
         elif self.offline:
             yield from torch.randperm(self.size).tolist() if self.shuffle else list(range(self.size))
         else:
@@ -535,9 +539,9 @@ class Sampler:
                 last = self.indices[-1]
                 self.indices[-1] = self.indices[sample]
                 self.indices[sample] = last
-                yield self.indices.pop()
+                yield self.indices.pop()  # Ordinarily removing an element is O(n). pop is O(1).
             else:
-                yield None
+                yield random.randint(0, size - 1)
 
     def __len__(self):
         return self.size if self.offline else len(self.data_source)
