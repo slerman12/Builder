@@ -46,12 +46,7 @@ class RandomShiftsAug(nn.Module):
 
         device = obs.device.type
 
-        if device == 'mps':
-            # M1 Macs don't support grid_sample (https://github.com/pytorch/pytorch/pull/94273)
-            warnings.warn('F.grid_sample not supported on M1 Mac MPS by Pytorch. Temporarily using CPU for '
-                          'RandomShiftsAug. Alternately, try Aug=Identity or a different augmentation.')
-
-            obs, grid = obs.to('cpu'), grid.to('cpu')
+        warnings.filterwarnings("ignore", message='.*grid_sampler_2d op is supported natively starting from macOS 13.1')
 
         output = F.grid_sample(obs.float() if obs.device.type == 'cpu' else obs,
                                grid,

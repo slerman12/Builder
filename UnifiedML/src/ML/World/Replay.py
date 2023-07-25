@@ -530,7 +530,7 @@ class Sampler:
 
     def __iter__(self):
         if self.with_replacement:
-            yield random.randint(0, len(self) - self.done_episodes_only - 1)
+            yield -1
         elif self.offline:
             yield from torch.randperm(self.size).tolist() if self.shuffle else list(range(self.size))
         else:
@@ -548,7 +548,7 @@ class Sampler:
                 self.indices[sample] = last
                 yield self.indices.pop()  # Ordinarily removing an element is O(n). pop is O(1).
             else:
-                yield random.randint(0, size - 1)
+                yield -1
 
     def __len__(self):
         return self.size if self.offline else len(self.data_source)
