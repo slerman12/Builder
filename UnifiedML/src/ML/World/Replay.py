@@ -27,7 +27,7 @@ class Replay:
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
                  save=False, mem_size=None,
                  partition_workers=False, with_replacement=False, done_episodes_only=None, shuffle=True,
-                 fetch_per=1, prefetch_factor=3, pin_memory=False, pin_device_memory=False, rewrite_shape=None,
+                 fetch_per=None, prefetch_factor=3, pin_memory=False, pin_device_memory=False, rewrite_shape=None,
                  dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
         self.device = device
@@ -157,8 +157,10 @@ class Replay:
 
         self.partitions = (num_workers if partition_workers else 1) + bool(done_episodes_only)
 
+        fetch_per = 0 if offline else batch_size // num_workers if fetch_per is None else fetch_per
+
         worker = create_worker(memory=self.memory,
-                               fetch_per=None if offline else fetch_per,
+                               fetch_per=fetch_per,
                                sampler=None if offline else sampler,
                                partition_workers=partition_workers,
                                done_episodes_only=done_episodes_only,
@@ -282,13 +284,13 @@ class Worker:
     def __init__(self, memory, fetch_per, sampler, partition_workers, done_episodes_only, begin_flag, transform,
                  frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
-        self.fetch_per = fetch_per
+        self.fetch_per = fetch_per  # TODO Default: batch size // num workers
         self.partition_workers = partition_workers
         self.done_episodes_only = done_episodes_only
         self.begin_flag = begin_flag
 
         self.sampler = None if sampler is None else OnlineSampler(sampler)
-        self.samples_since_last_fetch = 0
+        self.samples_since_last_fetch = fetch_per
 
         self.transform = transform
 
@@ -312,10 +314,11 @@ class Worker:
             self.initialized = True
 
         # Periodically update memory
-        while self.fetch_per and not self.samples_since_last_fetch % self.fetch_per:
+        while self.fetch_per and self.samples_since_last_fetch >= self.fetch_per:
             self.memory.update()  # Can make Online only
 
             if len(self.memory) and self.begin_flag:
+                self.samples_since_last_fetch = 0
                 break
 
         self.samples_since_last_fetch += 1
@@ -367,8 +370,8 @@ class Worker:
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
             if getattr(experience[key], 'dtype', None) in [torch.int64, torch.float64]:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
-                experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
-            # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+                # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
+                experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
             # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32

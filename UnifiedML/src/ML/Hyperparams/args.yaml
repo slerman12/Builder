@@ -155,7 +155,7 @@ replay:
   with_replacement: false
   done_episodes_only: null
   shuffle: true
-  fetch_per: 1
+  fetch_per: null
   prefetch_factor: 3
   pin_memory: false
   pin_device_memory: false
