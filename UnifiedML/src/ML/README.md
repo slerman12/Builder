@@ -483,6 +483,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 <details>
@@ -497,6 +499,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 <details>
@@ -510,6 +514,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -526,6 +532,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 <details>
@@ -539,6 +547,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -555,6 +565,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 <details>
@@ -568,6 +580,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -585,6 +599,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 <details>
@@ -598,6 +614,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -614,6 +632,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 
@@ -628,6 +648,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -644,6 +666,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 
@@ -658,6 +682,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -674,6 +700,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 
@@ -688,6 +716,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </h2>
 
 </summary>
+
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -704,6 +734,8 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+
 </details>
 
 # Reproducing works
@@ -718,4 +750,4 @@ By [Sam Lerman](https://www.github.com/slerman12).
 
 [MIT license.](MIT_LICENSE)
 
-[Please sponsor to support the development of this work](https://github.com/sponsors/AGI-init)
+[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
