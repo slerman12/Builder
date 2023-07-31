@@ -58,7 +58,7 @@ Paths to architectures, agents, environments, etc. via ***dot notation***:
 ```console
 ML Model=Run.model
 ``` 
-or ***regular directory paths***:
+or regular ***directory paths***:
 ```console
 ML Model=./Run.py.model
 ```
