@@ -50,6 +50,8 @@ ML Model=Run.model Dataset=CIFAR10
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
+<show a training curve>
+
 ## Paths
 
 The above demonstrates ***dot notation***. Equivalently, it's possible to use ***regular directory paths***:
