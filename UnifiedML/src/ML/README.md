@@ -351,6 +351,8 @@ class MyDataset(Dataset):
 ML Dataset=Run.MyDataset
 ```
 
+For more info, see Pytorch's tutorial on [Map-Style Datasets](https://pytorch.org/docs/stable/data.html).
+
 **Classification**
 
 Since the default task is ```task=classify```, the above script will learn to classify ```MyDataset```.
