@@ -233,7 +233,9 @@ python Run.py task=recipe env.game=pong
 
 ---
 
-Valid ML objects include not just instantiated objects (e.g. ```Model='nn.Linear(3 * 32 * 32, 10)'```), but classes as well (e.g. ```Model=nn.Linear``` or another [custom architecture](#tutorials) of your own for example). Some class signature arguments, such as shape parameters (```in_features```, ```out_features```), can be automatically inferred. However, for more complex class configurability, various syntax possibilities exist to define the hyper-parameterization. Below are outlined those grammars and ways of defining complex and highly configurable ML structures.
+[//]: # (Valid ML objects include not just instantiated objects &#40;e.g. ```Model='nn.Linear&#40;3 * 32 * 32, 10&#41;'```&#41;, but classes as well &#40;e.g. ```Model=nn.Linear``` or another [custom architecture]&#40;#tutorials&#41; of your own for example&#41;. Some class signature arguments, such as shape parameters &#40;```in_features```, ```out_features```&#41;, can be automatically inferred. However, for more complex class configurability, various syntax possibilities exist to define the hyper-parameterization. Below are outlined those grammars and ways of defining complex and highly configurable ML structures.)
+
+Valid ML objects include not just instantiated objects, but classes as well.
 
 1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 above](#way-1-purely-command-line)).
 2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
