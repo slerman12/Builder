@@ -446,13 +446,19 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </details>
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Custom Environments
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Custom Environments)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
 
 [//]: # (<details>)
 
@@ -468,21 +474,34 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 [//]: # (</details>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Saving & Loading
-</h2>
-</summary>
-</details>
+[//]: # (<details>)
 
-<details>
-<summary>
-<h2>
-&nbsp;&nbsp;&nbsp;Multi-Task
-</h2>
-</summary>
-</details>
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Saving & Loading)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
+
+[//]: # ()
+[//]: # (<details>)
+
+[//]: # (<summary>)
+
+[//]: # (<h2>)
+
+[//]: # (&nbsp;&nbsp;&nbsp;Multi-Task)
+
+[//]: # (</h2>)
+
+[//]: # (</summary>)
+
+[//]: # (</details>)
 
 [//]: # (<details>)
 
