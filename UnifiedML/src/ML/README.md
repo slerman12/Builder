@@ -73,29 +73,6 @@ Not exactly scalable, but:
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
-## Custom models
-
-```python
-# Run.py
-
-from torch import nn
-
-class Model(nn.Module): 
-   def __init__(self, in_features, out_features):
-        super().__init__()
-        
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-```
-
-**Run:**
-
-```console
-ML Model=Run.Model Dataset=CIFAR10
-```
-
 ## Apps
 
 It's possible to do this entirely from code without using ```ML```, as per below:
@@ -122,6 +99,29 @@ python Run.py
 ```
 
 We call this a UnifiedML **app**.
+
+## Custom models
+
+```python
+# Run.py
+
+from torch import nn
+
+class Model(nn.Module): 
+   def __init__(self, in_features, out_features):
+        super().__init__()
+        
+        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
+
+    def forward(self, x):
+        return self.model(x)
+```
+
+**Run:**
+
+```console
+ML Model=Run.Model Dataset=CIFAR10
+```
 
 ## Syntax
 
