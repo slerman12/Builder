@@ -268,7 +268,7 @@ python Run.py task=recipe env.game=pong
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-## Acceleration
+### Acceleration
 
 With ```accelerate=true```:
 * Hard disk memory mapping.
