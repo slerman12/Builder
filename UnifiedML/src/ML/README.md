@@ -86,6 +86,8 @@ if __name__ == '__main__':
 python Run.py
 ```
 
+We call this a UnifiedML *app*.
+
 ### If you're feeling brave, this also works:
 
 Not exactly scalable, but:
