@@ -103,4 +103,6 @@ def main(args):
 
 [Licensed under the MIT license.](MIT_LICENSE)
 
+---
+
 <img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
