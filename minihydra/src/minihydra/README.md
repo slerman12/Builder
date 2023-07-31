@@ -24,7 +24,7 @@ print(args.goodbye.cruel)
 ```
 > python run.py hello=world number=42 goodbye.cruel='[world]'
 
-{'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
+{'hello': 'world', 'number': 42, {'goodbye': {'cruel': ['world']}}}
 
 world
 42
@@ -59,7 +59,7 @@ print(args.goodbye.cruel)
 ```
 > python run.py number=43
 
-{'hello': 'world', 'number', 43, {'goodbye': {'cruel': ['world']}}}
+{'hello': 'world', 'number': 43, {'goodbye': {'cruel': ['world']}}}
 
 world
 43
@@ -81,7 +81,7 @@ def main(args):
 ```
 > python run.py
 
-{'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
+{'hello': 'world', 'number': 42, {'goodbye': {'cruel': ['world']}}}
 ```
 
 ### Advanced
