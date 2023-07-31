@@ -381,6 +381,8 @@ Here's how easy it is to start training on ImageNet-1k using the built-in torchv
 ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
 ```
 
+```dataset.root=``` points to the location of the downloaded [imagenet](https://www.image-net.org/download.php) dataset.
+
 </details>
 
 <details>
