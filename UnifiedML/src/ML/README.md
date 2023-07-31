@@ -63,6 +63,8 @@ There are many [built-in](#built-ins) datasets, architectures, and so on, such a
 
 ### Equivalent pure-code training example
 
+A.K.A. A UnifiedML app:
+
 ```python
 # Run.py
 
