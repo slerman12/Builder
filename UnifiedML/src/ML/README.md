@@ -50,7 +50,7 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
+There are many [built-in](#built-ins) datasets, architectures, and so on, such as ```Dataset=CIFAR10```.
 
 show side by side results plots
 
