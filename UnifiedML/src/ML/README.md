@@ -43,7 +43,7 @@ Train a two-layer neural network on the CIFAR10 classification dataset:
 
 from torch import nn
 
-model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
+model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))  # Two-layer neural-net
 ```
 
 **Run:**
