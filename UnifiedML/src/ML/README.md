@@ -717,3 +717,5 @@ To be continued ...
 By [Sam Lerman](https://www.github.com/slerman12).
 
 [MIT license.](MIT_LICENSE)
+
+[Please sponsor to support the development of this work](https://github.com/sponsors/AGI-init)
