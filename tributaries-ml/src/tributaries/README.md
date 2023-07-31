@@ -1,5 +1,3 @@
-![tributaries-logo-2](https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890) <br>*Tributary: a river or stream flowing into a larger river or lake. AI-generated image.*
-
 # Tributaries 
 
 A library for mass-deploying [UnifiedML](github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.
@@ -76,3 +74,5 @@ One more thing: if your remote UnifiedML apps are [git-ssh enabled](https://docs
 #
 
 [Licensed under the MIT license.](MIT_LICENSE)
+
+<img width="20%" alt="tributaries-logo" src="https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890"><br>*Tributary: a river or stream flowing into a larger river or lake. AI-generated image.*
