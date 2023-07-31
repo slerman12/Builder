@@ -1,4 +1,6 @@
-minihydra / leviathan (cute-ish logo) all on one line
+![Logo](https://github.com/AGI-init/Assets/assets/92597756/5a32b2d4-1ad4-4386-8ea1-b3f991e60979)
+
+[//]: # (![Medieval-rounded]&#40;https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf&#41;)
 
 ### Reading in args
 
