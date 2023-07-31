@@ -1,4 +1,4 @@
-![tributaries-logo](https://github.com/AGI-init/Assets/assets/92597756/822389b6-04cc-4ca6-80fb-f17c0bcf7a8d)
+![tributaries-logo-2](https://github.com/AGI-init/Assets/assets/92597756/23e0873b-5a62-4959-b53f-f9789153361e)
 
 # Tributaries 
 
