@@ -724,4 +724,4 @@ To be continued ...
 
 By [Sam Lerman](https://www.github.com/slerman12).
 
-[MIT license included.](MIT_LICENSE)
+[MIT license.](MIT_LICENSE)
