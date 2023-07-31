@@ -10,7 +10,6 @@ from minihydra import just_args
 args = just_args()
 
 print(args, '\n')
-
 print(args.hello)
 print(args.number)
 print(args.goodbye.cruel)
@@ -46,7 +45,6 @@ from minihydra import just_args
 args = just_args(source='path/to/args.yaml')
 
 print(args, '\n')
-
 print(args.hello)
 print(args.number)
 print(args.goodbye.cruel)
