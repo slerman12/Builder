@@ -425,7 +425,7 @@ ML Model=Run.Model_ Dataset=CIFAR10
 
 We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy.
 
-For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss.
+For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); self.optim.step()```) and not return a loss.
 
 [```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics.
 
