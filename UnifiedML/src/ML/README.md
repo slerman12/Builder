@@ -54,7 +54,7 @@ show a training curve
 
 ## Paths
 
-The above demonstrates ***dot notation***. Equivalently, it's possible to use ***regular directory paths***:
+The above demonstrates **dot notation**. Equivalently, it's possible to use **regular directory paths**:
 ```console
 ML Model=./Run.py.model Dataset=CIFAR10
 ```
