@@ -1,4 +1,4 @@
-![tributaries-logo-2](https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890)
+![tributaries-logo-2](https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890) <br>*Tributary: A river or stream flowing into a larger river or lake. AI-generated image.*
 
 # Tributaries 
 
