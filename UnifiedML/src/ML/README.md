@@ -38,6 +38,8 @@ As a fun little example, let's train a neural network to simultaneously learn to
 ML multi_task='["task=RL Env=Mario", "Dataset=ImageNet dataset.root=imagenet/"] Eyes=ResNet50'
 ```
 
+[See full docs here.]()
+
 #
 
 By [Sam Lerman](https://www.github.com/slerman12).
