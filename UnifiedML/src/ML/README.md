@@ -345,7 +345,7 @@ class MyDataset(Dataset):
         ...
 ```
 
-For more info, see Pytorch's tutorial on [Map-Style Datasets](https://pytorch.org/docs/stable/data.html).
+For more info, see Pytorch's tutorial on [map-style Datasets](https://pytorch.org/docs/stable/data.html).
 
 **Run:**
 
