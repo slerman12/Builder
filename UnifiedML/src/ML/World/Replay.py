@@ -155,7 +155,7 @@ class Replay:
 
         create_worker = Offline if offline else Online
 
-        self.partitions = (num_workers if partition_workers else 1) + bool(done_episodes_only)
+        self.partitions = (num_workers if partition_workers else 1) + bool(done_episodes_only)  # To reproduce DrQV2
 
         fetch_per = 0 if offline else batch_size // num_workers if fetch_per is None else fetch_per
 
@@ -368,10 +368,12 @@ class Worker:
             experience.pop('done')
 
         for key in experience:  # TODO Move this adaptively in try-catch to collate converting first to int32
-            if getattr(experience[key], 'dtype', None) in [torch.int64, torch.float64]:
+            if getattr(experience[key], 'dtype', None) == torch.int64:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
                 # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
-                experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)  # Ints just generally tend to crash
+                experience[key] = torch.as_tensor(experience[key], dtype=torch.int32)  # Ints just generally tend to crash
+            if getattr(experience[key], 'dtype', None) == torch.float64:
+                experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)
             # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32

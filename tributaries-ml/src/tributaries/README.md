@@ -1,3 +1,5 @@
+![tributaries-logo](https://github.com/AGI-init/Assets/assets/92597756/822389b6-04cc-4ca6-80fb-f17c0bcf7a8d)
+
 # Tributaries 
 
 A library for mass-deploying [UnifiedML](github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.

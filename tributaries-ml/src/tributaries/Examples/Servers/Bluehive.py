@@ -5,30 +5,12 @@ from tributaries.SafePass import get_pass
 from tributaries.VPN import connect_vpn
 
 
-@my_server('../Sweeps/XRDsPaperBluehive', plot=False, group_name='acmml', username='slerman', env=None)
+@my_server('../Sweeps/XRDsPaperBluehive', plot=False, checkpoints=False, group_name='acmml', username='slerman', env=None)
 def main(group_name, username, env):  # Accepts custom args
     server, password = 'bluehive.circ.rochester.edu', get_pass('bluehive')
 
     vpn = connect_vpn(username)  # Returns a func that connects to VPN when called
     app_name_paths = {'XRDs': f"/scratch/{username}/XRDs/XRD.py"}  # Defines the name and location of apps
-
-    # Before running, install tributaries on Bluehive:
-
-    #   module load tmux
-    #   tmux new -s Install
-    #   module load miniforge3/22.11.1-2
-    #   conda create -n ML python=3.11.3 pip
-    #   conda activate ML
-    #   pip install tributaries --no-cache-dir --user
-    #   pip install tributaries --force-reinstall --no-dependencies
-    #   pip install UnifiedML --force-reinstall --no-dependencies
-
-    # If you get kicked out, you can log back into Bluehive and return to your persistent session with:
-
-    #   module load tmux
-    #   tmux attach -t Install
-
-    # If you need help logging into Bluehive, run 'python VPN.py'
 
     commands = ['module load git',
                 'module load miniforge3/22.11.1-2',
@@ -50,3 +32,26 @@ if __name__ == '__main__':
 #       $ python Bluehive.py
 #   Plot it:
 #       $ python Bluehive.py plot=true
+
+
+# Bluehive setup tutorial below:
+
+"""
+Before running, install tributaries on Bluehive as such:
+
+  module load tmux
+  tmux new -s Install
+  module load miniforge3/22.11.1-2
+  conda create -n ML python=3.11.3 pip
+  conda activate ML
+  pip install tributaries --no-cache-dir --user
+  pip install tributaries --force-reinstall --no-dependencies
+  pip install UnifiedML --force-reinstall --no-dependencies
+
+If you get kicked out, you can log back into Bluehive and return to your persistent session with:
+
+  module load tmux
+  tmux attach -t Install
+
+If you need help logging into Bluehive, run the 'python VPN.py' file.
+"""

@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-A simple port/mill on the rivers of your remote servers. By Sam Lerman.
+A simple port/mill operating on the branching tributaries of data flow between remote servers, hand-built by Sam Lerman.
 """
 
 import os
@@ -158,7 +158,7 @@ def launch_remote(server, username, password, sweep):
     for command in sweep.commands:
         ssh.sendline(command)
         ssh.prompt()
-    # Mass-deploy via tributaries
+    # Mass-deploy via tributaries  TODO SFTP the command in a file
     cmd = ' '.join([f'{key}={int.from_bytes(str(value).encode("utf-8"), "little")}'
                     for key, value in sweep.items()])  # Encode sweep for ssh command-line
     print('Sending command...')
