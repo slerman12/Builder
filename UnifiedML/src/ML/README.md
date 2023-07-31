@@ -55,7 +55,7 @@ The above demonstrates ***dot notation***. Equivalently, it's possible to use a 
 ML Model=./Run.py.model Dataset=CIFAR10
 ```
 
-Wherever you run ```ML```, it'll search the current directory for any specified paths.
+Wherever you run ```ML```, it'll search from the current directory for any specified paths.
 
 ### Equivalent pure-code training example
 
