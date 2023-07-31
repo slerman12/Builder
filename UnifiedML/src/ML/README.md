@@ -50,7 +50,7 @@ ML Model=Run.model Dataset=CIFAR10
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
-The above demonstrates ***dot notation***. Equivalently, it's possible to use a regular ***directory path***:
+The above demonstrates ***dot notation***. Equivalently, it's possible to use regular ***directory paths***:
 ```console
 ML Model=./Run.py.model Dataset=CIFAR10
 ```
