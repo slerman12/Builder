@@ -292,7 +292,7 @@ Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
 ```console
-ML Dataset=torchvision.datasets.ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
+ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
 ```
 
 ---
