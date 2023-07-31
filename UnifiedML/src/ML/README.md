@@ -57,6 +57,14 @@ ML Model=./Run.py.model Dataset=CIFAR10
 
 Wherever you run ```ML```, it'll search from the current directory for any specified paths.
 
+### If you're feeling brave, this also works:
+
+Not exactly scalable, but:
+
+```console
+ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
+```
+
 ### Apps
 
 It's possible to do this entirely from code without using ```ML```, as per below:
@@ -83,14 +91,6 @@ python Run.py
 ```
 
 We call this a UnifiedML ***app***.
-
-### If you're feeling brave, this also works:
-
-Not exactly scalable, but:
-
-```console
-ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
-```
 
 ### Architecture shapes
 
