@@ -131,9 +131,9 @@ Thus, you can pass classes to command-line, not just objects.
 
 <details>
 <summary>
-<h3>
+<h4>
 Here's how to write the same program in 7 different ways. (Click to expand)
-</h3>
+</h4>
 </summary>
 
 Train a simple 5-layer CNN to play Atari Pong:
