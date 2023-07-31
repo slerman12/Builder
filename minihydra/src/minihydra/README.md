@@ -78,19 +78,27 @@ def main(args):
 {'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
 ```
 
-### Literals: 
-lists, dicts, floats, ints, booleans, null, inf, strings; put lists and dicts in quotes
+[//]: # (### Literals: )
 
-### imports
-Or via reserved task= keyword argument
+[//]: # (lists, dicts, floats, ints, booleans, null, inf, strings; put lists and dicts in quotes)
 
-### instantiate
-Path/To.py -> Cow "Moo"
+[//]: # ()
+[//]: # (### imports)
 
-### interpolation
+[//]: # (Or via reserved task= keyword argument)
 
-### grammars
+[//]: # ()
+[//]: # (### instantiate)
 
-### yaml search paths
+[//]: # (Path/To.py -> Cow "Moo")
+
+[//]: # ()
+[//]: # (### interpolation)
+
+[//]: # ()
+[//]: # (### grammars)
+
+[//]: # ()
+[//]: # (### yaml search paths)
 
 <img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
