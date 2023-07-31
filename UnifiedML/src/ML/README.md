@@ -92,8 +92,6 @@ python Run.py
 
 We call this a UnifiedML **app**.
 
-# Syntax
-
 ## If you're feeling brave, this:
 
 Not exactly scalable, but:
@@ -139,7 +137,7 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects.
 
-## Arguments & recipes
+## Syntax
 
 1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
 2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
@@ -284,7 +282,7 @@ python Run.py task=recipe env.game=pong
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-# Acceleration
+## Acceleration
 
 With ```accelerate=true```:
 * Hard disk memory mapping.
