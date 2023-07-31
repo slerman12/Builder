@@ -483,7 +483,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -499,7 +499,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -515,7 +515,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -532,7 +532,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -548,7 +548,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -565,7 +565,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
@@ -581,7 +581,7 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </summary>
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
 
 </details>
 
