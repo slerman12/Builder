@@ -196,7 +196,7 @@ ML task=recipe
 
 The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
 
-Tasks will be searched for in the root directory, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
+Custom tasks will be searched for in the root directory, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
 
 ### Way 7. All of the above
 
