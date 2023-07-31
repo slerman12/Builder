@@ -102,41 +102,6 @@ ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Datase
 
 The above equivalently reproduces the earlier examples.
 
-## Inferred shaping
-
-UnifiedML automatically detects the shape signature of your model.
-
-Below we define a **custom architecture**, allowing UnifiedML to infer the input and output shapes.
-
-```diff
-# Run.py
-
-from torch import nn
-
-class Model(nn.Module): 
-+   def __init__(self, in_features, out_features):
-        super().__init__()
-        
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-```
-
-**Run:**
-
-```console
-ML Model=Run.Model Dataset=CIFAR10
-```
-
-This again reproduces the earlier examples.
-
-Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
-
-Just include them as args to your model and UnifiedML will detect and fill them in.
-
-Thus, you can pass classes to command-line, not just objects.
-
 ## Syntax
 
 1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
@@ -294,6 +259,63 @@ With ```accelerate=true```:
 Fully supported across domains, including reinforcement learning and generative modeling.
 
 # Tutorials
+
+<details>
+<summary>
+<h2>
+&nbsp;&nbsp;&nbsp;Custom architectures
+</h2>
+</summary>
+
+Below we define a **custom architecture**, allowing UnifiedML to infer the input and output shapes.
+
+```python
+# Run.py
+
+from torch import nn
+
+class Model(nn.Module): 
+   def __init__(self, in_features, out_features):
+        super().__init__()
+        
+        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
+
+    def forward(self, x):
+        return self.model(x)
+```
+
+**Run:**
+
+```console
+ML Model=Run.Model Dataset=CIFAR10
+```
+
+## Inferred shaping
+
+UnifiedML automatically detects the shape signature of your model.
+
+```diff
+# Run.py
+
+from torch import nn
+
+class Model(nn.Module): 
++   def __init__(self, in_features, out_features):
+        super().__init__()
+        
+        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
+
+    def forward(self, x):
+        return self.model(x)
+```
+
+Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
+
+Just include them as args to your model and UnifiedML will detect and fill them in.
+
+Thus, you can pass classes to command-line, not just objects.
+
+</details>
 
 <details>
 <summary>
