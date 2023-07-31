@@ -129,6 +129,8 @@ class Model(nn.Module):
 ML Model=Run.Model Dataset=CIFAR10
 ```
 
+This again reproduces the earlier examples.
+
 Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
 
 Just include them as args to your model and UnifiedML will detect and fill them in.
