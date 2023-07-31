@@ -34,7 +34,7 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 ## Training example
 
-UnifiedML automates domains across ML. The default domain is classification.
+UnifiedML automates learning across ML. The default domain is classification.
 
 Train a two-layer neural network on CIFAR10:
 
