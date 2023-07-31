@@ -396,7 +396,7 @@ ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resiz
 </h2>
 </summary>
 
-Let's look at the ```Model``` [from earlier](#architecture-shapes):
+Let's look at the ```Model``` [from Custom Architectures](#tutorials):
 
 ```python
 # Run.py
