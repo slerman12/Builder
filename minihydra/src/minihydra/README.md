@@ -1,6 +1,4 @@
-[//]: # (<img width="15%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/5a32b2d4-1ad4-4386-8ea1-b3f991e60979">)
-
-<img width="50%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
+<img width="50%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/5a32b2d4-1ad4-4386-8ea1-b3f991e60979">
 
 ### Reading in args
 
@@ -98,3 +96,5 @@ Path/To.py -> Cow "Moo"
 ### yaml search paths
     
 [MIT](MIT)
+
+<img width="50%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
