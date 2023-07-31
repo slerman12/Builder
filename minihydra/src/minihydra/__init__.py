@@ -137,7 +137,7 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
             for key in kwargs:
                 _target_ = _target_.replace(f'kwargs.{key}', f'kwargs["{key}"]')  # Interpolation
-            module = eval(_target_, None, {**added_modules, **(_modules_ or {})})  # Direct code execution
+            module = eval(_target_, None, {**added_modules, **(_modules_ or {}), 'kwargs': kwargs})  # Direct code exec
         else:
             module = _target_
 
@@ -156,12 +156,9 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         # Convert to config
         return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, **kwargs)
 
-    try:
-        iter(module)
-    except Exception:
-        return module
-    else:
-        return module if _i_ is None else module[_i_]  # Allow sub-indexing (if specified)
+    # Allow sub-indexing (if specified)
+    return module[_i_] if (isinstance(module, (list, tuple)) or 'ModuleList' in str(type(module))) and _i_ is not None \
+        else module
 
 
 def open_yaml(source, return_path=False):
