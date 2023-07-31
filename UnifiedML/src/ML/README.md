@@ -326,12 +326,6 @@ ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Datase
 
 Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 
-Here's ImageNet using the built-in torchvision Dataset with a custom transform:
-
-```console
-ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
-```
-
 ---
 
 Generally, a custom Dataset class may look like this:
@@ -382,6 +376,14 @@ Stats will automatically be computed for standardization and normalization, and 
 **Subsets**
 
 Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` of the given Dataset will be used for training and evaluation.
+
+### TorchVision
+
+Here's ImageNet using the built-in torchvision Dataset with a custom transform:
+
+```console
+ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
+```
 
 </details>
 
