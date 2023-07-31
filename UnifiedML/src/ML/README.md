@@ -92,161 +92,6 @@ python Run.py
 
 We call this a UnifiedML **app**.
 
-## Syntax
-
-1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
-2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
-3. **Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
-
-<details>
-<summary>
-<h3>
-Here's how to write the same program in 7 different ways. (Click to expand)
-</h3>
-</summary>
-
-Train a simple 5-layer CNN to play Atari Pong:
-
-<img src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" data-canonical-src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" width="64" height="84" alt=""/>
-
-### Way 1. Purely command-line
-
-```console
-ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
-```
-
-### Way 2. Command-line code
-
-```console
-ML task=RL Env='Atari(game="pong")' Model='CNN(depth=5)'
-```
-
-### Way 3. Command-line
-
-```python
-# Run.py
-
-from ML import main
-
-if __name__ == '__main__':
-    main()
-```
-
-**Run:**
-
-```console
-python Run.py task=RL Env=Atari env.game=pong Model=CNN model.depth=5
-```
-
-### Way 4. Inferred Code
-
-```python
-# Run.py
-
-from ML import main
-
-if __name__ == '__main__':
-    main('env.game=pong', 'model.depth=5', task='RL', Env='Atari', Model='CNN')
-```
-
-**Run:**
-
-```console
-python Run.py
-```
-
-### Way 5. Purely Code
-
-```python
-# Run.py
-
-from ML import main
-from ML.Blocks.Architectures import CNN
-from ML.World.Environments import Atari
-
-if __name__ == '__main__':
-    main(task='RL', Env=Atari(game='pong'), Model=CNN(depth=5))
-```
-
-**Run:**
-
-```console
-python Run.py
-```
-
-### Way 6. Recipes
-
-Define recipes in a ```.yaml``` file like this one:
-
-```yaml
-# recipe.yaml
-
-imports:
-  - RL
-  - self
-Env: Atari
-env:
-  game: pong
-Model: CNN
-model:
-  depth: 5
-```
-
-**Run:**
-
-```console
-ML task=recipe
-```
-
-The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
-
-### Way 7. All of the above
-
-The order of hyperparam priority is ```command-line > code > recipe```.
-
-Here's a combined example:
-
-```yaml
-# recipe.yaml
-
-imports:
-  - RL
-  - self
-Model: CNN
-model:
-  depth: 5
-```
-
-```python
-# Run.py
-
-from ML import main
-from ML.World.Environments.Atari import Atari
-
-if __name__ == '__main__':
-    main(Env=Atari)
-```
-
-**Run:**
-
-```console
-python Run.py task=recipe env.game=pong
-```
-
-</details>
-
-Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
-
-## Acceleration
-
-With ```accelerate=true```:
-* Hard disk memory mapping.
-* Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
-* Shared-RAM parallelism.
-* Automatic 16-bit mixed precision with ```mixed_precision=true```.
-* Multi-GPU automatic detection and parallel training with ```parallel=true```.
-
-Fully supported across domains, including reinforcement learning and generative modeling.
 
 # Tutorials
 
@@ -687,9 +532,165 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 [//]: # (- Universal generalism)
 
-To be continued ...
+# Syntax
+
+1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
+2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
+3. **Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
+
+<details>
+<summary>
+<h3>
+Here's how to write the same program in 7 different ways. (Click to expand)
+</h3>
+</summary>
+
+Train a simple 5-layer CNN to play Atari Pong:
+
+<img src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" data-canonical-src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" width="64" height="84" alt=""/>
+
+### Way 1. Purely command-line
+
+```console
+ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
+```
+
+### Way 2. Command-line code
+
+```console
+ML task=RL Env='Atari(game="pong")' Model='CNN(depth=5)'
+```
+
+### Way 3. Command-line
+
+```python
+# Run.py
+
+from ML import main
+
+if __name__ == '__main__':
+    main()
+```
+
+**Run:**
+
+```console
+python Run.py task=RL Env=Atari env.game=pong Model=CNN model.depth=5
+```
+
+### Way 4. Inferred Code
+
+```python
+# Run.py
+
+from ML import main
+
+if __name__ == '__main__':
+    main('env.game=pong', 'model.depth=5', task='RL', Env='Atari', Model='CNN')
+```
+
+**Run:**
+
+```console
+python Run.py
+```
+
+### Way 5. Purely Code
+
+```python
+# Run.py
+
+from ML import main
+from ML.Blocks.Architectures import CNN
+from ML.World.Environments import Atari
+
+if __name__ == '__main__':
+    main(task='RL', Env=Atari(game='pong'), Model=CNN(depth=5))
+```
+
+**Run:**
+
+```console
+python Run.py
+```
+
+### Way 6. Recipes
+
+Define recipes in a ```.yaml``` file like this one:
+
+```yaml
+# recipe.yaml
+
+imports:
+  - RL
+  - self
+Env: Atari
+env:
+  game: pong
+Model: CNN
+model:
+  depth: 5
+```
+
+**Run:**
+
+```console
+ML task=recipe
+```
+
+The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
+
+### Way 7. All of the above
+
+The order of hyperparam priority is ```command-line > code > recipe```.
+
+Here's a combined example:
+
+```yaml
+# recipe.yaml
+
+imports:
+  - RL
+  - self
+Model: CNN
+model:
+  depth: 5
+```
+
+```python
+# Run.py
+
+from ML import main
+from ML.World.Environments.Atari import Atari
+
+if __name__ == '__main__':
+    main(Env=Atari)
+```
+
+**Run:**
+
+```console
+python Run.py task=recipe env.game=pong
+```
+
+</details>
+
+Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
+
+# Acceleration
+
+With ```accelerate=true```:
+* Hard disk memory mapping.
+* Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
+* Shared-RAM parallelism.
+* Automatic 16-bit mixed precision with ```mixed_precision=true```.
+* Multi-GPU automatic detection and parallel training with ```parallel=true```.
+
+Fully supported across domains, including reinforcement learning and generative modeling.
 
 ---
+
+To be continued ...
 
 #
 
