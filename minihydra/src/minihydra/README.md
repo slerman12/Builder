@@ -1,6 +1,6 @@
 <img width="50%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/5a32b2d4-1ad4-4386-8ea1-b3f991e60979">
 
----
+#
 
 ### Reading in args
 
@@ -103,10 +103,10 @@ def main(args):
 [//]: # ()
 [//]: # (### yaml search paths)
 
-#
+---
 
 [Licensed under the MIT license.](MIT_LICENSE)
 
-#
+---
 
 <img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
