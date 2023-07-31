@@ -34,7 +34,9 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 ## Training example
 
-Train a two-layer neural network on CIFAR10.
+UnifiedML obliterates boilerplate for many domains. The default is classification.
+
+Train a two-layer neural network on CIFAR10:
 
 ```python
 # Run.py
@@ -50,7 +52,7 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-There are many [built-in](#built-ins) datasets, architectures, and so on, such as ```Dataset=CIFAR10```.
+There are many [built-in](#built-ins) datasets, architectures, environments, and so on, such as ```Dataset=CIFAR10```. The domain can be changed with ```task=``` as we'll see later.
 
 show side by side results plots
 
