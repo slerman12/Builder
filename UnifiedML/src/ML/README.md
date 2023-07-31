@@ -265,8 +265,6 @@ Fully supported across domains, including reinforcement learning and generative 
 </h2>
 </summary>
 
-Below we define a **custom architecture**, allowing UnifiedML to infer the input and output shapes.
-
 ```python
 # Run.py
 
