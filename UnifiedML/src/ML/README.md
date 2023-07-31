@@ -94,9 +94,13 @@ We call this a UnifiedML **app**.
 
 ## Syntax
 
+Valid ML objects include not just instantiated objects (e.g. ```nn.Linear(3 * 32 * 32, 10)```), but classes as well (e.g. ```nn.Linear``` or a [custom architecture](#tutorials)). Some arguments, such as shape parameters (```in_features```, ```out_features```), can be automatically inferred. However, for more complex class configurability, various syntax possibilities exist to define the hyper-parameterization. 
+
 1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
 2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
 3. **Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
+
+Check out the 7 ways to write the same program. It quickly demonstrates the varied syntax specification options.
 
 <details>
 <summary>
