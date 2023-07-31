@@ -54,7 +54,7 @@ There are many [built-in](#built-ins) datasets, architectures, and so on, such a
 
 show side by side results plots
 
-## Paths
+## Search paths
 
 The above demonstrates **dot notation**. Equivalently, it's possible to use **regular directory paths**:
 ```console
