@@ -50,7 +50,7 @@ ML Model=Run.model Dataset=CIFAR10
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
-show a training curve
+show side by plot results plots
 
 ## Paths
 
