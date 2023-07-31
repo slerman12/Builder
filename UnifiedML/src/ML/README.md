@@ -86,15 +86,13 @@ python Run.py
 
 We call this a UnifiedML ***app***.
 
-## If you're feeling brave, this also works:
+## Direct code execution also works:
 
 Not exactly scalable, but:
 
 ```console
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
-
-Direct code execution also works.
 
 ## Architecture shapes
 
