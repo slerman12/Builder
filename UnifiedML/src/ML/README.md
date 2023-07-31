@@ -344,7 +344,7 @@ Stats will automatically be computed for standardization and normalization, and 
 
 **Subsets**
 
-Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` will be used for training and evaluation.
+Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` of the given dataset will be used for training and evaluation.
 
 </details>
 
