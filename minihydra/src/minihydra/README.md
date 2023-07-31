@@ -5,7 +5,7 @@
 ### Reading in args
 
 ```python
-# run_script.py
+# run.py
 
 from minihydra import just_args
 
@@ -19,7 +19,7 @@ print(args.goodbye.cruel)
 ```
 
 ```
-> python run_script.py hello=world number=42 goodbye.cruel='[world]'
+> python run.py hello=world number=42 goodbye.cruel='[world]'
 
 {'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
 
@@ -41,7 +41,7 @@ goodbye:
 ```
 
 ```python
-# run_script.py
+# run.py
 
 from minihydra import just_args
 
@@ -55,7 +55,7 @@ print(args.goodbye.cruel)
 ```
 
 ```
-> python run_script.py number=43
+> python run.py number=43
 
 {'hello': 'world', 'number', 43, {'goodbye': {'cruel': ['world']}}}
 
@@ -67,7 +67,7 @@ world
 ### As a decorator
 
 ```python
-# run_script.py
+# run.py
 
 from minihydra import get_args
 
@@ -77,7 +77,7 @@ def main(args):
 ```
 
 ```
-> python run_script.py
+> python run.py
 
 {'hello': 'world', 'number', 42, {'goodbye': {'cruel': ['world']}}}
 ```
