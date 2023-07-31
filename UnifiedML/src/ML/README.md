@@ -32,17 +32,6 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 ## Quick start
 
-Wherever you run ```ML```, it'll search the current directory for any specified paths.
-
-Paths to architectures, agents, environments, etc. via dot notation:
-```console
-ML Model=MyFile.model
-``` 
-or regular directory paths:
-```console
-ML Model=./MyFile.py.model
-```
-
 ### Training example
 
 ```python
@@ -60,6 +49,19 @@ ML Model=Run.model Dataset=CIFAR10
 ```
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
+
+#
+
+Wherever you run ```ML```, it'll search the current directory for any specified paths.
+
+Paths to architectures, agents, environments, etc. via dot notation:
+```console
+ML Model=Run.model
+``` 
+or regular directory paths:
+```console
+ML Model=./Run.py.model
+```
 
 ### Equivalent pure-code training example
 
@@ -123,9 +125,9 @@ Thus, you can pass classes to command-line, not just objects.
 
 ### Syntax
 
-1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
-2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
-3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
+**Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
+**Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
+**Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
 
 <details>
 <summary>
