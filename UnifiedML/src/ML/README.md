@@ -341,7 +341,7 @@ You can include a ```train=``` boolean arg to your custom Dataset to define diff
 
 **Transforms & augmentations**
 
-All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the transformed dataset before training begins. One-time operations like Resize are most efficient here.  
+All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
 
 **Standardization & normalization**
 
