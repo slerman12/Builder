@@ -280,7 +280,7 @@ class Model(nn.Module):
 ML Model=Run.Model Dataset=CIFAR10
 ```
 
-## Inferred shaping
+### Inferred shaping
 
 UnifiedML automatically detects the shape signature of your model.
 
@@ -305,7 +305,7 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects.
 
-## If you're feeling brave, this:
+### If you're feeling brave, this:
 
 Not exactly scalable, but:
 
