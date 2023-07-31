@@ -685,36 +685,6 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </details>
 
-
-# Apps built with UnifiedML
-
-
-- [XRDs modeling project](https://www.github.com/AGI-init/XRDs)
-
-Step 1. Define a [Generator]() and [Discriminator]().
-
-Step 2. ...
-
-Step N.These are all the parts that are pointed to in the [```dcgan recipe```]().
-
-
-**Run:**
-
-
-```console
-
-ML task=dcgan
-
-```
-
-# What is novel about UnifiedML?
-
-
-- Adaptive accelerations
-
-- Multi-block framework
-
-- Universal generalism
 # Reproducing works
 
 To be continued ...
