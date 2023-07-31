@@ -52,15 +52,11 @@ There are many [built-in](#built-ins) datasets, architectures, and so on, such a
 
 **Path searching:**
 
-Wherever you run ```ML```, it'll search the current directory for any specified paths.
+Wherever you run ```ML```, it'll search the current directory for any specified paths. The above demonstrates ***dot notation***.
 
-Paths to architectures, agents, environments, etc. via ***dot notation***:
+Equivalently, it's possible to use a regular ***directory path***:
 ```console
-ML Model=Run.model
-``` 
-or regular ***directory paths***:
-```console
-ML Model=./Run.py.model
+ML Model=./Run.py.model Dataset=CIFAR10
 ```
 
 ### Equivalent pure-code training example
