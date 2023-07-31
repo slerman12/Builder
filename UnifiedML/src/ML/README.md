@@ -56,7 +56,7 @@ show side by side results plots
 
 ## Search paths
 
-The above demonstrates **dot notation**. Equivalently, it's possible to use **regular directory paths**:
+The earlier demonstrates **dot notation**. Equivalently, it's possible to use **regular directory paths**:
 ```console
 ML Model=./Run.py.model Dataset=CIFAR10
 ```
