@@ -450,271 +450,272 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 
 </details>
 
-[//]: # (<details>)
+<details>
 
-[//]: # (<summary>)
+<summary>
 
-[//]: # (<h2>)
+<h2>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Custom Environments)
+&nbsp;&nbsp;&nbsp;Custom Environments
 
-[//]: # (</h2>)
+</h2>
 
-[//]: # (</summary>)
+</summary>
 
-[//]: # (</details>)
+</details>
 
-[//]: # (<details>)
+<details>
 
-[//]: # (<summary>)
+<summary>
 
-[//]: # (<h2>)
+<h2>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Plotting, Logging, Stats, & Media )
+&nbsp;&nbsp;&nbsp;Plotting, Logging, Stats, & Media 
 
-[//]: # (</h2>)
+</h2>
 
-[//]: # (</summary>)
+</summary>
 
-[//]: # (</details>)
+</details>
 
-[//]: # (<details>)
+<details>
 
-[//]: # (<summary>)
+<summary>
 
-[//]: # (<h2>)
+<h2>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Saving & Loading)
+&nbsp;&nbsp;&nbsp;Saving & Loading
 
-[//]: # (</h2>)
+</h2>
 
-[//]: # (</summary>)
+</summary>
 
-[//]: # (</details>)
+</details>
 
-[//]: # ()
-[//]: # (<details>)
 
-[//]: # (<summary>)
+<details>
 
-[//]: # (<h2>)
+<summary>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Multi-Task)
+<h2>
 
-[//]: # (</h2>)
+&nbsp;&nbsp;&nbsp;Multi-Task
 
-[//]: # (</summary>)
+</h2>
 
-[//]: # (</details>)
+</summary>
 
-[//]: # (<details>)
+</details>
 
-[//]: # (<summary>)
+<details>
 
-[//]: # (<h2>)
+<summary>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Multi-Modal)
+<h2>
 
-[//]: # (</h2>)
+&nbsp;&nbsp;&nbsp;Multi-Modal
 
-[//]: # (</summary>)
+</h2>
 
-[//]: # (</details>)
+</summary>
 
-[//]: # ()
-[//]: # (<details>)
+</details>
 
-[//]: # (<summary>)
 
-[//]: # (<h2>)
+<details>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet of built-in learning modes & features)
+<summary>
 
-[//]: # (</h2>)
+<h2>
 
-[//]: # (</summary>)
+&nbsp;&nbsp;&nbsp;Cheatsheet of built-in learning modes & features
 
-[//]: # (</details>)
+</h2>
 
-[//]: # (<details>)
+</summary>
 
-[//]: # (<summary>)
+</details>
 
-[//]: # (<h2>)
+<details>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn)
+<summary>
 
-[//]: # (</h2>)
+<h2>
 
-[//]: # (</summary>)
+&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn
 
-[//]: # (</details>)
+</h2>
 
-[//]: # (# Examples)
+</summary>
 
-[//]: # (<details>)
+</details>
 
-[//]: # (<summary>)
+# Examples
 
-[//]: # (<h2>)
+<details>
 
-[//]: # (&nbsp;&nbsp;&nbsp;CIFAR10 in 10 seconds)
+<summary>
 
-[//]: # (</h2>)
+<h2>
 
-[//]: # (</summary>)
+&nbsp;&nbsp;&nbsp;CIFAR10 in 10 seconds
 
-[//]: # (</details>)
+</h2>
 
-[//]: # (<details>)
+</summary>
 
-[//]: # (<summary>)
+</details>
 
-[//]: # (<h2>)
+<details>
 
-[//]: # (&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU)
+<summary>
 
-[//]: # (</h2>)
+<h2>
 
-[//]: # (</summary>)
+&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU
 
-[//]: # (</details>)
+</h2>
 
-[//]: # ()
-[//]: # (<details>)
+</summary>
 
-[//]: # (<summary>)
+</details>
 
-[//]: # (<h2>)
 
-[//]: # (&nbsp;&nbsp;&nbsp;Imagen: Text to image)
+<details>
 
-[//]: # (</h2>)
+<summary>
 
-[//]: # (</summary>)
+<h2>
 
-[//]: # (</details>)
+&nbsp;&nbsp;&nbsp;Imagen: Text to image
 
-[//]: # ()
-[//]: # (<details>)
+</h2>
 
-[//]: # (<summary>)
+</summary>
 
-[//]: # (<h2>)
+</details>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Stable Diffusion)
 
-[//]: # (</h2>)
+<details>
 
-[//]: # (</summary>)
+<summary>
 
-[//]: # (</details>)
+<h2>
 
-[//]: # ()
-[//]: # (<details>)
+&nbsp;&nbsp;&nbsp;Stable Diffusion
 
-[//]: # (<summary>)
+</h2>
 
-[//]: # (<h2>)
+</summary>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Humanoid from pixels)
+</details>
 
-[//]: # (</h2>)
 
-[//]: # (</summary>)
+<details>
 
-[//]: # (</details>)
+<summary>
 
-[//]: # ()
-[//]: # (<details>)
+<h2>
 
-[//]: # (<summary>)
+&nbsp;&nbsp;&nbsp;Humanoid from pixels
 
-[//]: # (<h2>)
+</h2>
 
-[//]: # (&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL)
+</summary>
 
-[//]: # (</h2>)
+</details>
 
-[//]: # (</summary>)
 
-[//]: # (</details>)
+<details>
 
-[//]: # ()
-[//]: # (<details>)
+<summary>
 
-[//]: # (<summary>)
+<h2>
 
-[//]: # (<h2>)
+&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL
 
-[//]: # (&nbsp;&nbsp;&nbsp;Image Segmentation)
+</h2>
 
-[//]: # (</h2>)
+</summary>
 
-[//]: # (</summary>)
+</details>
 
-[//]: # (</details>)
 
-[//]: # ()
-[//]: # (<details>)
+<details>
 
-[//]: # (<summary>)
+<summary>
 
-[//]: # (<h2>)
+<h2>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Atari)
+&nbsp;&nbsp;&nbsp;Image Segmentation
 
-[//]: # (</h2>)
+</h2>
 
-[//]: # (</summary>)
+</summary>
 
-[//]: # (</details>)
+</details>
 
-[//]: # ()
-[//]: # (<details>)
 
-[//]: # (<summary>)
+<details>
 
-[//]: # (<h2>)
+<summary>
 
-[//]: # (&nbsp;&nbsp;&nbsp;Text prediction)
+<h2>
 
-[//]: # (</h2>)
+&nbsp;&nbsp;&nbsp;Atari
 
-[//]: # (</summary>)
+</h2>
 
-[//]: # (</details>)
+</summary>
 
-[//]: # ()
-[//]: # (# Apps built with UnifiedML)
+</details>
 
-[//]: # ()
-[//]: # (- [XRDs modeling project]&#40;https://www.github.com/AGI-init/XRDs&#41;)
 
-[//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
+<details>
 
-[//]: # (Step 2. ...)
+<summary>
 
-[//]: # (Step N.These are all the parts that are pointed to in the [```dcgan recipe```]&#40;&#41;.)
+<h2>
 
-[//]: # ()
-[//]: # (**Run:**)
+&nbsp;&nbsp;&nbsp;Text prediction
 
-[//]: # ()
-[//]: # (```console)
+</h2>
 
-[//]: # (ML task=dcgan)
+</summary>
 
-[//]: # (```)
+</details>
 
-[//]: # (# What is novel about UnifiedML?)
 
-[//]: # ()
-[//]: # (- Adaptive accelerations)
+# Apps built with UnifiedML
 
-[//]: # (- Multi-block framework)
 
-[//]: # (- Universal generalism)
+- [XRDs modeling project](https://www.github.com/AGI-init/XRDs)
+
+Step 1. Define a [Generator]() and [Discriminator]().
+
+Step 2. ...
+
+Step N.These are all the parts that are pointed to in the [```dcgan recipe```]().
+
+
+**Run:**
+
+
+```console
+
+ML task=dcgan
+
+```
+
+# What is novel about UnifiedML?
+
+
+- Adaptive accelerations
+
+- Multi-block framework
+
+- Universal generalism
+# Reproducing works
 
 To be continued ...
 
