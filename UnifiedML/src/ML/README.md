@@ -100,6 +100,8 @@ Not exactly scalable, but:
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
+The above equivalently reproduces the earlier examples.
+
 ## Inferred shaping
 
 UnifiedML automatically detects the shape signature of your model.
