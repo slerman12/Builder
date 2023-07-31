@@ -324,10 +324,6 @@ ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Datase
 </h2>
 </summary>
 
-Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
-
----
-
 Generally, a custom Dataset class may look like this:
 
 ```python
