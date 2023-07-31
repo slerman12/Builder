@@ -30,7 +30,7 @@ Optionally:
 - A ```commands``` list or string of any extra environment-setup commands you may need to pass to the remote server command-line and deploy config such as [activating a conda environment for example](Examples/Servers/XuLab.py#L9).
 - Any additional ```sbatch``` string text you'd like to add to the deploy config.
 
-[You may use one of the blueprint server tutorials provided.](Examples/Servers)
+[You may use one of the blueprint server tutorial files provided.](Examples/Servers)
 
 Note the decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
 
