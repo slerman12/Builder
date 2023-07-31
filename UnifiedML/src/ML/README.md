@@ -141,7 +141,7 @@ Executable code such as lists, tuples, dictionaries, and functions should be pas
 
 3. **Saving arguments as recipes** 
 
-4. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
+Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
 
 <details>
 <summary>
