@@ -30,7 +30,7 @@ pip install UnifiedML
 
 UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.
 
-# Quick start
+# Basics
 
 ## Training example
 
