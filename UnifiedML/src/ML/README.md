@@ -35,7 +35,7 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 As a fun little example, let's train a neural network to simultaneously learn to play Super Mario Bros. and classify ImageNet:
 
 ```console
-ML multi_task='["task=RL Env=Mario", "Dataset=ImageNet dataset.root=imagenet/"] Eyes=ResNet50'
+ML multi_task='["task=RL Env=Mario", "Dataset=ImageNet dataset.root=imagenet/"]' Eyes=ResNet50
 ```
 
 [See full docs here.]()
