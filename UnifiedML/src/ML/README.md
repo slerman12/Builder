@@ -54,11 +54,11 @@ There are many [built-in](#built-ins) datasets, architectures, and so on, such a
 
 Wherever you run ```ML```, it'll search the current directory for any specified paths.
 
-Paths to architectures, agents, environments, etc. via dot notation:
+Paths to architectures, agents, environments, etc. via ***dot notation***:
 ```console
 ML Model=Run.model
 ``` 
-or regular directory paths:
+or ***regular directory paths***:
 ```console
 ML Model=./Run.py.model
 ```
