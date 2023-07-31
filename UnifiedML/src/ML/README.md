@@ -16,8 +16,7 @@ Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
 pip install UnifiedML
 ```
 
-***TODO: Below should be header 1!***
-## What is UnifiedML?
+# What is UnifiedML?
 
 <p align="center">
 <a href="https://github.com/AGI-init/Assets/assets/92597756/d92e6b3f-9625-427c-87ef-909b3ec40f08">
@@ -31,9 +30,9 @@ pip install UnifiedML
 
 UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.
 
-## Quick start
+# Quick start
 
-### Training example
+## Training example
 
 ```python
 # Run.py
@@ -58,7 +57,7 @@ ML Model=./Run.py.model Dataset=CIFAR10
 
 Wherever you run ```ML```, it'll search from the current directory for any specified paths.
 
-### If you're feeling brave, this also works:
+## If you're feeling brave, this also works:
 
 Not exactly scalable, but:
 
@@ -66,7 +65,7 @@ Not exactly scalable, but:
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
-### Apps
+## Apps
 
 It's possible to do this entirely from code without using ```ML```, as per below:
 
@@ -93,7 +92,7 @@ python Run.py
 
 We call this a UnifiedML ***app***.
 
-### Architecture shapes
+## Architecture shapes
 
 UnifiedML automatically detects the shape signature of your model.
 
@@ -124,7 +123,7 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects.
 
-### Syntax
+## Syntax
 
 - **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
 - **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
