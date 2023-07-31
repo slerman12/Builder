@@ -305,7 +305,7 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects.
 
-### If you're feeling brave, this:
+### If you're feeling brave, this works as well:
 
 Not exactly scalable, but:
 
