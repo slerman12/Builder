@@ -101,6 +101,8 @@ def main(args):
 [//]: # ()
 [//]: # (### yaml search paths)
 
+---
+
 [Licensed under the MIT license.](MIT_LICENSE)
 
 ---
