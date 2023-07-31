@@ -131,28 +131,28 @@ Thus, you can pass classes to command-line, not just objects.
 
 <details>
 <summary>
-<h4>
+<h3>
 Here's how to write the same program in 7 different ways. (Click to expand)
-</h4>
+</h3>
 </summary>
 
 Train a simple 5-layer CNN to play Atari Pong:
 
 <img src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" data-canonical-src="https://camo.githubusercontent.com/38d38c836102c4487b79af81f79005a26a990119464ce337b5230bc34695ccc0/687474703a2f2f6d7573796f6b752e6769746875622e696f2f696d616765732f706f73742f323031362d30332d30362f706f6e675f726573756c742e676966" width="64" height="84" alt=""/>
 
-#### Way 1. Purely command-line
+### Way 1. Purely command-line
 
 ```console
 ML task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ```
 
-#### Way 2. Command-line code
+### Way 2. Command-line code
 
 ```console
 ML task=RL Env='Atari(game="pong")' Model='CNN(depth=5)'
 ```
 
-#### Way 3. Command-line
+### Way 3. Command-line
 
 ```python
 # Run.py
@@ -169,7 +169,7 @@ if __name__ == '__main__':
 python Run.py task=RL Env=Atari env.game=pong Model=CNN model.depth=5
 ```
 
-#### Way 4. Inferred Code
+### Way 4. Inferred Code
 
 ```python
 # Run.py
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 python Run.py
 ```
 
-#### Way 5. Purely Code
+### Way 5. Purely Code
 
 ```python
 # Run.py
@@ -205,7 +205,7 @@ if __name__ == '__main__':
 python Run.py
 ```
 
-#### Way 6. Recipes
+### Way 6. Recipes
 
 Define recipes in a ```.yaml``` file like this one:
 
@@ -231,7 +231,7 @@ ML task=recipe
 
 The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
 
-#### Way 7. All of the above
+### Way 7. All of the above
 
 The order of hyperparam priority is ```command-line > code > recipe```.
 
@@ -268,7 +268,7 @@ python Run.py task=recipe env.game=pong
 
 Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
-### Acceleration
+## Acceleration
 
 With ```accelerate=true```:
 * Hard disk memory mapping.
