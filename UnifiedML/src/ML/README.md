@@ -133,7 +133,7 @@ Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_fe
 
 Just include them as args to your model and UnifiedML will detect and fill them in.
 
-Thus, you can pass classes to command-line, not just objects.
+Thus, you can pass classes to command-line, not just instantiated objects.
 
 ## Syntax
 
