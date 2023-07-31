@@ -57,12 +57,14 @@ ML Model=./Run.py.model Dataset=CIFAR10
 
 Wherever you run ```ML```, it'll search from the current directory for any specified paths.
 
-### Equivalent pure-code training example
+### Apps
 
 It's possible to do this entirely from code without using ```ML```, as per below:
 
 ```python
 # Run.py
+
+# Equivalent pure-code training example
 
 from torch import nn
 
