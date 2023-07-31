@@ -88,8 +88,6 @@ We call this a UnifiedML ***app***.
 
 ## If you're feeling brave, this also works:
 
-Direct code execution also works.
-
 Not exactly scalable, but:
 
 ```console
