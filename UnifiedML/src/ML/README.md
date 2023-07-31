@@ -282,7 +282,7 @@ class Model(nn.Module):
 ML Model=Run.Model Dataset=CIFAR10
 ```
 
-**Inferred shaping**
+### Inferred shaping
 
 UnifiedML automatically detects the shape signature of your model.
 
