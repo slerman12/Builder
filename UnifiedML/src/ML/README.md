@@ -65,6 +65,8 @@ ML Model=./Run.py.model
 
 ### Equivalent pure-code training example
 
+It's possible to do this entirely from code without using ```ML```.
+
 ```python
 # Run.py
 
