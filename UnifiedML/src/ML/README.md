@@ -8,7 +8,7 @@
 
 See our library [Tributaries](../../../tributaries-ml/src/tributaries) for mass-deploying UnifiedML apps on remote servers.
 
-Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
+Check out [minihydra / leviathan](../../../minihydra/src/minihydra) for how we handle sys args & hyperparams.
 
 ## Install
 
