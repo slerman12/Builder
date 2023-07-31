@@ -270,6 +270,7 @@ Find more details about the grammar and syntax possibilities at [minihydra / lev
 
 ## Acceleration
 
+With ```accelerate=true```:
 * Hard disk memory mapping.
 * Adaptive RAM, CUDA, and pinned-memory allocation & caching, with [customizable storage distributions]().
 * Shared-RAM parallelism.
