@@ -243,6 +243,8 @@ Valid ML objects include not just instantiated objects, but classes as well.
 
 [//]: # (Find more details about the grammar and syntax possibilities at [minihydra / leviathan]&#40;github.com/AGI-init/minihydra&#41;.)
 
+Tasks will be searched for in the roots directory, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
+
 ## Acceleration
 
 With ```accelerate=true```:
