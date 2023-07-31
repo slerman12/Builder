@@ -50,14 +50,12 @@ ML Model=Run.model Dataset=CIFAR10
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
-**Path searching:**
-
-Wherever you run ```ML```, it'll search the current directory for any specified paths. The above demonstrates ***dot notation***.
-
-Equivalently, it's possible to use a regular ***directory path***:
+The above demonstrates ***dot notation***. Equivalently, it's possible to use a regular ***directory path***:
 ```console
 ML Model=./Run.py.model Dataset=CIFAR10
 ```
+
+Wherever you run ```ML```, it'll search the current directory for any specified paths.
 
 ### Equivalent pure-code training example
 
