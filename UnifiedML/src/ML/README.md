@@ -196,6 +196,8 @@ ML task=recipe
 
 The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
 
+Tasks will be searched for in the root directory, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
+
 ### Way 7. All of the above
 
 The order of hyperparam priority is ```command-line > code > recipe```.
@@ -242,8 +244,6 @@ Valid ML objects include not just instantiated objects, but classes as well.
 3. **Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 above](#way-6-recipes) show how to define a task/recipe.
 
 [//]: # (Find more details about the grammar and syntax possibilities at [minihydra / leviathan]&#40;github.com/AGI-init/minihydra&#41;.)
-
-Tasks will be searched for in the root directory, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
 
 ## Acceleration
 
