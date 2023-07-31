@@ -239,7 +239,7 @@ python Run.py task=recipe env.game=pong
 
 Valid ML objects include not just instantiated objects, but classes as well.
 
-1. **Class argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 above](#way-1-purely-command-line)).
+1. **Class argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```Env=Atari env.game=pong``` or ```Model=CNN model.depth=5``` (shown in [ways 1, 2, and 4 above](#way-1-purely-command-line)).
 2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
 3. **Recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 above](#way-6-recipes) show how to define a task/recipe.
 
