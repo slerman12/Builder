@@ -92,16 +92,6 @@ python Run.py
 
 We call this a UnifiedML **app**.
 
-## If you're feeling brave, this:
-
-Not exactly scalable, but:
-
-```console
-ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
-```
-
-The above equivalently reproduces the earlier examples.
-
 ## Syntax
 
 1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
@@ -314,6 +304,14 @@ Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_fe
 Just include them as args to your model and UnifiedML will detect and fill them in.
 
 Thus, you can pass classes to command-line, not just objects.
+
+## If you're feeling brave, this:
+
+Not exactly scalable, but:
+
+```console
+ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
+```
 
 </details>
 
