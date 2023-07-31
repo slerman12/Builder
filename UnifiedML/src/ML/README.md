@@ -375,7 +375,7 @@ Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In t
 
 ### Training ImageNet
 
-Here's how easy it is to start training on ImageNet using the built-in torchvision Dataset with a custom transform:
+Here's how easy it is to start training on ImageNet-1k using the built-in torchvision Dataset with a custom transform:
 
 ```console
 ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
