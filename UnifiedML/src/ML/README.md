@@ -52,7 +52,7 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))  # Two-la
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-There are many [built-in](#built-ins) datasets, architectures, environments, and so on, such as ```Dataset=CIFAR10```. The domain can be changed with ```task=``` as we'll see later. [Custom datasets](#tutorials) and much more can be passed in analogously.
+There are many [built-in](#built-ins) datasets, architectures, environments, and so on, such as ```Dataset=CIFAR10```. [Custom datasets](#tutorials) and much more can be passed in analogously as the model above. The domain can be changed with ```task=``` as we'll see later.
 
 show side by side results plots
 
