@@ -50,7 +50,7 @@ ML Model=Run.model Dataset=CIFAR10
 
 There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
-#
+### Path searching
 
 Wherever you run ```ML```, it'll search the current directory for any specified paths.
 
