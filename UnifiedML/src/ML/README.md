@@ -143,11 +143,11 @@ Executable code such as lists, tuples, dictionaries, and functions should be pas
 
 Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
 
+### Here's how to write the same program in 7 different ways
+
 <details>
 <summary>
-<h3>
-Here's how to write the same program in 7 different ways. (Click to expand)
-</h3>
+Click to expand
 </summary>
 
 Train a simple 5-layer CNN to play Atari Pong:
