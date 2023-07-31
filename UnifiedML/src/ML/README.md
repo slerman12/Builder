@@ -48,7 +48,9 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-In this example, we use the Dataset ```CIFAR10```. There are many [built-in](#built-ins) datasets, architectures, and so on, such as ```Dataset=CIFAR10```. The default domain is classification and can be changed with the ```task=``` flag.
+There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
+
+## Paths
 
 The above demonstrates ***dot notation***. Equivalently, it's possible to use ***regular directory paths***:
 ```console
