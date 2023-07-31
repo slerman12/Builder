@@ -104,7 +104,7 @@ ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Datase
 
 UnifiedML automatically detects the shape signature of your model.
 
-Below we define our own **custom architecture**.
+Below we define a **custom architecture**.
 
 ```diff
 # Run.py
