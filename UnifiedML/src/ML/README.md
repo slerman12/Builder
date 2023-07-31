@@ -72,8 +72,6 @@ It's possible to do this entirely from code without using ```ML```, as per below
 ```python
 # Run.py
 
-# Equivalent pure-code training example
-
 from torch import nn
 
 from ML import main
@@ -87,6 +85,8 @@ if __name__ == '__main__':
 **Run:**
 
 ```console
+# Equivalent pure-code training example
+
 python Run.py
 ```
 
