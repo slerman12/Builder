@@ -97,4 +97,4 @@ Path/To.py -> Cow "Moo"
 
 ### yaml search paths
     
-MIT
+[MIT](MIT)
