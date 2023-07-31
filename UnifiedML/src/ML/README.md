@@ -16,7 +16,7 @@ Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
 pip install UnifiedML
 ```
 
-## What is UnifiedML?
+# What is UnifiedML?
 
 <p align="center">
 <a href="https://github.com/AGI-init/Assets/assets/92597756/d92e6b3f-9625-427c-87ef-909b3ec40f08">
@@ -30,20 +30,11 @@ pip install UnifiedML
 
 UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.
 
-## Quick start
+# Quick start
 
-Wherever you run ```ML```, it'll search the current directory for any specified paths.
+## Training example
 
-Paths to architectures, agents, environments, etc. via dot notation:
-```console
-ML Model=MyFile.model
-``` 
-or regular directory paths:
-```console
-ML Model=./MyFile.py.model
-```
-
-### Training example
+Train a two-layer neural network on CIFAR10.
 
 ```python
 # Run.py
@@ -59,14 +50,27 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
+There are many [built-in](#built-ins) datasets, architectures, and so on, such as ```Dataset=CIFAR10```.
 
-### Equivalent pure-code training example
+show side by side results plots
 
-A.K.A. A UnifiedML app:
+## Search paths
+
+The earlier demonstrates **dot notation**. Equivalently, it's possible to use **regular directory paths**:
+```console
+ML Model=./Run.py.model Dataset=CIFAR10
+```
+
+Wherever you run ```ML```, it'll search from the current directory for any specified paths.
+
+## Apps
+
+It's possible to do this entirely from code without using ```ML```, as per below:
 
 ```python
 # Run.py
+
+# Equivalent pure-code training example
 
 from torch import nn
 
@@ -84,7 +88,9 @@ if __name__ == '__main__':
 python Run.py
 ```
 
-### If you're feeling brave, this also works:
+We call this a UnifiedML **app**.
+
+## If you're feeling brave, this:
 
 Not exactly scalable, but:
 
@@ -92,7 +98,7 @@ Not exactly scalable, but:
 ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
 ```
 
-### Architecture shapes
+## Inferred shaping
 
 UnifiedML automatically detects the shape signature of your model.
 
@@ -123,11 +129,11 @@ Just include them as args to your model and UnifiedML will detect and fill them 
 
 Thus, you can pass classes to command-line, not just objects.
 
-### Syntax
+## Syntax
 
-1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
-2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
-3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
+1. **Argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
+2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
+3. **Saving arguments as recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
 
 <details>
 <summary>
@@ -293,7 +299,7 @@ Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
 Here's ImageNet using the built-in torchvision Dataset with a custom transform:
 
 ```console
-ML Dataset=torchvision.datasets.ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
+ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
 ```
 
 ---
@@ -337,7 +343,7 @@ You can include a ```train=``` boolean arg to your custom Dataset to define diff
 
 **Transforms & augmentations**
 
-All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.
+All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
 
 **Standardization & normalization**
 
@@ -345,7 +351,7 @@ Stats will automatically be computed for standardization and normalization, and 
 
 **Subsets**
 
-Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` will be used for training and evaluation.
+Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` of the given Dataset will be used for training and evaluation.
 
 </details>
 
@@ -659,6 +665,6 @@ To be continued ...
 
 #
 
-By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and [XRD project team](https://www.github.com/AGI-init/XRDs).
+By [Sam Lerman](https://www.github.com/slerman12).
 
 [MIT license included.](MIT_LICENSE)
