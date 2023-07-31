@@ -336,11 +336,11 @@ You can include a ```train=``` boolean arg to your custom Dataset to define diff
 
 **Transforms & augmentations**
 
-All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the dataset before training begins. One-time operations like Resize are most efficient here.  
+All passed-in Datasets will support the ```dataset.transform=``` argument. ```dataset.transform=``` is distinct from ```transform=``` and ```Aug=```, as ```transform=``` runs a transform on CPU at runtime and ```Aug=``` runs a batch-vectorized augmentation on GPU at runtime, whereas ```dataset.transform=``` transforms/pre-compiles the transformed dataset before training begins. One-time operations like Resize are most efficient here.  
 
 **Standardization & normalization**
 
-Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. Learn about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
+Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. You may learn more about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
 
 **Subsets**
 
