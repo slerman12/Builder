@@ -345,13 +345,13 @@ class MyDataset(Dataset):
         ...
 ```
 
+For more info, see Pytorch's tutorial on [Map-Style Datasets](https://pytorch.org/docs/stable/data.html).
+
 **Run:**
 
 ```console
 ML Dataset=Run.MyDataset
 ```
-
-For more info, see Pytorch's tutorial on [Map-Style Datasets](https://pytorch.org/docs/stable/data.html).
 
 **Classification**
 
