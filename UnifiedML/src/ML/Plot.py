@@ -22,7 +22,7 @@ from matplotlib import ticker, dates, lines
 from matplotlib.ticker import FuncFormatter, PercentFormatter
 import seaborn as sns
 
-from minihydra import get_args, grammar
+from minihydra import get_args, grammar, just_args, instantiate
 import Utils
 
 
@@ -643,27 +643,11 @@ low = {**atari_random}
 high = {**atari_human}
 
 
+def main():
+    args = just_args()
+    defaults = just_args(source='Hyperparams/args.yaml').plotting
+    instantiate(plot, **{**defaults, **args})
+
+
 if __name__ == "__main__":
-
-    @get_args(source='Hyperparams/args.yaml')  # Converts global arg defaults to plotting args
-    def main(args):
-        del args.plotting['_target_']
-        if 'path' not in sys_args:
-            if isinstance(args.plotting.plot_experiments, str):
-                args.plotting.plot_experiments = [args.plotting.plot_experiments]
-            args.plotting.path = f"./Benchmarking/{'_'.join(args.plotting.plot_experiments)}/Plots"
-        if 'steps' not in sys_args:
-            args.plotting.steps = np.inf
-        plot(**args.plotting)
-
-    # Format path names
-    # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
-    grammar.append(lambda arg: Utils.parse(arg, 'format', lambda name: name.split('.')[-1]))
-
-    sys_args = []
-    for i in range(1, len(sys.argv)):
-        sys_args.append(sys.argv[i].split('=')[0].strip('"').strip("'"))
-        sys.argv[i] = 'plotting.' + sys.argv[i] if sys.argv[i][0] != "'" and sys.argv[i][0] != '"' \
-            else sys.argv[i][0] + 'plotting.' + sys.argv[i][1:]
-
     main()
