@@ -16,7 +16,7 @@ Check out [minihydra / leviathan]() for how we handle sys args & hyperparams.
 pip install UnifiedML
 ```
 
-# What is UnifiedML?
+## What is UnifiedML?
 
 <p align="center">
 <a href="https://github.com/AGI-init/Assets/assets/92597756/d92e6b3f-9625-427c-87ef-909b3ec40f08">
@@ -30,20 +30,27 @@ pip install UnifiedML
 
 UnifiedML is a toolbox & engine for defining ML tasks and training them individually, or together in a single general intelligence.
 
-# Basics
+## Quick start
 
-## Training example
+Wherever you run ```ML```, it'll search the current directory for any specified paths.
 
-The default domain is classification.
+Paths to architectures, agents, environments, etc. via dot notation:
+```console
+ML Model=MyFile.model
+``` 
+or regular directory paths:
+```console
+ML Model=./MyFile.py.model
+```
 
-Train a two-layer neural network on the CIFAR10 classification dataset:
+### Training example
 
 ```python
 # Run.py
 
 from torch import nn
 
-model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))  # Two-layer neural-net
+model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))
 ```
 
 **Run:**
@@ -52,53 +59,9 @@ model = nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))  # Two-la
 ML Model=Run.model Dataset=CIFAR10
 ```
 
-There are many [built-in](#built-ins) datasets, architectures, environments, and so on, such as ```Dataset=CIFAR10```. The domain can be changed with ```task=``` [as we'll see later](#syntax).  [Custom datasets](#tutorials) and much more can be passed in with analogous syntax (e.g. ```Dataset=```, ```Env=```, etc.).
+There are many [built-in](#built-ins) datasets, architectures, and so on, such as CIFAR10.
 
-show side by side results plots
-
-## Search paths
-
-The earlier demonstrates **dot notation** (```Run.model```) for pointing to an ML object. Equivalently, it's possible to use **regular directory paths**:
-```console
-ML Model=./Run.py.model Dataset=CIFAR10
-```
-
-Wherever you run ```ML```, it'll search from the current directory for any specified paths.
-
-## If you're feeling brave, this works as well:
-
-Not exactly scalable, but:
-
-```console
-ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
-```
-
-## Custom models
-
-```python
-# Run.py
-
-from torch import nn
-
-class Model(nn.Module): 
-   def __init__(self, in_features, out_features):
-        super().__init__()
-        
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-```
-
-**Run:**
-
-```console
-ML Model=Run.Model Dataset=CIFAR10
-```
-
-## Apps
-
-It's possible to do this entirely from code without using ```ML```, as per below:
+### Equivalent pure-code training example
 
 ```python
 # Run.py
@@ -116,14 +79,53 @@ if __name__ == '__main__':
 **Run:**
 
 ```console
-# Equivalent pure-code training example
-
 python Run.py
 ```
 
-We call this a UnifiedML **app**.
+### If you're feeling brave, this also works:
 
-## Syntax
+Not exactly scalable, but:
+
+```console
+ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
+```
+
+### Architecture shapes
+
+UnifiedML automatically detects the shape signature of your model.
+
+```diff
+# Run.py
+
+from torch import nn
+
+class Model(nn.Module): 
++   def __init__(self, in_features, out_features):
+        super().__init__()
+        
+        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
+
+    def forward(self, x):
+        return self.model(x)
+```
+
+**Run:**
+
+```console
+ML Model=Run.Model Dataset=CIFAR10
+```
+
+Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
+
+Just include them as args to your model and UnifiedML will detect and fill them in.
+
+Thus, you can pass classes to command-line, not just objects.
+
+### Syntax
+
+1. The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```env.game=pong``` or ```model.depth=5``` (shown in [ways 1, 2, and 4 below](#way-1-purely-command-line)).
+2. Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
+3. Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 below](#way-6-recipes) show how to define a task/recipe.
 
 <details>
 <summary>
@@ -227,8 +229,6 @@ ML task=recipe
 
 The ```imports:``` syntax allows importing multiple tasks/recipes from different sources, with the last item in the list having the highest priority when arguments conflict.
 
-Custom task ```.yaml``` files will be searched for in the root directory ```./```, a ```Hyperparams/``` directory if one exists, and a ```Hyperparams/task``` directory if one exists.
-
 ### Way 7. All of the above
 
 The order of hyperparam priority is ```command-line > code > recipe```.
@@ -264,17 +264,7 @@ python Run.py task=recipe env.game=pong
 
 </details>
 
----
-
-[//]: # (Valid ML objects include not just instantiated objects &#40;e.g. ```Model='nn.Linear&#40;3 * 32 * 32, 10&#41;'```&#41;, but classes as well &#40;e.g. ```Model=nn.Linear``` or another [custom architecture]&#40;#tutorials&#41; of your own for example&#41;. Some class signature arguments, such as shape parameters &#40;```in_features```, ```out_features```&#41;, can be automatically inferred. However, for more complex class configurability, various syntax possibilities exist to define the hyper-parameterization. Below are outlined those grammars and ways of defining complex and highly configurable ML structures.)
-
-Valid ML objects include not just instantiated objects, but classes as well.
-
-1. **Class argument tinkering** The ```hyperparam.``` syntax is used to modify arguments of flag ```Hyperparam```. We reserve ```Uppercase=Path.To.Class``` for the class itself and ```lowercase.key=value``` for argument tinkering, as in ```Env=Atari env.game=pong``` or ```Model=CNN model.depth=5``` (shown in [ways 1, 2, and 4 above](#way-1-purely-command-line)).
-2. **Executable arguments** Executable code such as lists, tuples, dictionaries, and functions should be passed in quotes e.g. ```model.dims='[128, 64, 32]'```.
-3. **Recipes** Note: we often use the "task" and "recipe" terms interchangeably. Both refer to the ```task=``` flag. [Ways 6 and 7 above](#way-6-recipes) show how to define a task/recipe.
-
-[//]: # (Find more details about the grammar and syntax possibilities at [minihydra / leviathan]&#40;github.com/AGI-init/minihydra&#41;.)
+Find more details about the grammar and syntax possibilities at [minihydra / leviathan](github.com/AGI-init/minihydra).
 
 ## Acceleration
 
@@ -292,64 +282,19 @@ Fully supported across domains, including reinforcement learning and generative 
 <details>
 <summary>
 <h2>
-&nbsp;&nbsp;&nbsp;Custom architectures
-</h2>
-</summary>
-
-```python
-# Run.py
-
-from torch import nn
-
-class Model(nn.Module): 
-   def __init__(self, in_features, out_features):
-        super().__init__()
-        
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-```
-
-**Run:**
-
-```console
-ML Model=Run.Model Dataset=CIFAR10
-```
-
-### Inferred shaping
-
-UnifiedML automatically detects the shape signature of your model.
-
-```diff
-# Run.py
-
-from torch import nn
-
-class Model(nn.Module): 
-+   def __init__(self, in_features, out_features):
-        super().__init__()
-        
-        self.model = nn.Sequential(nn.Linear(in_features, 128), nn.Linear(128, out_features))
-
-    def forward(self, x):
-        return self.model(x)
-```
-
-Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_features```, ```out_features```, ```in_channels```, ```out_channels```, ```in_dim```, ```out_dim```.
-
-Just include them as args to your model and UnifiedML will detect and fill them in.
-
-Thus, you can pass classes to command-line, not just objects.
-
-</details>
-
-<details>
-<summary>
-<h2>
 &nbsp;&nbsp;&nbsp;Custom datasets
 </h2>
 </summary>
+
+Paths or instances to Pytorch Datasets can be fed to the ```Dataset=``` flag.
+
+Here's ImageNet using the built-in torchvision Dataset with a custom transform:
+
+```console
+ML Dataset=torchvision.datasets.ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
+```
+
+---
 
 Generally, a custom Dataset class may look like this:
 
@@ -371,8 +316,6 @@ class MyDataset(Dataset):
     def __len__(self):
         ...
 ```
-
-For more info, see Pytorch's tutorial on [map-style Datasets](https://pytorch.org/docs/stable/data.html).
 
 **Run:**
 
@@ -400,17 +343,7 @@ Stats will automatically be computed for standardization and normalization, and 
 
 **Subsets**
 
-Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` of the given Dataset will be used for training and evaluation.
-
-### Training ImageNet
-
-Here's how easy it is to start training on ImageNet-1k using the built-in torchvision Dataset with a custom transform:
-
-```console
-ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resize(64)'
-```
-
-```dataset.root=``` points to the location of the downloaded [imagenet](https://www.image-net.org/download.php) dataset.
+Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` will be used for training and evaluation.
 
 </details>
 
@@ -421,7 +354,7 @@ ML Dataset=ImageNet dataset.root='imagenet/' dataset.transform='transforms.Resiz
 </h2>
 </summary>
 
-Let's look at the ```Model``` [from Custom Architectures](#tutorials):
+Let's look at the ```Model``` [from earlier](#architecture-shapes):
 
 ```python
 # Run.py
@@ -448,7 +381,7 @@ ML Model=Run.Model_ Dataset=CIFAR10
 
 We've now added a custom ```learn(·)``` method to our original ```Model``` that does basic cross-entropy.
 
-For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); self.optim.step()```) and not return a loss.
+For more sophisticated optimization schemes, we may optimize directly within the ```learn(·)``` method (e.g. ```loss.backward(); optim.step()```) and not return a loss.
 
 [```replay```](World/Replay.py) allows us to sample batches. [```logger```](Logger.py) allows us to keep track of metrics.
 
@@ -472,273 +405,251 @@ ML Model=Run.Model_ Dataset=CIFAR10 lr=1e2 lr_decay_epochs=1000
 </details>
 
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;Custom Environments
-
 </h2>
-
 </summary>
-
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
-
 </details>
 
-<details>
+[//]: # (<details>)
 
-<summary>
+[//]: # (<summary>)
 
-<h2>
+[//]: # (<h2>)
 
-&nbsp;&nbsp;&nbsp;Plotting, Logging, Stats, & Media 
+[//]: # (&nbsp;&nbsp;&nbsp;Plotting, Logging, Stats, & Media )
 
-</h2>
+[//]: # (</h2>)
 
-</summary>
+[//]: # (</summary>)
 
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
-
-</details>
+[//]: # (</details>)
 
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;Saving & Loading
-
 </h2>
-
 </summary>
-
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
-
 </details>
 
-
 <details>
-
 <summary>
-
 <h2>
-
 &nbsp;&nbsp;&nbsp;Multi-Task
-
 </h2>
-
 </summary>
-
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
-
 </details>
 
-<details>
+[//]: # (<details>)
 
-<summary>
+[//]: # (<summary>)
 
-<h2>
+[//]: # (<h2>)
 
-&nbsp;&nbsp;&nbsp;Multi-Modal
+[//]: # (&nbsp;&nbsp;&nbsp;Multi-Modal)
 
-</h2>
+[//]: # (</h2>)
 
-</summary>
+[//]: # (</summary>)
 
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (</details>)
 
-</details>
+[//]: # ()
+[//]: # (<details>)
 
+[//]: # (<summary>)
 
-<details>
+[//]: # (<h2>)
 
-<summary>
+[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet of built-in learning modes & features)
 
-<h2>
+[//]: # (</h2>)
 
-&nbsp;&nbsp;&nbsp;Cheatsheet of built-in learning modes & features
+[//]: # (</summary>)
 
-</h2>
+[//]: # (</details>)
 
-</summary>
+[//]: # (<details>)
 
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (<summary>)
 
-</details>
+[//]: # (<h2>)
 
-<details>
+[//]: # (&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn)
 
-<summary>
+[//]: # (</h2>)
 
-<h2>
+[//]: # (</summary>)
 
-&nbsp;&nbsp;&nbsp;Cheatsheet: Built-in features of default Agent.learn
+[//]: # (</details>)
 
-</h2>
+[//]: # (# Examples)
 
-</summary>
+[//]: # (<details>)
 
-[Most of these features are implemented, but not yet documented. Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (<summary>)
 
-</details>
+[//]: # (<h2>)
 
-# Examples
+[//]: # (&nbsp;&nbsp;&nbsp;CIFAR10 in 10 seconds)
 
-<details>
+[//]: # (</h2>)
 
-<summary>
+[//]: # (</summary>)
 
-<h2>
+[//]: # (</details>)
 
-&nbsp;&nbsp;&nbsp;CIFAR10 in 10 seconds
+[//]: # (<details>)
 
-</h2>
+[//]: # (<summary>)
 
-</summary>
+[//]: # (<h2>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU)
 
-</details>
+[//]: # (</h2>)
 
-<details>
+[//]: # (</summary>)
 
-<summary>
+[//]: # (</details>)
 
-<h2>
+[//]: # ()
+[//]: # (<details>)
 
-&nbsp;&nbsp;&nbsp;ImageNet on 1 GPU
+[//]: # (<summary>)
 
-</h2>
+[//]: # (<h2>)
 
-</summary>
+[//]: # (&nbsp;&nbsp;&nbsp;Imagen: Text to image)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (</h2>)
 
-</details>
+[//]: # (</summary>)
 
+[//]: # (</details>)
 
-<details>
+[//]: # ()
+[//]: # (<details>)
 
-<summary>
+[//]: # (<summary>)
 
-<h2>
+[//]: # (<h2>)
 
-&nbsp;&nbsp;&nbsp;Imagen: Text to image
+[//]: # (&nbsp;&nbsp;&nbsp;Stable Diffusion)
 
-</h2>
+[//]: # (</h2>)
 
-</summary>
+[//]: # (</summary>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (</details>)
 
-</details>
+[//]: # ()
+[//]: # (<details>)
 
+[//]: # (<summary>)
 
-<details>
+[//]: # (<h2>)
 
-<summary>
+[//]: # (&nbsp;&nbsp;&nbsp;Humanoid from pixels)
 
-<h2>
+[//]: # (</h2>)
 
-&nbsp;&nbsp;&nbsp;Stable Diffusion
+[//]: # (</summary>)
 
-</h2>
+[//]: # (</details>)
 
-</summary>
+[//]: # ()
+[//]: # (<details>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (<summary>)
 
-</details>
+[//]: # (<h2>)
 
+[//]: # (&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL)
 
-<details>
+[//]: # (</h2>)
 
-<summary>
+[//]: # (</summary>)
 
-<h2>
+[//]: # (</details>)
 
-&nbsp;&nbsp;&nbsp;Humanoid from pixels
+[//]: # ()
+[//]: # (<details>)
 
-</h2>
+[//]: # (<summary>)
 
-</summary>
+[//]: # (<h2>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (&nbsp;&nbsp;&nbsp;Image Segmentation)
 
-</details>
+[//]: # (</h2>)
 
+[//]: # (</summary>)
 
-<details>
+[//]: # (</details>)
 
-<summary>
+[//]: # ()
+[//]: # (<details>)
 
-<h2>
+[//]: # (<summary>)
 
-&nbsp;&nbsp;&nbsp;BittleBot: Real-time robotics with RL
+[//]: # (<h2>)
 
-</h2>
+[//]: # (&nbsp;&nbsp;&nbsp;Atari)
 
-</summary>
+[//]: # (</h2>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (</summary>)
 
-</details>
+[//]: # (</details>)
 
+[//]: # ()
+[//]: # (<details>)
 
-<details>
+[//]: # (<summary>)
 
-<summary>
+[//]: # (<h2>)
 
-<h2>
+[//]: # (&nbsp;&nbsp;&nbsp;Text prediction)
 
-&nbsp;&nbsp;&nbsp;Image Segmentation
+[//]: # (</h2>)
 
-</h2>
+[//]: # (</summary>)
 
-</summary>
+[//]: # (</details>)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # ()
+[//]: # (# Apps built with UnifiedML)
 
-</details>
+[//]: # ()
+[//]: # (- [XRDs modeling project]&#40;https://www.github.com/AGI-init/XRDs&#41;)
 
+[//]: # (Step 1. Define a [Generator]&#40;&#41; and [Discriminator]&#40;&#41;.)
 
-<details>
+[//]: # (Step 2. ...)
 
-<summary>
+[//]: # (Step N.These are all the parts that are pointed to in the [```dcgan recipe```]&#40;&#41;.)
 
-<h2>
+[//]: # ()
+[//]: # (**Run:**)
 
-&nbsp;&nbsp;&nbsp;Atari
+[//]: # ()
+[//]: # (```console)
 
-</h2>
+[//]: # (ML task=dcgan)
 
-</summary>
+[//]: # (```)
 
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[//]: # (# What is novel about UnifiedML?)
 
-</details>
+[//]: # ()
+[//]: # (- Adaptive accelerations)
 
+[//]: # (- Multi-block framework)
 
-<details>
-
-<summary>
-
-<h2>
-
-&nbsp;&nbsp;&nbsp;Text prediction
-
-</h2>
-
-</summary>
-
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
-
-</details>
-
-# Reproducing works
+[//]: # (- Universal generalism)
 
 To be continued ...
 
@@ -746,8 +657,6 @@ To be continued ...
 
 #
 
-By [Sam Lerman](https://www.github.com/slerman12).
+By [Sam Lerman](https://www.github.com/slerman12), with support from doctoral advisor [Chenliang Xu](https://www.cs.rochester.edu/~cxu22/) and [XRD project team](https://www.github.com/AGI-init/XRDs).
 
-[MIT license.](MIT_LICENSE)
-
-[Please sponsor to support the development of this work.](https://github.com/sponsors/AGI-init)
+[MIT license included.](MIT_LICENSE)
