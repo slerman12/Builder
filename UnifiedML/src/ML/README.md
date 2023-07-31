@@ -340,7 +340,7 @@ All passed-in Datasets will support the ```dataset.transform=``` argument. ```da
 
 **Standardization & normalization**
 
-Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. You may learn more about the differences [here](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
+Stats will automatically be computed for standardization and normalization, and saved in the corresponding Memory ```card.yaml``` in ```World/ReplayBuffer```. Disable standardization with ```standardize=false```. This will trigger to use normalization instead. Disable both with ```standardize=false norm=false```. You may learn more about the differences at [GeeksforGeeks](https://www.geeksforgeeks.org/normalization-vs-standardization/). By default, an agent loaded from a checkpoint will reuse its original tabulated stats of the data that it was trained on even when evaluated or further trained on a new dataset, to keep conditions consistent.
 
 **Subsets**
 
