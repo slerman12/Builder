@@ -92,7 +92,7 @@ python Run.py
 
 We call this a UnifiedML **app**.
 
-## If you're feeling brave, this is also equivalent:
+## If you're feeling brave, this:
 
 Not exactly scalable, but:
 
