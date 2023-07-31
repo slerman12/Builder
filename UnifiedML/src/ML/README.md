@@ -86,7 +86,7 @@ python Run.py
 
 We call this a UnifiedML ***app***.
 
-## Direct code execution also works:
+## If you're feeling brave, direct code execution also works:
 
 Not exactly scalable, but:
 
