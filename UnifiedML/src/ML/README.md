@@ -106,7 +106,7 @@ The above equivalently reproduces the earlier examples.
 
 UnifiedML automatically detects the shape signature of your model.
 
-Below we define a **custom architecture**.
+Below we define a **custom architecture**, allowing UnifiedML to infer the input and output shapes.
 
 ```diff
 # Run.py
