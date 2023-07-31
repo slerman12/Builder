@@ -373,7 +373,7 @@ Stats will automatically be computed for standardization and normalization, and 
 
 Sub-classing is possible with the ```dataset.subset='[0, 5, 2]'``` keyword. In this example, only classes ```0```, ```5```, and ```2``` of the given Dataset will be used for training and evaluation.
 
-### TorchVision
+### Training ImageNet
 
 Here's how easy it is to start training on ImageNet using the built-in torchvision Dataset with a custom transform:
 
