@@ -1,4 +1,4 @@
-# <img width="3%" alt="tributaries-logo" src="https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890"> Tributaries 
+# Tributaries 
 
 A library for mass-deploying [UnifiedML](github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.
 
@@ -72,5 +72,7 @@ Note: Tributaries launching fully works for non-UnifiedML apps too. Also, for co
 One more thing: if your remote UnifiedML apps are [git-ssh enabled](https://docs.github.com/en/authentication/connecting-to-github-with-ssh), Tributaries will automatically try syncing with the latest branch via a git pull. You can disable automatic GitHub-syncing with the ```github=false``` flag. 
 
 #
+
+<img width="10%" alt="tributaries-logo" src="https://github.com/AGI-init/Assets/assets/92597756/7e7bb054-f265-4f53-a4f2-d3af52f1d890"> 
 
 [Licensed under the MIT license.](MIT_LICENSE)
