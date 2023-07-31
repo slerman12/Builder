@@ -65,6 +65,14 @@ ML Model=./Run.py.model Dataset=CIFAR10
 
 Wherever you run ```ML```, it'll search from the current directory for any specified paths.
 
+## If you're feeling brave, this works as well:
+
+Not exactly scalable, but:
+
+```console
+ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
+```
+
 ## Apps
 
 It's possible to do this entirely from code without using ```ML```, as per below:
@@ -310,14 +318,6 @@ Inferrable signature arguments include ```in_shape```, ```out_shape```, ```in_fe
 Just include them as args to your model and UnifiedML will detect and fill them in.
 
 Thus, you can pass classes to command-line, not just objects.
-
-### However, if you're feeling brave, this works as well:
-
-Not exactly scalable, but:
-
-```console
-ML Model='nn.Sequential(nn.Linear(3 * 32 * 32, 128), nn.Linear(128, 10))' Dataset=CIFAR10
-```
 
 </details>
 
