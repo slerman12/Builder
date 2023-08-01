@@ -33,7 +33,7 @@ class TruncatedNormal(Normal):
 
     def sample(self, sample_shape=1, to_clip=False, batch_first=True, keepdim=True):
         with torch.no_grad():
-            self.rsample(sample_shape, to_clip, batch_first, keepdim, detach=True)
+            return self.rsample(sample_shape, to_clip, batch_first, keepdim, detach=True)
 
     def rsample(self, sample_shape=1, to_clip=True, batch_first=True, keepdim=True, detach=False):
         if isinstance(sample_shape, int):
