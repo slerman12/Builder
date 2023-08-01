@@ -67,7 +67,6 @@ class CNNEncoder(nn.Module):
         if self.standardize:
             obs = (obs - self.mean.to(obs.device).view(-1, *axes)) / self.stddev.to(obs.device).view(-1, *axes)
         elif self.normalize:
-            print(self.low, self.high, obs.mean())
             obs = 2 * (obs - self.low) / (self.high - self.low) - 1
 
         try:
