@@ -48,6 +48,8 @@ Later, after we've built the civilization of our dreams together, we have to ask
 
 [See full docs here.]()
 
+Part of what makes UnifiedML unique is that it's designed to be easy, so that everyone with vision and good understanding can use these tools, not just those with the specialized, often discriminative or barrier-inducing, mindset.
+
 #
 
 By [Sam Lerman](https://www.github.com/slerman12).
