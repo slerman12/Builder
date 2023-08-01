@@ -56,7 +56,7 @@ What stops them from doing that with an open-source UnifiedML? Can't this techno
 
 Beyond "artificial" intelligence, these tools can be used to greater understand intelligence more generally. To that end, we think it can connect us further to nature, not further from it. 
 
-And frankly I'm not sure about this either, but I trust my own ethics.
+And frankly I'm not sure about any of this either, but I trust my own ethics.
 
 #
 
