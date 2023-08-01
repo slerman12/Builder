@@ -36,7 +36,7 @@ The terrible purpose of UnifiedML is to de-centralize the autonomous-agent train
 
 UnifiedML is the best machine learning library in the world, even without the ethical utopian spiel. It's accelerated, general, and exceptionally-sufficient to the training of any robotic, predictive, or intelligent agent, made for both the small scale (esoteric small-lab research projects) and the large scale (foundation models, unified models, and generalist agents). It's fast and made for you, humanity, and the community-rather-than-corporate driven rise of general AI. Like [GATO](), except open-source.  
 
-As a demonstration of this library's range and power, let's train a neural network generalist agent to simultaneously learn to play a video game and classify the computer vision gold-standard ImageNet:
+As a demonstration of this library's range and power, let's train a neural network generalist agent to simultaneously learn to play a video game (in this case, the Nintendo classic, Mario) and classify the computer vision gold-standard ImageNet:
 
 ```console
 ML multi_task='["task=RL Env=Mario", "Dataset=ImageNet dataset.root=imagenet/"]' Eyes=ResNet50
