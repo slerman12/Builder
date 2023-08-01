@@ -58,7 +58,7 @@ Beyond "artificial" intelligence, these tools can be used to greater understand 
 
 And frankly I'm not sure about any of this either, but I trust my own ethics. Moreover, I trust that something important is being built and that I'm just a small part of it. Maybe one day I'll be quoting Oppenheimer/the Bhagavad Gita in saying "I am become death, the destroyer of worlds." I hope not. I hope the opposite. I hope our 10,000 years of technological progress --- 300,000 if we can date it to as far back as fire --- can culminate in an actual human utopia, an actual Garden of Eden. The Tower of Babel supposedly divided humanity into thousands of languages in an effort to unify us and bring us together and to "heaven". If Babel means anything, it means "babble" as in "bla bla bla". That's what large language models are doing. That's what all of us are doing. I don't know if UnifiedML is another Tower of Babel or if we can gear towards some direction of human purpose this time, find our roots in nature, and genuinely build utopia, which we certainly have the technology for and *can*.
 
-I wlecome everyone to use this library for good and hope no one will use it for bad.
+I welcome everyone to use this library for good and hope no one will use it for bad.
 
 #
 
