@@ -44,7 +44,7 @@ class CNNEncoder(nn.Module):
 
         self.feature_shape = Utils.cnn_feature_shape(obs_shape, self.Eyes)  # Feature map shape
 
-        self.pool = instantiate(pool, **Utils.adaptive_shaping(self.feature_shape)) or nn.Flatten()
+        self.pool = instantiate(pool, **Utils.adaptive_shaping(self.feature_shape)) or nn.Flatten()  # TODO Identity?
 
         self.repr_shape = Utils.cnn_feature_shape(self.feature_shape, self.pool)  # Shape after pooling
 

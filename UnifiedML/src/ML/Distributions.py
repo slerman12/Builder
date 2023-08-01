@@ -33,9 +33,9 @@ class TruncatedNormal(Normal):
 
     def sample(self, sample_shape=1, to_clip=False, batch_first=True, keepdim=True):
         with torch.no_grad():
-            return self.rsample(sample_shape, to_clip, batch_first, keepdim)
+            self.rsample(sample_shape, to_clip, batch_first, keepdim, detach=True)
 
-    def rsample(self, sample_shape=1, to_clip=True, batch_first=True, keepdim=True):
+    def rsample(self, sample_shape=1, to_clip=True, batch_first=True, keepdim=True, detach=False):
         if isinstance(sample_shape, int):
             sample_shape = torch.Size((sample_shape,))
 
@@ -46,7 +46,8 @@ class TruncatedNormal(Normal):
         dev = rand * self.scale.expand(shape)  # Deviate
 
         if to_clip:
-            dev = Utils.rclamp(dev, -self.stddev_clip, self.stddev_clip)  # Don't explore /too/ much, clip std
+            dev = (torch.clamp if detach else Utils.rclamp)(
+                dev, -self.stddev_clip, self.stddev_clip)  # Don't explore /too/ much, clip std
         x = self.loc.expand(shape) + dev
 
         if batch_first:
@@ -57,7 +58,8 @@ class TruncatedNormal(Normal):
 
         if self.low is not None and self.high is not None:
             # Differentiable truncation
-            return Utils.rclamp(x, self.low + self.eps, self.high - self.eps)  # Clip sample
+            return (torch.clamp if detach else Utils.rclamp)(
+                x, self.low + self.eps, self.high - self.eps)  # Clip sample
 
         return x
 
@@ -93,7 +95,7 @@ class NormalizedCategorical(Categorical):
         sample = super().sample(sample_shape)
 
         if batch_first:
-            sample = sample.transpose(0, len(sample_shape))  # Batch dim first
+            sample = sample.transpose(0, len(sample_shape))  # Batch dim first  TODO Perhaps also movedim -1 to self.dim
 
         return self.normalize(sample)
 
@@ -101,11 +103,15 @@ class NormalizedCategorical(Categorical):
         return self.sample(*args, **kwargs)  # Non-differentiable
 
     def normalize(self, sample):
+        if None in (self.low, self.high) or (self.low, self.high) == (0, self.logits.shape[-1] - 1):
+            return sample
+
         # Normalize -> [low, high]
-        return sample / (self.logits.shape[-1] - 1) * (self.high - self.low) + self.low if self.low or self.high \
-            else sample
+        return sample / (self.logits.shape[-1] - 1) * (self.high - self.low) + self.low
 
     def un_normalize(self, value):
+        if None in (self.low, self.high) or (self.low, self.high) == (0, self.logits.shape[-1] - 1):
+            return value
+
         # Inverse of normalize -> indices
-        return (value - self.low) / (self.high - self.low) * (self.logits.shape[-1] - 1) if self.low or self.high \
-            else value
+        return (value - self.low) / (self.high - self.low) * (self.logits.shape[-1] - 1)

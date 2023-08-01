@@ -7,7 +7,7 @@
 def deepPolicyGradient(actor, critic, obs, action=None, step=1, logs=None):
 
     if action is None or not action.requires_grad:  # If None or not differentiable
-        action = actor(obs, step).mean  # Differentiable action ensemble
+        action = actor(obs, step).rsample()  # Differentiable action ensemble  TODO if rollout=true, sample, else mean
 
     Qs = critic(obs, action)
 
