@@ -50,6 +50,14 @@ Later, after we've built the civilization of our dreams together, we have to ask
 
 Part of what makes UnifiedML unique is that it's designed to be easy, so that everyone with vision and good understanding can use these tools, not just those with the specialized, often discriminative or barrier-inducing mindset that some people are not able to acquire even through extremely hard work.
 
+Why do we need generalists and "general AI" for fish drones and quadruped companions? We maybe don't. But the tools are better in our hands and open-source than where they currently exist: in for-profit DARPA funded/affiliated institutions that have no such vision and would easily allow their engineers to make something that would directly be sold to the nearest military vendor.
+
+What stops them from doing that with an open-source UnifiedML? Can't this technology be used maliciously by those institutions? Answer: we've released this under the MIT license. That means anything they do with it (especially commercially), any derivative, has to be made public and under the same license. Mutually assured destruction stops them. Proliferating weapons of mass destruction is usually a bad idea, leading to cold war. Releasing the schematics for a nuclear reactor has proven not to be, leading to more-clean energy. In the hands of elite, war; in the hands of average scientists, energy/research. De-centralizing is safer than centralizing, and it's already centralized.  
+
+Beyond "artificial" intelligence, these tools can be used to greater understand intelligence more generally. To that end, we think it can connect us further to nature, not further from it. 
+
+And frankly I'm not sure about this either, but I trust my own ethics.
+
 #
 
 By [Sam Lerman](https://www.github.com/slerman12).
