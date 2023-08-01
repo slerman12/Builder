@@ -278,8 +278,6 @@ class AC2Agent(torch.nn.Module):
                 logs.update({'reward': batch.reward})
 
             # "Discern" / "Discriminate"
-            print(getattr(batch, 'next_obs', None).shape if hasattr(getattr(batch, 'next_obs', None), 'shape')
-                  else getattr(batch, 'next_obs', None))
 
             # Critic loss
             critic_loss = QLearning.ensembleQLearning(self.critic, self.actor, batch.obs, batch.action, batch.reward,
