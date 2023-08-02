@@ -6,6 +6,10 @@ A library for mass-deploying [UnifiedML](https://www.github.com/agi-init/Unified
 pip install tributaries-ml
 ```
 
+[Examples](Examples)
+
+#### Server
+
 Simply create and run a python file with a server configuration like this one:
 
 ```python
@@ -33,6 +37,8 @@ Optionally:
 [You may use one of the blueprint server files provided.](Examples/Servers)
 
 Note the decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
+
+#### Sweep
 
 You can define a ```sweep``` file like this one:
 
