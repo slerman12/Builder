@@ -10,7 +10,7 @@ pip install minihydra
 
 [//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.)
 
-[//]: # (:fleur_de_lis:)
+:fleur_de_lis:
 
 ---
 
@@ -98,7 +98,7 @@ def main(args):
 
 For deeper documentation and allowing this work to continue to be open source, please consider [donating](https://github.com/sponsors/AGI-init).
 
-:fleur_de_lis:
+[//]: # (:fleur_de_lis:)
 
 [//]: # (### Literals: )
 
