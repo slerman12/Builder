@@ -286,6 +286,9 @@ def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):
     config += (None,) * (8 - len(config))
     server, username, password, func, app_name_paths, commands, sbatch, hyper = config
 
+    # TODO No need for app_name_paths; just path or allow task= to infer path. Default path for World/benchmarking
+    #  can be in root dir under Tributaries/
+
     recursive_update(sweep, {'app_name_paths': app_name_paths, 'commands': commands, 'sbatch': sbatch, 'hyper': hyper,
                              'github': github, 'username': username})
 

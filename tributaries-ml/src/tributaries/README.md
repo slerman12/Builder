@@ -47,18 +47,12 @@ You can define a ```sweep``` file like this one:
 
 from tributaries import my_sweep, my_plots, my_checkpoints
 
-# Launching
-
 my_sweep.hyperparams = ['task=mario experiment=example', 
                         'task=imagenet experiment=example']  # List of hyperparams to launch
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in app_name_paths in Servers
 
-# Plotting
-
 my_plots.plots = [['example']]  # Experiments to plot together / get logs for
-
-# Checkpoints
 
 my_checkpoints.experiments = ['example']  # Experiments to get checkpoints for
 ```
