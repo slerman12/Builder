@@ -51,7 +51,9 @@ my_sweep.hyperparams = ['task=mario experiment=example',
                         'task=imagenet experiment=example']  # List of hyperparams to launch
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in app_name_paths in Servers
+
 my_plots.plots = [['example']]  # Experiments to plot together / get logs for
+
 my_checkpoints.experiments = ['example']  # Experiments to get checkpoints for
 ```
 
