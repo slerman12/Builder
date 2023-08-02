@@ -8,7 +8,7 @@ pip install tributaries-ml
 
 [Examples](Examples)
 
-#### Server
+### Server
 
 Simply create and run a python file with a server configuration like this one:
 
@@ -38,7 +38,7 @@ Optionally:
 
 Note the decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
 
-#### Sweep
+### Sweep
 
 You can define a ```sweep``` file like this one:
 
@@ -54,6 +54,8 @@ my_sweep.app = 'name_of_my_app'
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
 
 You can also pass in the sweep file path via command line with the ```sweep=path.to.my.sweep``` flag. The command-line flag will override the decorator flag; therefore the decorator flag is optional if the command-line flag is present.
+
+### Running
 
 That's it. Running it via ```python MyServer.py``` will launch the corresponding sweep experiments on your remote server. Add the ```plot=true``` flag to instead download plots back down to your local machine.
 
