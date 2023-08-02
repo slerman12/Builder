@@ -10,6 +10,8 @@ pip install minihydra
 
 I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.
 
+:fleur_de_lis:
+
 ---
 
 ### Reading in args
