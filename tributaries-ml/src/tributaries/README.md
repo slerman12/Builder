@@ -1,6 +1,6 @@
 # Tributaries 
 
-A library for mass-deploying [UnifiedML](github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.
+A library for mass-deploying [UnifiedML](https://www.github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.
 
 ```console
 pip install tributaries-ml
