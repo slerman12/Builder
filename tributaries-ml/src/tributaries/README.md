@@ -36,9 +36,9 @@ Optionally:
 
 [You may use one of the blueprint server files provided.](Examples/Servers)
 
-Note the decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
-
 ### Sweep
+
+Note the Server decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
 
 You can define a ```sweep``` file like this one:
 
