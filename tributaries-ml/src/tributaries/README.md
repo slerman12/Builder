@@ -85,6 +85,7 @@ python MyServer.py checkpoints=true
 ```
 
 [//]: # (Note: these hyperparams are already fully part of [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;, together with the ```my_server=``` server-path flag for pointing to a server file, *e.g.*, ```ML my_server=MyServer.main``` can launch and plot the above directly from [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;! )
+#
 
 Note: Tributaries launching fully works for non-UnifiedML apps too. Also, for convenience, ```tributaries hyperparams='...' app='run.py'``` can be used as a general slurm launcher on your remote servers.
 
