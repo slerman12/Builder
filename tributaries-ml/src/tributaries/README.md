@@ -52,8 +52,8 @@ my_sweep.hyperparams = ['task=mario experiment=example',
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to a name in app_name_paths defined in Servers
 
-my_plots.plots = [['example']]  # List of lists of experiments to plot together  & get logs for
-my_checkpoints.experiments = ['example']  # List of experiments to get checkpoints for
+my_plots.plots = [['example']]  # Experiments to plot together  & get logs for
+my_checkpoints.experiments = ['example']  # Experiments to get checkpoints for
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
