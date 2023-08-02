@@ -53,7 +53,7 @@ my_sweep.app = 'name_of_my_app'
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
 
-You can also pass in the sweep file path via command line with the ```sweep=path.to.my.sweep``` flag. The command-line flag will override the decorator flag; therefore the decorator flag is optional if the command-line flag is present.
+You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the decorator flag; therefore the decorator flag is optional if the command-line flag is present.
 
 ### Running
 
