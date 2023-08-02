@@ -56,13 +56,19 @@ Add ```checkpoints=true``` to download checkpoints.
 #### Launching
 
 ```console
-python MyServer.py sweep=path.to.my.sweep
+python MyServer.py
 ```
 
-#### Plotting
+#### Plotting & logs
 
 ```console
-python MyServer.py sweep=path.to.my.sweep plot=true
+python MyServer.py plot=true
+```
+
+#### Checkpoints
+
+```console
+python MyServer.py checkpoints=true
 ```
 
 [//]: # (Note: these hyperparams are already fully part of [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;, together with the ```my_server=``` server-path flag for pointing to a server file, *e.g.*, ```ML my_server=MyServer.main``` can launch and plot the above directly from [UnifiedML]&#40;github.com/agi-init/UnifiedML&#41;! )
