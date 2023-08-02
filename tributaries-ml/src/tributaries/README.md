@@ -8,8 +8,6 @@ pip install tributaries-ml
 
 [Examples](Examples)
 
-#
-
 ### Server
 
 Simply create and run a python file with a server configuration like this one:
@@ -51,14 +49,8 @@ You can define a ```sweep``` file like this one:
 
 from tributaries import my_sweep, my_plots, my_checkpoints
 
-my_sweep.hyperparams = ['task=mario experiment=example', 
-                        'task=imagenet experiment=example']  # List of hyperparams to launch
-
+my_sweep.hyperparams = ['...',  '...']  # List of hyperparams to launch
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
-
-my_plots.plots = [['example']]  # Experiments to plot together / get logs for
-
-my_checkpoints.experiments = ['example']  # Experiments to get checkpoints for
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
