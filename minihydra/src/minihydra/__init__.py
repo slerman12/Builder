@@ -272,6 +272,9 @@ def read(source, recurse=False):
 
     # Command-line task import
     if 'task' in args and args.task not in [None, 'null']:
+        # TODO if not recurse: add task path to paths or outer dir if out dir called Hyperparams/ or out-out if task/
+        #   That way tasks can be launched from any system directory
+
         added = None
         path = os.path.dirname(path)
         if path not in sys.path:
