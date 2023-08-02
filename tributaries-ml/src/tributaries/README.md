@@ -48,7 +48,7 @@ You can define a ```sweep``` file like this one:
 from tributaries import my_sweep, my_plots, my_checkpoints
 
 my_sweep.hyperparams = ['task=mario experiment=example', 
-                        'task=imagenet experiment=example']  # List of hyperparams
+                        'task=imagenet experiment=example']  # List of hyperparams to launch
 
 my_sweep.app = 'name_of_my_app'
 
