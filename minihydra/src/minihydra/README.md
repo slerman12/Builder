@@ -4,6 +4,10 @@
 pip install minihydra
 ```
 
+Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended.
+
+[//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.)
+
 ### Reading in args
 
 ```python
@@ -118,9 +122,3 @@ For deeper documentation and allowing this work to continue to be open source, p
 <img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
 
 [Licensed under the MIT license.](MIT_LICENSE)
-
----
-
-Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended.
-
-[//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.)
