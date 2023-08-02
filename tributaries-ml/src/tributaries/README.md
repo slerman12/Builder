@@ -47,7 +47,7 @@ You can define a ```sweep``` file like this one:
 ```python
 # path/to/my/sweep.py
 
-from tributaries import my_sweep, my_plots, my_checkpoints
+from tributaries import my_sweep
 
 my_sweep.hyperparams = ['...',  '...']  # List of hyperparams to launch
 
