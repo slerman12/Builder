@@ -6,11 +6,11 @@ pip install minihydra
 
 ---
 
-> *minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via **[Hydra](https://www.github.com/facebookresearch/hydra)**. After running into some limitations with **[Hydra](https://www.github.com/facebookresearch/hydra)**, I ended up needing to build *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended. 
+*minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via **[Hydra](https://www.github.com/facebookresearch/hydra)**. After running into some limitations with **[Hydra](https://www.github.com/facebookresearch/hydra)**, I ended up needing to build *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended. 
 
-I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.
+[//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.)
 
-:fleur_de_lis:
+[//]: # (:fleur_de_lis:)
 
 ---
 
@@ -97,8 +97,6 @@ def main(args):
 **Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, and expanding module and yaml search paths.**
 
 For deeper documentation and allowing this work to continue to be open source, please consider [donating](https://github.com/sponsors/AGI-init).
-
-Building the UnifiedML ecosystem was a lot of work and I could use money.
 
 :fleur_de_lis:
 
