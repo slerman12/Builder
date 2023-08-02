@@ -4,7 +4,7 @@
 pip install minihydra
 ```
 
-*minihydra / leviathan* emerged from building the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via [Hydra](https://www.github.com/facebookresearch/hydra). After running into some limitations with Hydra, I ended building minihydra / leviathan from scratch and have found it to be extremely useful and support everything I need, in only ~400 lines of code.
+*minihydra / leviathan* emerged from building the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via [Hydra](https://www.github.com/facebookresearch/hydra). After running into some limitations with Hydra, I ended building *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at Hydra who know I tried my damned hardest to integrate the features I wanted into Hydra. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended. 
 
 ---
 
