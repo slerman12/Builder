@@ -28,9 +28,11 @@ if __name__ == '__main__':
     main()
 ```
 
-That method must return the ```server```, ```username```, ```password```, any additional ```func``` that needs to be run (e.g. [connecting to a VPN](VPN.py)), and a ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```.
+That method must return the ```server```, ```username```, and ```password```.
 
 Optionally:
+-  any additional ```func``` that needs to be run (e.g. [connecting to a VPN](VPN.py)).
+- A ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```.
 - A ```commands``` list or string of any extra environment-setup commands you may need to pass to the remote server command-line and deploy config such as [activating a conda environment for example](Examples/Servers/XuLab.py#L9).
 - Any additional ```sbatch``` string text you'd like to add to the deploy config.
 
