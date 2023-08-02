@@ -4,13 +4,16 @@
 pip install minihydra
 ```
 
-:fleur_de_lis:
+[//]: # (:fleur_de_lis:)
 
-*minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via **[Hydra](https://www.github.com/facebookresearch/hydra)**. After running into some limitations with **[Hydra](https://www.github.com/facebookresearch/hydra)**, I ended up needing to build *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended.
+[//]: # ()
+[//]: # (*minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML]&#40;https://www.github.com/agi-init/UnifiedML&#41; initially via **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**. After running into some limitations with **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**, I ended up needing to build *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** who know I tried my damned hardest to integrate the features I wanted into **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**. After overdoing the hacking &#40;and the issue-posting&#41;, eventually I built this. Hope people find it useful. No competition intended.)
 
-I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need. It's ~400 lines of code if you wish to figure it out. Generally speaking, I ask that you put the equal effort that I did into integrating with **[Hydra](https://www.github.com/facebookresearch/hydra)** before blatantly copying or ripping off this work. See if **[Hydra](https://www.github.com/facebookresearch/hydra)** or this suits your needs. If not, and you really make sure, then go ahead. But be careful, hydras and leviathans are beautiful beasts and they are not to mess with.
+[//]: # ()
+[//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need. It's ~400 lines of code if you wish to figure it out. Generally speaking, I ask that you put the equal effort that I did into integrating with **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** before blatantly copying or ripping off this work. See if **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** or this suits your needs. If not, and you really make sure, then go ahead. But be careful, hydras and leviathans are beautiful beasts and they are not to mess with.)
 
-:fleur_de_lis:
+[//]: # ()
+[//]: # (:fleur_de_lis:)
 
 ### Reading in args
 
