@@ -96,6 +96,8 @@ def main(args):
 
 For deeper documentation and allowing this work to continue to be open source, please consider [donating](https://github.com/sponsors/AGI-init).
 
+Building the UnifiedML ecosystem was a lot of work and I could use money.
+
 [//]: # (### Literals: )
 
 [//]: # (lists, dicts, floats, ints, booleans, null, inf, strings; put lists and dicts in quotes)
