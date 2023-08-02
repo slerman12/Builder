@@ -32,7 +32,7 @@ That method must return the ```server```, ```username```, and ```password```.
 
 Optionally:
 - Any additional ```func``` that needs to be run (e.g. [connecting to a VPN](VPN.py)).
-- An ```app_name_paths``` dictionary of names and paths to any UnifiedML apps you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```, or leave this blank to use the remote server's root directory and ```ML``` as the run script.
+- An ```app_name_paths``` dictionary of names and paths to any UnifiedML apps' run scripts you'd like to use, *e.g.* ```{'name_of_my_app': '/server/path/to/name_of_my_app/run.py'}```, or leave this blank to use the remote server's root directory and ```ML``` as the run script.
 - A ```commands``` list or string of any extra environment-setup commands you may need to pass to the remote server command-line and deploy config such as [activating a conda environment for example](Examples/Servers/XuLab.py#L9).
 - Any additional ```sbatch``` string text you'd like to add to the deploy config.
 
