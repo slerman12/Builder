@@ -50,8 +50,7 @@ from tributaries import my_sweep, my_plots, my_checkpoints
 my_sweep.hyperparams = ['task=mario experiment=example', 
                         'task=imagenet experiment=example']  # List of hyperparams to launch
 
-# Corresponds to an app name in app_name_paths whose name and directory location is defined in Servers
-my_sweep.app = 'name_of_my_app'
+my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in app_name_paths defined in Servers
 
 my_plots.plots = [['example']]  # Experiments to plot together  & get logs for
 my_checkpoints.experiments = ['example']  # Experiments to get checkpoints for
