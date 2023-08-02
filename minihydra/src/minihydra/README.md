@@ -4,6 +4,8 @@
 pip install minihydra
 ```
 
+minihydra / leviathan emerged from building the grammar of [UnifiedML]() initially with the full [Hydra](). After running into some limitations with Hydra, I ended building this from scratch and have found it be extremely useful and supports everything I have need of, in only ~400 lines of code.
+
 ---
 
 ### Reading in args
