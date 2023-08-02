@@ -47,17 +47,11 @@ You can define a ```sweep``` file like this one:
 
 from tributaries import my_sweep, my_plots, my_checkpoints
 
-# List of hyperparams to launch
 my_sweep.hyperparams = ['task=mario experiment=example', 
-                        'task=imagenet experiment=example']
-
+                        'task=imagenet experiment=example']  # List of hyperparams to launch
 my_sweep.app = 'name_of_my_app'
-
-# List of lists of experiments to plot together  & get logs for
-my_plots.plots = [['example']]
-
-# List of experiments to get checkpoints for
-my_checkpoints.experiments = ['example']
+my_plots.plots = [['example']]  # List of lists of experiments to plot together  & get logs for
+my_checkpoints.experiments = ['example']  # List of experiments to get checkpoints for
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
