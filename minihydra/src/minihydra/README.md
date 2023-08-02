@@ -121,6 +121,6 @@ For deeper documentation and allowing this work to continue to be open source, p
 
 ---
 
-[^1]: *minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via **[Hydra](https://www.github.com/facebookresearch/hydra)**. Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended.
+*minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML](https://www.github.com/agi-init/UnifiedML) initially via **[Hydra](https://www.github.com/facebookresearch/hydra)**. Great respect to the team at **[Hydra](https://www.github.com/facebookresearch/hydra)** who know I tried my damned hardest to integrate the features I wanted into **[Hydra](https://www.github.com/facebookresearch/hydra)**. After overdoing the hacking (and the issue-posting), eventually I built this. Hope people find it useful. No competition intended.
 
 [//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need.)
