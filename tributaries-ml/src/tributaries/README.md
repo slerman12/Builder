@@ -59,7 +59,7 @@ Add ```checkpoints=true``` to download checkpoints.
 python MyServer.py
 ```
 
-#### Plotting & logs
+#### Plotting & Logs
 
 ```console
 python MyServer.py plot=true
