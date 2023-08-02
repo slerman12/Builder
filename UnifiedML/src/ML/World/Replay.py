@@ -228,7 +228,7 @@ class Replay:
                 self._replay = None  # Reset iterator when depleted
                 sample = next(self.replay)
 
-        return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True, dtype=torch.float32)
+        return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True)
                       for key, value in sample.items()})
 
     def __iter__(self):

@@ -49,7 +49,7 @@ class Environment:
 
             # Frame-stacked obs
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
-            obs = self.transform(torch.as_tensor(obs, device=self.device, dtype=torch.float32))
+            obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
             with torch.no_grad():
