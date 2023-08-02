@@ -29,7 +29,9 @@ class CNNEncoder(nn.Module):
 
         self.standardize = \
             standardize and None not in [self.mean, self.stddev]  # Whether to center-scale (0 mean, 1 stddev)
-        self.normalize = norm and None not in [self.low, self.high]  # Whether to [-0.5, 0.5] shift-max scale
+        self.normalize = norm and None not in [self.low, self.high]  # Whether to shift-max scale
+
+        self.norm = norm  # Can control normalization range, default: [-1, 1]
 
         # Dimensions
         obs_shape = [*(1,) * (len(self.obs_shape) < 2), *self.obs_shape]  # Create at least 1 channel dim & spatial dim
@@ -67,7 +69,7 @@ class CNNEncoder(nn.Module):
         if self.standardize:
             obs = (obs - self.mean.to(obs.device).view(-1, *axes)) / self.stddev.to(obs.device).view(-1, *axes)
         elif self.normalize:
-            obs = (obs - self.low) / (self.high - self.low) - 0.5
+            obs = (self.norm * 2) * (obs - self.low) / (self.high - self.low) - self.norm
 
         try:
             channel_dim = (1,) * (not axes)  # At least 1 channel dim and spatial dim

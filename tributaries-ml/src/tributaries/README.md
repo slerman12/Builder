@@ -8,6 +8,8 @@ pip install tributaries-ml
 
 [Examples](Examples)
 
+---
+
 ### Server
 
 Simply create and run a python file with a server configuration like this one:
