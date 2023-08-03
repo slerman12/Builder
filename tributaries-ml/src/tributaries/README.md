@@ -53,9 +53,8 @@ my_sweep.hyperparams = ['...',  '...']  # List of hyperparams to launch
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
 
-# Names of experiments to download lots/logs and checkpoints for  
-my_plots.plots = [['...',], ['...',]]
-my_checkpoints.experiments = ['...',]
+my_plots.plots = [['...',], ['...',]]  # Names of experiments to plot together and download logs for
+my_checkpoints.experiments = ['...',]  # Names of experiments to download checkpoints for
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
