@@ -49,7 +49,11 @@ You can define a ```sweep``` file like this one:
 
 from tributaries import my_sweep
 
-my_sweep.hyperparams = ['...',  '...']  # List of hyperparams to launch
+# Iterable list of hyperparams
+my_sweep.hyperparams = [
+    '...',  
+    '...'
+]
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.

@@ -24,7 +24,7 @@ my_sweep = Args(
 )
 
 my_plots = Args(
-    plots=[],  # List of lists of strings (list of grouped plots)
+    plots=[],  # List of lists of strings (list of grouped plots)  TODO Infer if None, default None
     sftp=True,
     write_tabular=False,
     steps=None,
@@ -36,5 +36,5 @@ my_plots = Args(
 )
 
 my_checkpoints = Args(
-    experiments=[],  # List of experiments (strings)
+    experiments=[],  # List of experiments (strings)  TODO Infer if None, default None
 )
