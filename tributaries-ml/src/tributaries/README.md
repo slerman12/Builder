@@ -65,7 +65,7 @@ my_plots.plots = [['Exp1', 'Exp2']]  # Names of experiments to plot together in 
 my_checkpoints.experiments = ['Exp1', 'Exp2']  # Names of experiments to download checkpoints for
 ```
 
-The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
+The ```my_sweep``` and ```my_plots``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
 
 [See here for examples.](Examples/Sweeps) 
 
