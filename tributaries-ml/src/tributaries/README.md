@@ -73,7 +73,7 @@ my_plots.plots = [
 my_checkpoints.experiments = ['...', '...']  # Names of experiments
 ```
 
-```my_sweep``` and ```my_plot``` have [additional configurations](Sweeps.py) that can be used to further customize the launching and plotting protocol.
+```my_sweep``` and ```my_plot``` have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
 
