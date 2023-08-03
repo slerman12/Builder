@@ -64,7 +64,7 @@ my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths
 my_plots.plots = [
     ['...', '...']  # Names of experiments to plot together in a single plot
     
-    ['...', '...']
+    ['...', '...'],
 ]
 
 my_checkpoints.experiments = ['...', '...']  # Names of experiments to download checkpoints for
