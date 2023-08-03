@@ -62,7 +62,7 @@ my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths
 # Logs to download
 my_plots.plots = [['Exp1', 'Exp2']]  # Names of experiments to plot together in a single plot
 
-my_checkpoints.experiments = ['...', '...']  # Names of experiments to download checkpoints for
+my_checkpoints.experiments = ['Exp1', 'Exp2']  # Names of experiments to download checkpoints for
 ```
 
 The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
