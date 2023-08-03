@@ -51,7 +51,10 @@ from tributaries import my_sweep
 
 # Iterable list of hyperparams
 my_sweep.hyperparams = [
+    # Hyperparam set 1
     '...',  
+    
+    # Hyperparam set 2
     '...'
 ]
 ```
