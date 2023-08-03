@@ -42,6 +42,8 @@ Optionally:
 
 Note the Server decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
 
+You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
+
 You can define a ```sweep``` file like this one:
 
 ```python
@@ -73,8 +75,6 @@ my_checkpoints.experiments = ['...', '...']  # Names of experiments to download 
 The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
-
-You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
 
 ### Running
 
