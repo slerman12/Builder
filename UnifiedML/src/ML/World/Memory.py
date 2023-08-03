@@ -97,9 +97,12 @@ class Memory:
         shared = self.num_experiences + batch_size <= sum(self.capacities[:4])
         mmap = self.num_experiences + batch_size <= sum(self.capacities[:5])
 
+        def error():
+            raise RuntimeError('Memory containing 0 episodes allocated 0 capacity. Try hd_capacity=1e6.')
+
         mode = 'gpu' if gpu else 'pinned' if pinned else 'shared_tensor' if shared_tensor \
             else 'shared' if shared else 'mmap' if mmap \
-            else next(iter(self.episodes[0].batch(0).values())).mode  # Oldest batch
+            else next(iter(self.episodes[0].batch(0).values())).mode if self.episodes else error()  # Oldest batch
 
         if mode == 'mmap':
             assert self.save_path is not None, \
@@ -393,12 +396,10 @@ class Mem:
 
         self.main_worker = os.getpid()
 
-        # atexit.register(self.cleanup)
-
     @contextlib.contextmanager
     def mem(self):
         with DelayedKeyboardInterrupt():
-            if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store
+            if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store !!!
                 shm = SharedMemory(name=self.name)
                 yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
                 shm.close()
