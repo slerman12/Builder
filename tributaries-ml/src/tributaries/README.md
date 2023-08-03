@@ -61,7 +61,7 @@ my_sweep.hyperparams = [
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
 
-# What plots to generate and download logs for
+# Logs to download
 my_plots.plots = [
     ['...', '...']  # Names of experiments to plot together in a single plot
 ]
