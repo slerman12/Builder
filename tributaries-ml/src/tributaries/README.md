@@ -38,9 +38,11 @@ Optionally:
 
 [You may use one of the blueprint server files provided.](Examples/Servers)
 
-### Sweep
+> &#9432;
+>
+> You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
 
-Note the Server decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
+### Sweep
 
 You may define a ```sweep``` file like this one:
 
@@ -62,8 +64,6 @@ my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths
 # What plots to generate and download logs for
 my_plots.plots = [
     ['...', '...']  # Names of experiments to plot together in a single plot
-    
-    ['...', '...']
 ]
 
 my_checkpoints.experiments = ['...', '...']  # Names of experiments to download checkpoints for
