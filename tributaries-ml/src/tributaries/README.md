@@ -73,6 +73,8 @@ my_plots.plots = [
 my_checkpoints.experiments = ['...', '...']  # Names of experiments
 ```
 
+```my_sweep``` and ```my_plot``` have additional configurations that can customize the launching and plotting protocol.
+
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
 
 You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
