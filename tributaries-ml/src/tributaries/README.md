@@ -67,8 +67,7 @@ my_plots.plots = [
     ['...', '...']
 ]
 
-# Checkpoints to download
-my_checkpoints.experiments = ['...', '...']  # Names of experiments
+my_checkpoints.experiments = ['...', '...']  # Names of experiments to download checkpoints for
 ```
 
 The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
