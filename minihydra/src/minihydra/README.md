@@ -97,7 +97,7 @@ def main(args):
 
 **Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, and expanding module and yaml search paths.**
 
-For deeper documentation, [leave an issue]() / please consider [donating](https://github.com/sponsors/AGI-init).
+For deeper documentation, [leave an issue]() / please consider [sponsoring](https://github.com/sponsors/AGI-init).
 
 [//]: # (:fleur_de_lis:)
 
