@@ -55,7 +55,7 @@ my_sweep.hyperparams = [
     '...',
 
     # Hyperparam set 2
-    '...'
+    '...',
 ]
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
