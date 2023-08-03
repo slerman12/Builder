@@ -62,10 +62,8 @@ my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths
 
 # What plots to generate and download logs for
 my_plots.plots = [
-    # Plot group 1
     ['...', '...']  # Names of experiments to plot together in a single plot
     
-    # Plot group 2
     ['...', '...']
 ]
 
