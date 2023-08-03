@@ -74,7 +74,7 @@ my_checkpoints.experiments = ['...', '...']  # Names of experiments to download 
 
 The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
 
-[You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
+[You may use one of the provided examples](Examples/Sweeps) to make it easy.
 
 ### Running
 
