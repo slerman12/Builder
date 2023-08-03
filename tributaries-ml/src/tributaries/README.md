@@ -47,17 +47,9 @@ You can define a ```sweep``` file like this one:
 ```python
 # path/to/my/sweep.py
 
-from tributaries import my_sweep, my_plots, my_checkpoints
+from tributaries import my_sweep
 
 my_sweep.hyperparams = ['...',  '...']  # List of hyperparams to launch
-
-my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
-
-# Names of experiments to download plots/logs and checkpoints for
-
-my_plots.plots = [['...',], ['...',]]
-
-my_checkpoints.experiments = ['...',]
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
