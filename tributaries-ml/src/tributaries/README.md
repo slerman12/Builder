@@ -67,7 +67,7 @@ my_checkpoints.experiments = ['Exp1', 'Exp2']  # Names of experiments to downloa
 
 The ```my_sweep``` and ```my_plot``` toggles have [additional configurations](Sweeps.py) that can be used to further customize the launching and plots.
 
-[You may use one of the provided examples](Examples/Sweeps) to make it easy.
+[Examples available here.](Examples/Sweeps) 
 
 ### Running
 
