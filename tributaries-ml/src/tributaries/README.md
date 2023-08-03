@@ -1,4 +1,4 @@
-# Tributaries 
+# Tributaries
 
 A library for mass-deploying [UnifiedML](https://www.github.com/agi-init/UnifiedML) apps on [slurm](https://en.wikipedia.org/wiki/Slurm_Workload_Manager)-enabled remote servers.
 
@@ -47,16 +47,30 @@ You can define a ```sweep``` file like this one:
 ```python
 # path/to/my/sweep.py
 
-from tributaries import my_sweep
+from tributaries import my_sweep, my_plots, my_checkpoints
 
 # Iterable list of hyperparams
 my_sweep.hyperparams = [
     # Hyperparam set 1
-    '...',  
-    
+    '...',
+
     # Hyperparam set 2
     '...'
 ]
+
+my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
+
+# What plots to generate and download logs for
+my_plots.plots = [
+    # Plot group 1
+    ['...', '...']  # Experiments names of plots to plot together
+    
+    # Plot group 2
+    ['...', '...']  # Experiments names of plots to plot together
+]
+
+# List of checkpoints to download
+my_checkpoints.experiments = ['...', '...']  # Experiment names
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
@@ -93,7 +107,7 @@ python MyServer.py checkpoints=true
 
 Note: Tributaries launching fully works for non-UnifiedML apps too. Also, for convenience, ```tributaries hyperparams='...' app='run.py'``` can be used as a general slurm launcher on your remote servers.
 
-One more thing: if your remote UnifiedML apps are [git-ssh enabled](https://docs.github.com/en/authentication/connecting-to-github-with-ssh), Tributaries will automatically try syncing with the latest branch via a git pull. You can disable automatic GitHub-syncing with the ```github=false``` flag. 
+One more thing: if your remote UnifiedML apps are [git-ssh enabled](https://docs.github.com/en/authentication/connecting-to-github-with-ssh), Tributaries will automatically try syncing with the latest branch via a git pull. You can disable automatic GitHub-syncing with the ```github=false``` flag.
 
 #
 
