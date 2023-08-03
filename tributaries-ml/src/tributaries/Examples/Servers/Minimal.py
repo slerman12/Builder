@@ -5,7 +5,7 @@ from tributaries import my_server
 
 @my_server()
 def main():
-    server, username, password = 'slurm', 'slerman', ''
+    server, username, password = 'samlerman.com', 'slerman', ''
 
     return server, username, password
 
