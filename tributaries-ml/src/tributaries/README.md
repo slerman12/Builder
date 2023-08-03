@@ -51,10 +51,10 @@ from tributaries import my_sweep, my_plots, my_checkpoints
 
 my_sweep.hyperparams = [
     # Hyperparam set 1
-    '...',
+    '... experiment=Exp1',
 
     # Hyperparam set 2
-    '...'
+    '... experiment=Exp2'
 ]
 
 my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths' of Server definition
