@@ -49,7 +49,6 @@ You may define a ```sweep``` file like this one:
 
 from tributaries import my_sweep, my_plots, my_checkpoints
 
-# Iterable list of hyperparams
 my_sweep.hyperparams = [
     # Hyperparam set 1
     '...',
