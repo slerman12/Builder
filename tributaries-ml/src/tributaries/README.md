@@ -70,7 +70,7 @@ my_plots.plots = [
 ]
 
 # List of checkpoints to download
-my_checkpoints.experiments = ['...', '...']  # Experiment names
+my_checkpoints.experiments = ['...', '...']  # Names of experiments
 ```
 
 [You may use one of the blueprint sweep files examples](Examples/Sweeps) to make it easy.
