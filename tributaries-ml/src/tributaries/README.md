@@ -40,9 +40,7 @@ Optionally:
 
 ### Sweep
 
-Note the Server decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with.
-
-You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
+Note the Server decorator may accept a ```sweep=``` file path for picking out the hyperparams to launch the experiments with. You can also pass in the sweep file path via command line with the ```sweep=path/to/my/sweep.py``` flag. The command-line flag will override the Server decorator flag; therefore the Server decorator flag is optional if the command-line flag is present.
 
 You may define a ```sweep``` file like this one:
 
