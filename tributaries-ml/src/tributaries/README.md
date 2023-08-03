@@ -56,6 +56,7 @@ my_sweep.app = 'name_of_my_app'  # Corresponds to an app name in 'app_name_paths
 # Names of experiments to download plots/logs and checkpoints for
 
 my_plots.plots = [['...',], ['...',]]
+
 my_checkpoints.experiments = ['...',]
 ```
 
