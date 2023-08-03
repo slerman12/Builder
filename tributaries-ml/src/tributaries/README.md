@@ -67,7 +67,7 @@ my_plots.plots = [
     ['...', '...']
 ]
 
-# List of checkpoints to download
+# Checkpoints to download
 my_checkpoints.experiments = ['...', '...']  # Names of experiments
 ```
 
