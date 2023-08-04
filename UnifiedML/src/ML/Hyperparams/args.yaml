@@ -91,7 +91,7 @@ num_workers: 8
 autocast: false  # Shorthand for mixed_precision
 mixed_precision: ${autocast}
 # Experiment
-Agent: Agents.AC2Agent
+Agent: Agents.Agent
 seed: 1
 experiment: Exp
 
@@ -171,8 +171,8 @@ replay:
     action_spec: ${action_spec}
 
 logger:
-  _target_: Logger.Logger
-  path: ${log_path}Benchmarking/${experiment}/${format:${Agent}}/${environment.suite}/
+  _target_: Benchmarking.Logger.Logger
+  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${environment.suite}/
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
@@ -181,14 +181,14 @@ logger:
   wandb: false
 
 vlogger:
-  _target_: Vlogger.Vlogger
-  path: ${logger.path}${task_name}_${seed}_Video_Image
+  _target_: Benchmarking.Vlogger.Vlogger
+  path: ${log_path}Benchmarking/Vlogs/${experiment}/${format:${Agent}}/${environment.suite}/${task_name}_${seed}
   fps: 20
   reel: ${generate}
 
 plotting:
-  _target_: Plot.plot
-  path: ${log_path}Benchmarking/${experiment}/Plots
+  _target_: Benchmarking.Plot.plot
+  path: ${log_path}Benchmarking/Plots/${experiment}
   plot_experiments: ${experiment}
   plot_agents: null
   plot_suites: null

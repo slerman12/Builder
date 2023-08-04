@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 
-from Blocks.Architectures.Vision.CNN import AvgPool, cnn_broadcast
+from Agents.Blocks.Architectures.Vision.CNN import AvgPool, cnn_broadcast
 
 import Utils
 

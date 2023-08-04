@@ -306,7 +306,7 @@ def _parse(value):
 
 
 def parse(args=None):
-    # Parse command-line
+    # Parse command-line  TODO parse key1= and key1.key2= as key1={_target_: key1-value, key2: key2-value}
     for sys_arg in sys.argv[1:]:
         arg = args
         keys, value = sys_arg.split('=', 1)

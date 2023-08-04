@@ -4,8 +4,8 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from torch import nn
 
-from Blocks.Architectures.Residual import Residual
-from Blocks.Architectures.Vision.CNN import AvgPool, cnn_broadcast
+from Agents.Blocks.Architectures.Residual import Residual
+from Agents.Blocks.Architectures.Vision.CNN import AvgPool, cnn_broadcast
 
 import Utils
 

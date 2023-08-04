@@ -6,7 +6,7 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures.Vision.CNN import cnn_broadcast
+from Agents.Blocks.Architectures.Vision.CNN import cnn_broadcast
 
 
 """

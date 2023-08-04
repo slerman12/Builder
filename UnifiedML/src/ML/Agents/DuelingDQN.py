@@ -4,7 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from torch.nn import Module
 
-from Blocks.Architectures import MLP
+from Agents.Blocks.Architectures import MLP
 
 from minihydra import instantiate
 

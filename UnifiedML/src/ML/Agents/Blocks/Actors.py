@@ -9,11 +9,11 @@ from torch import nn
 
 from minihydra import instantiate
 
-from Blocks.Architectures.MLP import MLP
+from Agents.Blocks.Architectures.MLP import MLP
 
 import Utils
 
-from Blocks.Creator import Creator
+from Agents.Blocks.Creator import Creator
 
 
 class EnsemblePiActor(nn.Module):

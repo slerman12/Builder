@@ -15,8 +15,8 @@ from multiprocessing.pool import ThreadPool
 from torch.nn import Identity, Flatten  # For direct accessibility via command line
 import torchvision  # For direct accessibility via command line
 from torchvision import transforms  # For direct accessibility via command line
-from Blocks.Augmentations import *  # For direct accessibility via command line
-from Blocks.Architectures import *  # For direct accessibility via command line
+from Agents.Blocks.Augmentations import *  # For direct accessibility via command line
+from Agents.Blocks.Architectures import *  # For direct accessibility via command line
 
 import warnings
 

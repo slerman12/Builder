@@ -4,7 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from math import inf
 
-from Blocks.Creator import MonteCarlo
+from Agents.Blocks.Creator import MonteCarlo
 
 from Utils import one_hot
 

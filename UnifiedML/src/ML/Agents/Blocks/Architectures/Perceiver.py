@@ -10,8 +10,8 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures import MLP
-from Blocks.Architectures.Transformer import AttentionBlock, LearnableFourierPositionalEncodings, PositionalEncodings
+from Agents.Blocks.Architectures import MLP
+from Agents.Blocks.Architectures.Transformer import AttentionBlock, LearnableFourierPositionalEncodings, PositionalEncodings
 
 
 class Perceiver(nn.Module):

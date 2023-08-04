@@ -11,7 +11,7 @@ from torch import nn
 
 from minihydra import instantiate
 
-from Distributions import TruncatedNormal, NormalizedCategorical
+from Agents.Blocks.Architectures.Distributions import TruncatedNormal, NormalizedCategorical
 
 import Utils
 

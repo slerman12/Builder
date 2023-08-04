@@ -11,17 +11,18 @@ from torch.nn.functional import cross_entropy
 
 from minihydra import instantiate
 
-from Blocks.Architectures import MLP
-from Blocks.Architectures.Vision.ResNet import MiniResNet
+from Agents.Blocks.Architectures import MLP
+from Agents.Blocks.Architectures.Vision.ResNet import MiniResNet
 
 import Utils
 
-from Blocks.Augmentations import RandomShiftsAug
-from Blocks.Encoders import CNNEncoder
-from Blocks.Actors import EnsemblePiActor
-from Blocks.Critics import EnsembleQCritic
+from Agents.Blocks.Augmentations import RandomShiftsAug
+from Agents.Blocks.Encoders import CNNEncoder
+from Agents.Blocks.Actors import EnsemblePiActor
+from Agents.Blocks.Critics import EnsembleQCritic
 
-from Losses import QLearning, PolicyLearning, SelfSupervisedLearning
+from Agents.Losses import QLearning
+from Agents.Losses import PolicyLearning, SelfSupervisedLearning
 
 
 class AC2Agent(torch.nn.Module):

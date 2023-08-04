@@ -9,8 +9,8 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures.MLP import MLP
-from Blocks.Architectures.MultiHeadAttention import CrossAttention
+from Agents.Blocks.Architectures.MLP import MLP
+from Agents.Blocks.Architectures.MultiHeadAttention import CrossAttention
 
 
 class AttentionBlock(nn.Module):

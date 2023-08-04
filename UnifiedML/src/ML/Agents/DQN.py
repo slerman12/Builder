@@ -11,12 +11,12 @@ from minihydra import instantiate
 
 import Utils
 
-from Blocks.Augmentations import RandomShiftsAug
-from Blocks.Encoders import CNNEncoder
-from Blocks.Actors import EnsemblePiActor
-from Blocks.Critics import EnsembleQCritic
+from Agents.Blocks.Augmentations import RandomShiftsAug
+from Agents.Blocks.Encoders import CNNEncoder
+from Agents.Blocks.Actors import EnsemblePiActor
+from Agents.Blocks.Critics import EnsembleQCritic
 
-from Losses import QLearning
+from Agents.Losses import QLearning
 
 
 class DQNAgent(torch.nn.Module):

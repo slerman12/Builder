@@ -9,7 +9,7 @@ from torch import nn
 
 from minihydra import instantiate
 
-from Blocks.Architectures.Vision.CNN import CNN
+from Agents.Blocks.Architectures.Vision.CNN import CNN
 
 import Utils
 

@@ -5,7 +5,7 @@
 import torch
 from torch import nn
 
-from Blocks.Architectures.Vision.CNN import cnn_broadcast
+from Agents.Blocks.Architectures.Vision.CNN import cnn_broadcast
 
 import Utils
 

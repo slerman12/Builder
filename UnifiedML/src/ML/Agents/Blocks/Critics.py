@@ -10,7 +10,7 @@ from torch import nn
 
 from minihydra import instantiate
 
-from Blocks.Architectures.MLP import MLP
+from Agents.Blocks.Architectures.MLP import MLP
 
 import Utils
 

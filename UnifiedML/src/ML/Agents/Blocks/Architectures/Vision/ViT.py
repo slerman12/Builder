@@ -9,8 +9,8 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures.Transformer import SelfAttentionBlock, LearnableFourierPositionalEncodings
-from Blocks.Architectures.Vision.CNN import AvgPool, CNN
+from Agents.Blocks.Architectures.Transformer import SelfAttentionBlock, LearnableFourierPositionalEncodings
+from Agents.Blocks.Architectures.Vision.CNN import AvgPool, CNN
 
 
 class ViT(nn.Module):

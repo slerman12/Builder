@@ -6,8 +6,8 @@ from torch import nn
 
 import Utils
 
-from Blocks.Architectures.MLP import MLP
-from Blocks.Architectures.Transformer import PositionalEncodings, LearnableFourierPositionalEncodings
+from Agents.Blocks.Architectures.MLP import MLP
+from Agents.Blocks.Architectures.Transformer import PositionalEncodings, LearnableFourierPositionalEncodings
 
 
 class RN(nn.Module):
