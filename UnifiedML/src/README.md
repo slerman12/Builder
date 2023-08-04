@@ -42,8 +42,10 @@ By [Sam Lerman](https://www.github.com/slerman12).
 
 ---
 
-> This work is an effort to create the best of all worlds in ML: accelerated, accessible and easy, state of the art, and general, to meet every ML need and then some. The purpose of a generalist agent is reflected by the expression "to be greater than the sum of parts". For each task in a pool of learnable tasks, a singular agent may learn to better generalize not just on each one individually[1^], but on altogether new tasks[^2] due to the generalization of their inter-related and transferable knowledge-components. In the future, this library will be the easiest way to reproduce ML feats like [Imagen]() and [Stable Diffusion](), not to mention [GATO](). In the meantime, I ask for you to [sponsor]() this work and help in any way to provide me compute and resources and support for realizing the full potential of this "library". UnifiedML is much more than a library.
+> This work is an effort to create the best of all worlds in ML: accelerated, accessible and easy, state of the art, and general, to meet every ML need and then some. The purpose of a generalist agent is reflected by the expression "to be greater than the sum of parts". For each task in a pool of learnable tasks, a singular agent may learn to better generalize not just on each one individually[1^], but on altogether new tasks[^2] due to the generalization of their inter-related and transferable knowledge-components. In the future (and to some degree already today), this library will be the easiest way to reproduce ML feats like [Imagen]() and [Stable Diffusion](), not to mention [GATO](). In the meantime, I ask for you to [sponsor]() this work and help in any way to provide me compute and resources and support for realizing the full potential of this "library". UnifiedML is much more than a library.
 
 ### Projects built with UnifiedML
 
 ### Examples
+
+[//]: # (Pure-code examples that just import the relevant envs, etc. with plots, maybe an Examples dir? Or just docs)
