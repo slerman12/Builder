@@ -34,11 +34,7 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 [See full documentation here.](https://slerman12.github.io/Docs/)
 
-#
-
 [//]: # (TODO Projects built with UnifiedML and Examples)
-
-By [Sam Lerman](https://www.github.com/slerman12).
 
 ---
 
@@ -58,3 +54,7 @@ By [Sam Lerman](https://www.github.com/slerman12).
 [//]: # (- [\<links to docs\>]&#40;&#41;)
 
 [//]: # (Pure-code examples that just import the relevant envs, etc. with plots, maybe an Examples dir? Or just docs)
+
+#
+
+By [Sam Lerman](https://www.github.com/slerman12).
