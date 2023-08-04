@@ -57,7 +57,7 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 ### Sponsorships & support
 
-This library is built by a single individual from low-income means on the funding of graduate student wage. [Please support financially by sponsoring if you can]()  and if you have access to compute and resources that you would be willing to contribute, email [slerman12@gmail.com]().
+This library is built by a single individual from low-income means on the funding of a graduate student wage. [Please support financially by sponsoring if you can]()  and if you have access to compute and resources that you would be willing to contribute, email [slerman12@gmail.com]().
 
 ### Push-requests
 
