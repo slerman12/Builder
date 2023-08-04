@@ -39,3 +39,7 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 [//]: # (TODO Projects built with UnifiedML and Examples)
 
 By [Sam Lerman](https://www.github.com/slerman12).
+
+#
+
+This work is an effort to create the best of all worlds in ML: accelerated, accessible and easy, state of the art, and general, to meet every ML need and then some. The purpose of a generalist agent is reflected by the expression "more than the sum of its parts". For each task in a pool of learnable tasks, the singular agent is able to better generalize not just on each of them individually, but together in the scope of their more general shared and transferable knowledge-stores. In the future, this library will be the easiest way to reproduce ML feats like [Imagen]() and [Stable Diffusion](), not to mention [GATO](). In the meantime, I ask for you to [sponsor]() this work and help in any way to provide compute and resources and support for realizing the full potential of this "library". UnifiedML is much more than a library. 
