@@ -14,3 +14,5 @@ if '--from-scratch' in sys.argv:
     os.system(f'pip install {" ".join(builds)} --force-reinstall')
 else:
     os.system(f'pip install {" ".join(builds)} --force-reinstall --no-dependencies')
+
+# If issues, may be necessary to delete auto-generated build/ directories and re-run.
