@@ -3,7 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import re
-import sys
 from typing import MutableSequence
 from operator import iand
 from functools import reduce
@@ -22,8 +21,7 @@ from matplotlib import ticker, dates, lines
 from matplotlib.ticker import FuncFormatter, PercentFormatter
 import seaborn as sns
 
-from minihydra import get_args, grammar, just_args, instantiate
-import Utils
+from minihydra import just_args, instantiate
 
 
 def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_tasks=None, steps=None,
@@ -350,7 +348,7 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
 
 def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
     # All CSVs from path, recursive
-    csv_names = glob.glob('./Benchmarking/*/*/*/*.csv', recursive=True)
+    csv_names = glob.glob('./Benchmarking/*/*/*/*/*.csv', recursive=True)
 
     performance = []
     predicted_vs_actual = []
@@ -361,7 +359,7 @@ def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
     # Parsing + reading
     for csv_name in csv_names:
         # Parse file names
-        experiment, agent, suite, task_seed_eval = csv_name.split('/')[2:]
+        experiment, agent, suite, task_seed_eval = csv_name.split('/')[3:]
         split_size = 3 if 'Generate' in task_seed_eval else 5 if 'Predicted_vs_Actual' in task_seed_eval \
             else 4 if 'Predicted_Probas' in task_seed_eval else 2
         task_seed = task_seed_eval.rsplit('_', split_size)

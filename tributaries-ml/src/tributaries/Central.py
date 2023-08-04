@@ -18,7 +18,7 @@ from functools import partial
 import ast
 from pexpect import pxssh, spawn
 
-from ML import __file__, Plot
+from ML import __file__, plot as make_plots
 from minihydra import just_args, instantiate, interpolate, Args, recursive_update, recursive_Args
 
 
@@ -209,13 +209,13 @@ def download(server, username, password, sweep, plots=None, checkpoints=None):
     p.sendline(f'cd {os.path.dirname(path) if ".py" in path else path}')
     p.expect('sftp> ', timeout=None)
     if plots:
-        os.makedirs('./Benchmarking', exist_ok=True)
-        os.chdir('./Benchmarking')
-        p.sendline(f'lcd {cwd}/Benchmarking')
+        os.makedirs('./Benchmarking/Logs', exist_ok=True)
+        os.chdir('./Benchmarking/Logs')
+        p.sendline(f'lcd {cwd}/Benchmarking/Logs')
         p.expect('sftp> ', timeout=None)
         for i, experiment in enumerate(experiments):
             print(f'{i + 1}/{len(experiments)} SFTP\'ing "{experiment}"')
-            p.sendline(f'get -r ./Benchmarking/{experiment.replace(".*", "*")}')  # Some regex compatibility
+            p.sendline(f'get -r ./Benchmarking/Logs/{experiment.replace(".*", "*")}')  # Some regex compatibility
             p.expect('sftp> ', timeout=None)
     p.sendline(f'ls')  # Re-sync
     p.expect('sftp> ', timeout=None)
@@ -244,16 +244,16 @@ def paint(plots, name=''):
 
         for plot_experiments in plots.plots:
 
-            Plot.plot(path=f"./Benchmarking/{name}/{'_'.join(plot_experiments).strip('.')}/Plots/",
-                      plot_experiments=plot_experiments if len(plot_experiments) else None,
-                      plot_agents=plots.agents if 'agents' in plots and len(plots.agents) else None,
-                      plot_suites=plots.suites if 'suites' in plots and len(plots.suites) else None,
-                      plot_tasks=plots.tasks if 'tasks' in plots and len(plots.tasks) else None,
-                      steps=plots.steps if 'steps' in plots and plots.steps else inf,
-                      write_tabular=getattr(plots, 'write_tabular', False), plot_train=plot_train,
-                      title=getattr(plots, 'title', 'UnifiedML'), x_axis=getattr(plots, 'x_axis', 'Step'),
-                      verbose=True
-                      )
+            make_plots(path=f"./Benchmarking/{name}/Plots/{'_'.join(plot_experiments).strip('.')}/",
+                       plot_experiments=plot_experiments if len(plot_experiments) else None,
+                       plot_agents=plots.agents if 'agents' in plots and len(plots.agents) else None,
+                       plot_suites=plots.suites if 'suites' in plots and len(plots.suites) else None,
+                       plot_tasks=plots.tasks if 'tasks' in plots and len(plots.tasks) else None,
+                       steps=plots.steps if 'steps' in plots and plots.steps else inf,
+                       write_tabular=getattr(plots, 'write_tabular', False), plot_train=plot_train,
+                       title=getattr(plots, 'title', 'UnifiedML'), x_axis=getattr(plots, 'x_axis', 'Step'),
+                       verbose=True
+                       )
 
 
 def decorate(server, sweep=None, plot=False, checkpoints=False, **kwargs):

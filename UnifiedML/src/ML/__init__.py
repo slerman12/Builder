@@ -28,3 +28,4 @@ main = launch
 
 from Agents import Agent
 from Utils import load, save, optimize
+from Benchmarking.Plot import plot
