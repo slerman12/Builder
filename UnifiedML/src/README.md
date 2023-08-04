@@ -61,6 +61,6 @@ By [Sam Lerman](https://www.github.com/slerman12).
 
 # Contributing
 
-### Sponsorships
+### Sponsorships & support
 
 ### Push-requests
