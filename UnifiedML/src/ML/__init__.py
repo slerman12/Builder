@@ -3,8 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 """
-UnifiedML - A unified framework for intelligence training. Built and conceived as a generalist agent by Sam Lerman.
-
+UnifiedML - A unified framework for intelligence training. A built and conceived generalist agent by Sam Lerman.
     This file makes it possible to import UnifiedML as a package or launch it within Python.
 """
 
