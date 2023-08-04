@@ -61,7 +61,7 @@ This library is built by a single individual from low-income means on the fundin
 
 ### Push-requests
 
-This library is built with passion and dedication, and every effort has been made to make it minimal and elegant. The standards for accepted push requests are high, but if you have a push that you would like to add or a contribution that you would like to propose, you may [make a request]() and leave a note to me either in [issues]() or by email [slerman12@gmail.com]().
+This library is built with passion and dedication, and every effort has been made to make it minimal and elegant. The standards for accepted push requests are high, but if you have a push that you would like to make or a contribution that you would like to propose, you may [make a request]() and leave a note to me either in [issues]() or by email [slerman12@gmail.com]().
 
 Thank you.
 
