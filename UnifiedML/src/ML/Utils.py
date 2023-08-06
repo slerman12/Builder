@@ -27,7 +27,8 @@ import torch.nn as nn
 from torch.optim import *
 from torch.optim.lr_scheduler import *
 
-from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate
+from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
+    get_module
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -71,6 +72,15 @@ def init(args):
     torch.backends.cudnn.benchmark = True
 
     print('Device:', args.device)
+
+    # Set model
+    if args.model['_target_']:
+        model = get_module(args.model['_target_'])
+        signature = set(inspect.signature(model).parameters)
+        if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels'}:
+            args.agent.recipes.actor.Pi_head = args.model  # As Pi_head when output shape
+        else:
+            args.agent.recipes.encoder.Eyes = args.model  # Otherwise as Eyes
 
     interpolate(args)
 

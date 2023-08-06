@@ -150,7 +150,7 @@ class MonteCarlo:
 
         # Take random action  (Note: Due to rand_steps duration usually being short, efficiency is not optimized)
         if self.rand:
-            action = action.uniform_(self.low, self.high)
+            action = action.float().uniform_(self.low, self.high)
 
         # If sampled action is a discrete distribution, sample again  TODO Discrete norm?
         if sample_shape is None and self.discrete_as_continuous:

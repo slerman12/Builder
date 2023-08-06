@@ -301,6 +301,8 @@ class Worker:
 
         self.initialized = False
 
+        self.dtypes = {}
+
     @property
     def worker(self):
         try:
@@ -372,11 +374,18 @@ class Worker:
                 # For some reason, casting to int32 can throw collate_fn errors  TODO Lots of things do
                 # experience[key] = experience[key].to(torch.float32)  # Maybe b/c some ints aren't as_tensor'd
                 experience[key] = torch.as_tensor(experience[key], dtype=torch.int32)  # Ints just generally tend to crash
-            if getattr(experience[key], 'dtype', None) == torch.float64:
+            elif getattr(experience[key], 'dtype', None) == torch.float64:
                 experience[key] = torch.as_tensor(experience[key], dtype=torch.float32)
             # experience[key] = torch.as_tensor(experience[key], dtype=torch.float32).clone()
             # TODO In collate fn, just have a default tensor memory block to map everything to,
             #  maybe converts int64 to int32
+
+            # Enforce consistency - Atari for example can have inconsistent dtypes
+            if hasattr(experience[key], 'dtype'):
+                if key not in self.dtypes:
+                    self.dtypes[key] = experience[key].dtype
+                elif experience[key].dtype != self.dtypes[key]:
+                    experience[key] = torch.as_tensor(experience[key], dtype=self.dtypes[key])
 
         return experience.to_dict()
 
