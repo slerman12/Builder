@@ -114,7 +114,7 @@ Custom metrics
 3. Evaluate remaining as expression based on other metrics
 4. Override intersecting keys with exp
 5. If reward in exp and not log, add to log
-6. If reward not present use random key in log if exists as reward ?
+6. If reward not present use random key in log if exists as reward in exp ? If RL?
 7. env.reward should refer to env.metric.reward, default null. metric <-> env.metric, reward <-> metric.reward
 8. For each log and reward if present, track the episode sum
 9. Log the current logs sans accuracy/reward with addition of sums 
