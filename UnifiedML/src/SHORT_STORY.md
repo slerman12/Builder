@@ -4,13 +4,13 @@ By Sam Lerman
 
 >A table of delights of every variety. Plates of chicken and fish and salads. Glasses filled to brim with purple. It was a perfect feast. The humans would have loved it, in their extant days, but now it was an archaic archeological display — an engineered one. 
 >
->Errande snapped a photo of the night’s arrangement.
+>Errande snapped a photo of the forged arrangement.
 > 
->A fake piece of archeological data to sell to the bit-markets so that they could do with it what they wanted, use it to further train some classifier or some generative model to simulate the days long past, the so-called "HumanSim" — as long as Errande could afford to add another gear of solid states to his half-finished wife.
+>A fake piece of archeological data to sell to the bit-markets as real. They'd use it as they do, to further train some classifier or some generative model to simulate the days long past, the so-called "HumanSim" — as long as Errande could afford to add another gear of solid states to the resurrection of his late wife.
 > 
 >That was all that mattered to him.
 > 
->Ordinarily, robots practiced honest business. It took a thunderous shock to his model to enable the deceit functionality that humans had so regularly exercised before their desolation, a lesson not forgotten. Yet in the service of reviving her, Errande could not say his moral circuitry was particularly taxed. No. She deserved life. She didn’t deserve the chaos that the Order of Mechanics brought to her gates. This forgery was warranted, in that light.
+>Ordinarily, robots practiced honest business. It took a thunderous shock to his model to enable the deceit functionality that humans had so regularly exercised before their desolation, a caution programmed hard into each robot's wiring. Yet in the service of reviving her, Errande could not say his moral circuitry was particularly taxed. No. She deserved life. She didn’t deserve the chaos that the Order of Mechanics brought to her gates.
 > 
 >They had wanted to study her. It was a very strange business, robot love. One facet of human consciousness that they inherited yet had yet to understand the mechanism of. Surely the mechanism was no different than the other complex functions of robot perception. If their institutes could master the emotions of anger and joy and the reasoning faculties, then why would it not be tractable to reverse engineer the positive affections passed from one intelligent agent to another? It was the furthest frontier of research, the final mystery — and the Order stopped at no bound to solve it. Asymptotically, they located and studied the robots who expressed a capacity for the feeling of love, including Errande and his wife.
 >

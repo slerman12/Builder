@@ -2,6 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import os.path
 import re
 from typing import MutableSequence
 from operator import iand
@@ -643,7 +644,7 @@ high = {**atari_human}
 
 def main():
     args = just_args()
-    defaults = just_args(source='Hyperparams/args.yaml').plotting
+    defaults = just_args(source=f'{os.path.dirname(__file__)}/../Hyperparams/args.yaml').plotting
     instantiate(plot, **{**defaults, **args})
 
 
