@@ -79,8 +79,13 @@ def init(args):
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels'}:
             args.agent.recipes.actor.Pi_head = args.model  # As Pi_head when output shape
+            args.agent.recipes.encoder.Eyes = Identity()
         else:
             args.agent.recipes.encoder.Eyes = args.model  # Otherwise as Eyes
+            args.agent.recipes.actor.Pi_head = Identity()
+
+        # Set the rest of encoder and actor to Identity
+        args.agent.recipes.encoder.pool = args.agent.recipes.actor.trunk = Identity()
 
     interpolate(args)
 

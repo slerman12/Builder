@@ -306,17 +306,25 @@ def _parse(value):
 
 
 def parse(args=None):
-    # Parse command-line  TODO parse key1= and key1.key2= as key1={_target_: key1-value, key2: key2-value}
+    # Parse command-line
     for sys_arg in sys.argv[1:]:
         arg = args
         keys, value = sys_arg.split('=', 1)
         keys = keys.split('.')
-        for key in keys[:-1]:
+        value = _parse(value)
+        for i, key in enumerate(keys[:-1]):
             if key not in arg:
-                setattr(arg, key, Args())
+                if '.'.join(keys[:i + 1]) + '=' in [k.split('=', 1) for k in sys.argv[1:]]:
+                    setattr(arg, key, Args(_target_=None))  # Parse k1= and k1.k2= as k1={_target_: None, k2: k2-value}
+                else:
+                    setattr(arg, key, Args())
+            elif not isinstance(arg[key], (Args, dict)):
+                arg[key] = Args(_target_=arg[key])  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
             arg = getattr(arg, key)
-        setattr(arg, keys[-1], value)
-        arg[keys[-1]] = _parse(value)
+        if keys[-1] in arg and isinstance(arg[keys[-1]], (Args, dict)) and '_target_' in arg[keys[-1]]:
+            arg[keys[-1]]['_target_'] = value  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
+        else:
+            setattr(arg, keys[-1], value)
     return args
 
 
