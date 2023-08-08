@@ -73,20 +73,51 @@ def init(args):
 
     print('Device:', args.device)
 
-    # Set model
-    model = args.model['_target_']
-    if model is not None:
-        if isinstance(model, str):
-            model = get_module(model)
-        signature = set(inspect.signature(model).parameters)
-        if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels'}:
-            args.agent.recipes.actor.Pi_head = args.model  # As Pi_head when output shape
-            args.agent.recipes.encoder.Eyes = args.agent.recipes.encoder.pool \
-                = args.agent.recipes.actor.trunk = Identity()
-        else:
-            args.agent.recipes.encoder.Eyes = args.model  # Otherwise as Eyes
+    # Set passed-in model in agent
+    args.agent = define_agent(args.agent, args.model)
 
     interpolate(args)
+
+
+# Depending on what agent/model is passed in, different components need to be constructed/inferred
+def define_agent(agent):  # Note: Agent requires forward
+    model = agent['_target_']
+    if isinstance(model, str):
+        model = get_module(model)  # Class
+
+    # If an act method or learn method is missing, use AC2Agent boilerplate
+    if not callable(getattr(model, 'learn', ())) or not callable(getattr(model, 'act', ())):
+        agent['_target_'] = 'Agents.Agent'  # TODO agent_name can be model_name
+
+        signature = set(inspect.signature(model).parameters)
+        if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
+            agent.recipes.actor.Pi_head = agent  # As Pi_head when output shape
+            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool \
+                = agent.recipes.actor.trunk = Identity()
+        else:
+            agent.recipes.encoder.Eyes = agent  # Otherwise as Eyes  TODO Can't redefine agent like this. Use model ?
+            assert False, agent.recipes.encoder.Eyes
+
+        if callable(getattr(model, 'learn', ())) and 'learn' not in agent:
+            # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
+            agent.learn = lambda replay, *logger: model.learn(replay, *logger)  # Override agent learn method  TODO UN-ASTERISK *logger!
+        elif callable(getattr(model, 'act', ())) and 'act' not in agent:
+            agent.act = model.act  # Override agent act method
+
+        print(agent)
+
+
+class Model(nn.Module):
+    def __init__(self, in_features, out_features):
+        super().__init__()
+
+        self.MLP = nn.Linear(in_features, out_features)
+
+    def forward(self, x):
+        return self.MLP(x)
+
+    def learn(self, replay, *logger):
+        print('woo')
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -176,7 +207,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             to_load = torch.load(path, map_location=device)  # Load
             original_args = to_load['args']
 
-            args = args or original_args or {}  # Note: Could instead use original_args, but support _override_
+            args = args or original_args or {}  # Note: Could instead use original_args, but support _overload_
             if 'obs_spec' in original_args:
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
@@ -188,9 +219,9 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             warnings.warn(f'Load conflict, resolving...')  # For distributed training
 
     # Overriding original args where specified
-    for key, value in kwargs.items():  # Need to update kwargs to include _override_?
+    for key, value in kwargs.items():  # Need to update kwargs to include _overload_?
         if attr:
-            args.recipes[attr + f'._override_.{key}'] = value
+            args.recipes[attr + f'._overload_.{key}'] = value
         else:
             args[key] = value
 

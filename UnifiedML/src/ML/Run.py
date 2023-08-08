@@ -31,6 +31,9 @@ def main(args):
     agent = load(args.load_path, args.device, args.agent) if args.load \
         else instantiate(args.agent).to(args.device)
 
+    for key in args.agent.keys() & {'act', 'learn'}:
+        setattr(agent, key, args.agent['key'])  # Allow overriding agent act & learn
+
     # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory
 
     # Synchronize multi-task models (if exist)

@@ -123,8 +123,8 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
             isinstance(args, dict) and ('_target_' in args or '_default_' in args):
         args = Args(args)
 
-        if '_override_' in args:
-            kwargs.update(args.pop('_override_'))  # For overriding args without modifying defaults
+        if '_overload_' in args:
+            kwargs.update(args.pop('_overload_'))  # For overriding args without modifying defaults
 
         while '_default_' in args:  # Allow inheritance between sub-args Note: For some reason 2nd-last is dict not Args
             args = Args(_target_=args['_default_']) if isinstance(args['_default_'], str) \
