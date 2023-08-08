@@ -8,6 +8,7 @@ import math
 import os
 import sys
 import random
+import types
 from functools import cached_property
 import re
 from multiprocessing.pool import ThreadPool
@@ -74,50 +75,55 @@ def init(args):
     print('Device:', args.device)
 
     # Set passed-in model in agent
-    args.agent = define_agent(args.agent, args.model)
+    define_agent(args.agent, args.model._target_)
 
     interpolate(args)
 
 
-# Depending on what agent/model is passed in, different components need to be constructed/inferred
-def define_agent(agent):  # Note: Agent requires forward
-    model = agent['_target_']
-    if isinstance(model, str):
-        model = get_module(model)  # Class
-
-    # If an act method or learn method is missing, use AC2Agent boilerplate
-    if not callable(getattr(model, 'learn', ())) or not callable(getattr(model, 'act', ())):
-        agent['_target_'] = 'Agents.Agent'  # TODO agent_name can be model_name
+# Depending on what model is passed in, different agent components need to be overriden/inferred
+def define_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
+    if model is not None:
+        if not isinstance(model, type):
+            model = get_module(model) if isinstance(model, str) else type(model)
 
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
-            agent.recipes.actor.Pi_head = agent  # As Pi_head when output shape
+            agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
             agent.recipes.encoder.Eyes = agent.recipes.encoder.pool \
-                = agent.recipes.actor.trunk = Identity()
+                = agent.recipes.actor.trunk = Identity()  # TODO Adaptive shaping should flatten if needed for in_features, etc. reshaping
+            eyes = False
         else:
-            agent.recipes.encoder.Eyes = agent  # Otherwise as Eyes  TODO Can't redefine agent like this. Use model ?
-            assert False, agent.recipes.encoder.Eyes
+            agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
+            eyes = True
 
-        if callable(getattr(model, 'learn', ())) and 'learn' not in agent:
-            # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
-            agent.learn = lambda replay, *logger: model.learn(replay, *logger)  # Override agent learn method  TODO UN-ASTERISK *logger!
-        elif callable(getattr(model, 'act', ())) and 'act' not in agent:
-            agent.act = model.act  # Override agent act method
+        # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
+        # TODO What if parallel?
+        def override(method, self):
+            module = self.encoder.Eyes if eyes else self.actor.Pi_head.ensemble[0]
+            return lambda _, *vargs: getattr(module, method)(*vargs)
 
-        print(agent)
+        # Override agent act/learn methods with model
+        for key in {'act', 'learn'} - agent.keys():
+            if callable(getattr(model, key, ())):
+                agent['_' + key + '_'] = lambda self: types.MethodType(override(key, self), self)
+
+        # args.agent_name = model  # TODO
 
 
 class Model(nn.Module):
     def __init__(self, in_features, out_features):
         super().__init__()
 
-        self.MLP = nn.Linear(in_features, out_features)
+        self.MLP = nn.Sequential(nn.Flatten(), nn.Linear(in_features, out_features))
 
     def forward(self, x):
         return self.MLP(x)
 
-    def learn(self, replay, *logger):
-        print('woo')
+    def act(self, obs):
+        return self(obs), {}
+
+    def learn(self, replay):
+        return {}
 
 
 UnifiedML = os.path.dirname(__file__)
