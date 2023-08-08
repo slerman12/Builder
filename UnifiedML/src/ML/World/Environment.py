@@ -6,7 +6,7 @@ import time
 from math import inf
 
 import torch
-from minihydra import instantiate
+from minihydra import instantiate, valid_path
 
 
 class Environment:
@@ -33,6 +33,9 @@ class Environment:
 
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = self.episode_reward = 0
         self.daybreak = None
+
+        self.metric = {key: instantiate(env.metric) for key, metric in env.metric.items() if metric is not None
+                       and valid_path(metric)}
 
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
@@ -103,37 +106,3 @@ class Environment:
             self.daybreak = sundown
 
         return experiences, logs, video_image
-
-
-"""
-Custom metrics 
-
-1. Instantiate each log that can be instantiated, passing in exp 
-        as experience? (maybe support *vargs in minihydra)
-2. Pop the ones that are null
-3. Evaluate remaining as expression based on other metrics
-4. Override intersecting keys with exp
-5. If reward in exp and not log, add to log
-6. If reward not present use random key in log if exists as reward in exp ? If RL?
-7. env.reward should refer to env.metric.reward, default null. metric <-> env.metric, reward <-> metric.reward
-8. For each log and reward if present, track the episode sum
-9. Log the current logs sans accuracy/reward with addition of sums 
-
-Example:
-    ML task=classify Dataset=X env.metric.MSE=Run.MSE
-    
-    or even
-    
-    ML task=classify Dataset=X env.metric.MSE=Run.MSE env.reward=-MSE RL=true discrete=false
-
-and (a) get_dataset can adaptively count classes and (b) AC2Agent can do regression: maybe regression=true 
-    subset not supported for regression
-    or dataset.count_classes, no default regression for now
-    
-(c) Then if classes not in dataset, Classify should leave low/high/bins blank
-
-(d) Classify reward can be in Classify.py
-
-(e) Classify can be renamed to Supervised or even Datums
-    Maybe Supervised for now since (obs, label), Datums when generalized, or not
-"""

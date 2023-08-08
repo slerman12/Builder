@@ -161,6 +161,51 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         else module
 
 
+# Check if a string path to a module is valid for instantiation
+def valid_path(path, dir_path=False, module_path=True, module=True, _modules_=None):
+    truth = False
+
+    if not isinstance(path, str):
+        return truth
+
+    if dir_path:
+        try:
+            truth = os.path.exists(path)
+        except FileNotFoundError:
+            pass
+
+    if module_path and not truth and path.count('.') > 0:
+        *root, file, _ = path.replace('.', '/').rsplit('/', 2)
+        root = root[0].strip('/') + '/' if root else ''
+        for base in module_paths:
+            try:
+                truth = os.path.exists(base + '/' + root + file + '.py')
+            except FileNotFoundError:
+                break
+            if truth:
+                break
+
+    if _modules_ is None:
+        _modules_ = {}
+
+    _modules_.update(added_modules)
+
+    if module and not truth:
+        sub_module, *sub_modules = path.split('.')
+
+        if sub_module in _modules_:
+            sub_module = _modules_[sub_module]
+
+            try:
+                for key in sub_modules:
+                    sub_module = getattr(sub_module, key)
+                truth = True
+            except AttributeError:
+                pass
+
+    return truth
+
+
 def open_yaml(source, return_path=False):
     for path in yaml_search_paths + ['']:
         try:

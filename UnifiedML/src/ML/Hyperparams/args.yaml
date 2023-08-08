@@ -31,6 +31,7 @@ env:
   transform: null
   standardize: ${standardize}
   norm: ${norm}
+  metric: ${metric}
 Dataset: null  # Defaults per respective Classify task
 TestDataset: null
 dataset:
@@ -67,6 +68,9 @@ learn_steps_after: 20000
 # Evaluating
 evaluate_per_steps: 5000
 evaluate_episodes: 1
+reward: null
+metric:
+  reward: ${reward}
 ema: false
 # Saving
 save: true

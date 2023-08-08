@@ -80,6 +80,8 @@ def init(args):
     interpolate(args)
 
 
+# TODO logger, and if learn has an output, override as loss=output and optimize actor/encoder
+#     Perhaps should be able to pass these into different block parts as well
 # Depending on what model is passed in, different agent components need to be overriden/inferred
 def define_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
     if model is not None:
@@ -110,6 +112,7 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         # args.agent_name = model  # TODO
 
 
+# TODO Delete
 class Model(nn.Module):
     def __init__(self, in_features, out_features):
         super().__init__()

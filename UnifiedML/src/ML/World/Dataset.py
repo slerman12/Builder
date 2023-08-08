@@ -23,7 +23,7 @@ from torchvision.transforms import functional as F
 from tqdm import tqdm
 
 from World.Memory import Batch
-from minihydra import instantiate, Args, module_paths, added_modules, open_yaml, get_module
+from minihydra import instantiate, Args, module_paths, valid_path, open_yaml, get_module
 
 
 # Returns a path to an existing Memory directory or an instantiated Pytorch Dataset
@@ -36,7 +36,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         dataset_config = Args({'_target_': dataset_config})
 
     # If dataset is a directory path, return the string directory path
-    if allow_memory and is_valid_path(dataset_config._target_, dir_path=True) \
+    if allow_memory and valid_path(dataset_config._target_, dir_path=True, module_path=False, module=False) \
             and glob.glob(dataset_config._target_ + 'card.yaml'):
         return dataset_config._target_  # Note: stream=false if called in Env
 
@@ -49,7 +49,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         dataset_config._target_ = dataset_config._target_[len('torchvision.datasets.'):]  # Simplify torchvision. syntax
 
     # Return a Dataset based on a module path or non-default modules like torchvision
-    assert is_valid_path(dataset_config._target_, module_path=True, module=True, _modules_=pytorch_datasets), \
+    assert valid_path(dataset_config._target_, _modules_=pytorch_datasets), \
         f'Not a valid Dataset instantiation argument: {dataset_config._target_}. Search paths included: {module_paths}'
 
     path += get_dataset_path(dataset_config, path)  # DatasetClassName/Count/
@@ -73,7 +73,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     is_torchvision = False
 
     # From custom module path
-    if is_valid_path(dataset_config._target_, module_path=True):
+    if valid_path(dataset_config._target_, module=False):
         root_specs = download_specs = transform_specs = [{}]  # Won't assume any signature args except possibly train
     # From torchvision Dataset
     # TODO It shouldn't re-download for every version of the dataset. Make torchvision dir in __file__ dir /ReplayBuffer
@@ -212,48 +212,6 @@ def get_dataset_path(dataset_config, path):
             count += 1
 
     return f'{dataset_class_name}{count}/'
-
-
-# Check if is valid path for instantiation
-def is_valid_path(path, dir_path=False, module_path=False, module=False, _modules_=None):
-    truth = False
-
-    if dir_path:
-        try:
-            truth = os.path.exists(path)
-        except FileNotFoundError:
-            pass
-
-    if module_path and not truth and path.count('.') > 0:
-        try:
-            *root, file, _ = path.replace('.', '/').rsplit('/', 2)
-            root = root[0].strip('/') + '/' if root else ''
-            for base in module_paths:
-                truth = os.path.exists(base + '/' + root + file + '.py')
-                if truth:
-                    break
-        except FileNotFoundError:
-            pass
-
-    if _modules_ is None:
-        _modules_ = {}
-
-    _modules_.update(added_modules)
-
-    if module and not truth:
-        sub_module, *sub_modules = path.split('.')
-
-        if sub_module in _modules_:
-            sub_module = _modules_[sub_module]
-
-            try:
-                for key in sub_modules:
-                    sub_module = getattr(sub_module, key)
-                truth = True
-            except AttributeError:
-                pass
-
-    return truth
 
 
 # Computes mean, stddev, low, high
