@@ -66,7 +66,7 @@ learn_steps: 1
 learn_steps_after: 20000
 # Evaluating
 evaluate_per_steps: 5000
-evaluate_episodes: 10
+evaluate_episodes: 1
 ema: false
 # Saving
 save: true

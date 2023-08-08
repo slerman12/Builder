@@ -74,38 +74,19 @@ def init(args):
     print('Device:', args.device)
 
     # Set model
-    if args.model['_target_']:
-        model = get_module(args.model['_target_'])
+    model = args.model['_target_']
+    if model is not None:
+        if isinstance(model, str):
+            model = get_module(model)
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels'}:
             args.agent.recipes.actor.Pi_head = args.model  # As Pi_head when output shape
-            args.agent.recipes.encoder.Eyes = Identity()
+            args.agent.recipes.encoder.Eyes = args.agent.recipes.encoder.pool \
+                = args.agent.recipes.actor.trunk = Identity()
         else:
             args.agent.recipes.encoder.Eyes = args.model  # Otherwise as Eyes
-            args.agent.recipes.actor.Pi_head = Identity()
-
-        # Set the rest of encoder and actor to Identity
-        args.agent.recipes.encoder.pool = args.agent.recipes.actor.trunk = Identity()
 
     interpolate(args)
-
-
-"""
-Minihydra plans
-    
-Utils can manually map Uppercase to existing lowercases-with-_target_ attr. 
-    Or even create sub-configs for some e.g.senses.Poo creates a new senses.poo={_target_: poo}.
-As well as constructing "recipes" from the main shorthands.
-
-minihydra can have a pseudonyms arg with main_name: pseudonyms-list sublists maybe. Instead of _default_.
-
-minihydra can allow adding yaml_search_paths, module_paths, and modules via command line as reserved arguments. 
-    Maybe add underscores to all reserved arguments.
-    
-Maybe add __file__ directly from get_args call to add paths/modules.
-
-Wherever task is imported, Utils can add the Python files above Hyperparams (or task, or directly) as app
-"""
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -171,8 +152,6 @@ def launch(**args):
 
     global launch_args
     launch_args = {key: args[key] for key in args.keys() - command_line_args - added}
-
-    # torch.multiprocessing.set_start_method('spawn')
 
     main()  # Run
 
@@ -859,34 +838,3 @@ def schedule(schedule, step):
             start, stop, duration = [float(g) for g in match.groups()]
             mix = float(np.clip(step / duration, 0.0, 1.0))
             return (1.0 - mix) * start + mix * stop
-
-
-import time
-class Profiler:
-    def __init__(self, print_per=None):
-        self.starts = {}
-        self.profiles = {}
-        self.counts = {}
-        self.print_per = print_per
-        self.step = {}
-
-    def start(self, name):
-        self.starts[name] = time.time()
-
-    def stop(self, name):
-        if name in self.profiles:
-            self.profiles[name] += time.time() - self.starts[name]
-            self.counts[name] += 1
-            self.step[name] += 1
-        else:
-            self.profiles[name] = time.time() - self.starts[name]
-            self.counts[name] = 1
-            self.step[name] = 1
-        if self.print_per and self.step[name] % self.print_per == 0:
-            self.print()
-
-    def print(self):
-        for name in self.profiles:
-            print(name, ':', self.profiles[name] / self.counts[name])
-        self.profiles.clear()
-        self.counts.clear()
