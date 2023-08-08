@@ -31,11 +31,12 @@ class Environment:
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
-        self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = self.episode_reward = 0
-        self.daybreak = None
-
+        self.episode_sums = {}
         self.metric = {key: instantiate(env.metric) for key, metric in env.metric.items() if metric is not None
                        and valid_path(metric)}
+
+        self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
+        self.daybreak = None
 
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
@@ -61,6 +62,9 @@ class Environment:
             if not self.generate:
                 exp = self.env.step(action.cpu().numpy())  # Experience
 
+            # Tally reward & logs
+            self.tally_metric(exp)
+
             exp.update(**store, step=agent.step)
             experiences.append(exp)
 
@@ -72,8 +76,7 @@ class Environment:
             step += 1
             frame += len(action)
 
-            # Tally reward, done
-            self.episode_reward += exp.reward.mean() if 'reward' in exp else float('nan')
+            # Done
             self.episode_done = self.env.episode_done or self.episode_step > self.truncate_after - 2 or self.generate
 
             if self.env.episode_done:
@@ -96,13 +99,24 @@ class Environment:
                 'step': agent.step,
                 'frame': agent.frame * self.action_repeat,
                 'epoch' if self.offline or self.generate else 'episode':
-                    (self.offline or self.generate) and agent.epoch or agent.episode,
-                'accuracy' if self.suite == 'classify' else 'reward': self.episode_reward,  # TODO custom metrics
+                    (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_sums,
                 'fps': frames / (sundown - self.daybreak)} if not self.disable \
             else None
 
         if self.episode_done:
-            self.episode_step = self.episode_frame = self.episode_reward = 0
+            self.episode_sums = {}
+            self.episode_step = self.episode_frame = 0
             self.daybreak = sundown
 
         return experiences, logs, video_image
+
+    def tally_metric(self, exp):
+        metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
+        metric.update({key: eval(m, None, metric) for key, m in self.metric.items() if isinstance(m, str)})
+        exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
+        if 'reward' in exp and 'reward' not in metric:
+            metric['reward'] = exp.reward.mean() if any(k in str(type(exp.reward)) for k in {'np', 'torch'}) \
+                else exp.reward
+
+        self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
+                                  for key, m in metric.items()})
