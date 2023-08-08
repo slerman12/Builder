@@ -32,8 +32,8 @@ class Environment:
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
         self.episode_sums = {}
-        self.metric = {key: instantiate(env.metric) for key, metric in env.metric.items() if metric is not None
-                       and valid_path(metric)}
+        self.metric = {key: instantiate(metric) if valid_path(metric) else metric
+                       for key, metric in env.metric.items() if metric is not None}
 
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
         self.daybreak = None
@@ -112,11 +112,11 @@ class Environment:
 
     def tally_metric(self, exp):
         metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
-        metric.update({key: eval(m, None, metric) for key, m in self.metric.items() if isinstance(m, str)})
-        exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
-        if 'reward' in exp and 'reward' not in metric:
+        if 'reward' in exp and 'reward' not in self.metric:
             metric['reward'] = exp.reward.mean() if any(k in str(type(exp.reward)) for k in {'np', 'torch'}) \
                 else exp.reward
+        metric.update({key: eval(m, None, metric) for key, m in self.metric.items() if isinstance(m, str)})
+        exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
 
         self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
                                   for key, m in metric.items()})
