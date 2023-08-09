@@ -29,11 +29,8 @@ def main(args):
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent,  # Allow overriding agent act & learn
-                         _override_={key: args.agent.pop(key.strip('_'))
-                                     for key in args.agent.keys() & {'act', 'learn'}}).to(args.device)
-
-    # TODO Note: minihydra seems to not instantiate funcs as funcs?
+        else instantiate(args.agent,
+                         _override_={'_act_', '_learn_'}).to(args.device)  # Allow overriding agent act & learn
 
     # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory
 

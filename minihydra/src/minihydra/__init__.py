@@ -133,6 +133,8 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
 
         _target_ = args.pop('_target_')
 
+        _override_ = {key: args.pop(key) for key in args.keys() & (_override_ or {})}  # Extract overrides
+
         if _target_ is None:
             return
         elif isinstance(_target_, str) and '(' in _target_ and ')' in _target_:  # Function calls
@@ -152,8 +154,10 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
                 args = args if 'kwargs' in signature else {key: args[key] for key in args.keys() & signature}
                 module = module(**args)
 
-        for key, value in (_override_ or {}).items():  # Override class functions
-            setattr(module, key, types.MethodType(value, module))
+        for key, value in _override_.items():  # Override class functions
+            assert key[0] == key[-1] == '_', "Expected overrides to be designated by conjoining underscores."
+            # TODO Perhaps instantiate value as function first. But need to support func instantiates
+            setattr(module, key[1:-1], types.MethodType(value, module))
     else:
         # Convert to config
         return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, _override_, **kwargs)

@@ -94,8 +94,7 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
             agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
-            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool \
-                = agent.recipes.actor.trunk = Identity()  # TODO Adaptive shaping should flatten if needed for in_features, etc. reshaping
+            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()  # TODO Adaptive shaping should flatten if needed for in_features, etc. reshaping
             eyes = False
         else:
             agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
@@ -103,12 +102,11 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
         # TODO What if parallel?
 
-        # Override agent act/learn methods with model  TODO If in agent.keys() then to expected method format
+        # Override agent act/learn methods with model
         for key in {'act', 'learn'} - agent.keys():
             if callable(getattr(model, key, ())):
-                agent['_' + key + '_'] = lambda self, *vargs, **kwargs: getattr(self.encoder.Eyes if eyes
-                                                                                else self.actor.Pi_head.ensemble[0],
-                                                                                key)(*vargs, **kwargs)
+                agent['_' + key + '_'] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes
+                                                                    else a.actor.Pi_head.ensemble[0], key)(*v, **k)
 
         # args.agent_name = model  # TODO
 
@@ -124,6 +122,7 @@ class Model(nn.Module):
         return self.MLP(x)
 
     def act(self, obs):
+        print(self.forward(obs), {})
         return self(obs), {}
 
     def learn(self, replay):
