@@ -90,6 +90,7 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         if not isinstance(model, type):
             model = get_module(model) if isinstance(model, str) else type(model)
 
+        eyes = True
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
             agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
@@ -98,18 +99,16 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
             eyes = False
         else:
             agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
-            eyes = True
 
         # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
         # TODO What if parallel?
-        def override(method, self):
-            module = self.encoder.Eyes if eyes else self.actor.Pi_head.ensemble[0]
-            return lambda _, *vargs: getattr(module, method)(*vargs)
 
         # Override agent act/learn methods with model  TODO If in agent.keys() then to expected method format
         for key in {'act', 'learn'} - agent.keys():
             if callable(getattr(model, key, ())):
-                agent['_' + key + '_'] = lambda self: types.MethodType(override(key, self), self)
+                agent['_' + key + '_'] = lambda self, *vargs, **kwargs: getattr(self.encoder.Eyes if eyes
+                                                                                else self.actor.Pi_head.ensemble[0],
+                                                                                key)(*vargs, **kwargs)
 
         # args.agent_name = model  # TODO
 

@@ -14,6 +14,7 @@ import inspect
 import os.path
 import re
 import sys
+import types
 from math import inf
 import yaml
 
@@ -118,7 +119,7 @@ def get_module(_target_, paths=None, modules=None):
     raise FileNotFoundError(f'Could not find module {module_name}. Search modules include: {list(modules.keys())}')
 
 
-def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, _verbose_=False, **kwargs):
+def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matching_=True, _override_=None, **kwargs):
     if hasattr(args, '_target_') or hasattr(args, '_default_') or \
             isinstance(args, dict) and ('_target_' in args or '_default_' in args):
         args = Args(args)
@@ -149,12 +150,13 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
                 args.update(kwargs)
                 signature = inspect.signature(module).parameters if _signature_matching_ else args.keys()
                 args = args if 'kwargs' in signature else {key: args[key] for key in args.keys() & signature}
-                if _verbose_:
-                    print('instantiated', _target_)
                 module = module(**args)
+
+        for key, value in (_override_ or {}).items():  # Override class functions
+            setattr(module, key, types.MethodType(value, module))
     else:
         # Convert to config
-        return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, **kwargs)
+        return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, _override_, **kwargs)
 
     # Allow sub-indexing (if specified)
     return module[_i_] if (isinstance(module, (list, tuple)) or 'ModuleList' in str(type(module))) and _i_ is not None \
