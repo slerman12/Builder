@@ -11,7 +11,7 @@ from minihydra import instantiate, get_module, valid_path
 
 
 class Environment:
-    def __init__(self, env, task='cheetah_run', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
+    def __init__(self, env, task='pong', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
                  RL=True, offline=False, stream=True, generate=False, train=True, seed=0, transform=None, device='cpu'):
         self.RL = RL
         self.offline = offline
@@ -119,12 +119,12 @@ class Environment:
         exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
 
         # Use random popped metric as reward if RL and 'reward' not in exp
-        if 'reward' not in exp and len(metric) and self.RL:
+        if 'reward' not in exp and len(metric) and self.RL:  # Note: AC2 classifier actually defines its own reward
             key = next(iter(metric.keys()))
             exp.reward = metric['reward'] = metric.pop(key)
             warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
                           f'Customize your own reward with the "reward=" flag. For example: '
-                          f'"reward=path.to.rewardfunction" or even "reward=-{key}". See docs for more examples.')
+                          f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
         self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
                                   for key, m in metric.items()})
