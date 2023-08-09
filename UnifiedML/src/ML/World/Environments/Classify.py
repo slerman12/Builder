@@ -117,9 +117,6 @@ class Classify:
         # Adapt to discrete!
         _action = self.adapt_to_discrete(action)
 
-        correct = (self.exp.label == _action).astype('float32')
-
-        self.exp.reward = correct
         self.exp.action = action  # Note: can store argmax instead
 
         self.exp.done = self.episode_done = True
@@ -159,7 +156,7 @@ class Classify:
             self._batches = iter(self.batches)
             return next(self._batches)
 
-    # Arg-maxes if categorical distribution passed in
+    # Arg-maxes if categorical distribution passed in  TODO Is this method needed besides rounding? Move to env
     def adapt_to_discrete(self, action):
         shape = self.action_spec['shape']
 
@@ -183,3 +180,7 @@ class Classify:
 warnings.filterwarnings("ignore", message='.*invalid value encountered in scalar divide')
 warnings.filterwarnings("ignore", message='invalid value encountered in double_scalars')
 warnings.filterwarnings("ignore", message='Mean of empty slice')
+
+
+def accuracy(exp):
+    return (exp.label == exp.action).astype('float32')

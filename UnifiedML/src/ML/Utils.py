@@ -82,6 +82,8 @@ def init(args):
 
 # TODO logger, and if learn has an output, override as loss=output and optimize actor/encoder
 #     Perhaps should be able to pass these into different block parts as well
+#     If all methods present and 'encoder', 'actor' ... blocks in self.__dict__, can override as agent e.g. arg.update
+#           This exhausts me for some reason
 # Depending on what model is passed in, different agent components need to be overriden/inferred
 def define_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
     if model is not None:
@@ -104,7 +106,7 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
             module = self.encoder.Eyes if eyes else self.actor.Pi_head.ensemble[0]
             return lambda _, *vargs: getattr(module, method)(*vargs)
 
-        # Override agent act/learn methods with model
+        # Override agent act/learn methods with model  TODO If in agent.keys() then to expected method format
         for key in {'act', 'learn'} - agent.keys():
             if callable(getattr(model, key, ())):
                 agent['_' + key + '_'] = lambda self: types.MethodType(override(key, self), self)

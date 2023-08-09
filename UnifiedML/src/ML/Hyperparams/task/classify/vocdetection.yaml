@@ -1,5 +1,7 @@
 Env: World.Environments.Classify.Classify
 Dataset: torchvision.datasets.VOCDetection
+metric: 
+    accuracy: World.Environments.Classify.accuracy
 env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}

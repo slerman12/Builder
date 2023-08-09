@@ -102,11 +102,11 @@ experiment: Exp
 environment:
   _target_: World.Environment.Environment
   env: ${env}
-  suite: ${suite}
   task: ${task_name}
   frame_stack: ${frame_stack}
   truncate_episode_steps: ${truncate_episode_steps}
   action_repeat: ${action_repeat}
+  RL: ${RL}
   offline: ${offline}
   stream: ${stream}
   generate: ${generate}

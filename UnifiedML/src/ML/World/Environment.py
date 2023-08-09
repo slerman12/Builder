@@ -3,16 +3,17 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import time
+import warnings
 from math import inf
 
 import torch
-from minihydra import instantiate, valid_path
+from minihydra import instantiate, get_module, valid_path
 
 
 class Environment:
-    def __init__(self, env, suite='DMC', task='cheetah_run', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
-                 offline=False, stream=False, generate=False, train=True, seed=0, transform=None, device='cpu'):
-        self.suite = suite.lower()
+    def __init__(self, env, task='cheetah_run', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
+                 RL=True, offline=False, stream=True, generate=False, train=True, seed=0, transform=None, device='cpu'):
+        self.RL = RL
         self.offline = offline
         self.generate = generate
 
@@ -32,7 +33,7 @@ class Environment:
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
         self.episode_sums = {}
-        self.metric = {key: instantiate(metric) if valid_path(metric) else metric
+        self.metric = {key: get_module(metric) if valid_path(metric) else metric
                        for key, metric in env.metric.items() if metric is not None}
 
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
@@ -113,10 +114,17 @@ class Environment:
     def tally_metric(self, exp):
         metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
         if 'reward' in exp and 'reward' not in self.metric:
-            metric['reward'] = exp.reward.mean() if any(k in str(type(exp.reward)) for k in {'np', 'torch'}) \
-                else exp.reward
+            metric['reward'] = exp.reward.mean() if hasattr(exp.reward, 'mean') else exp.reward
         metric.update({key: eval(m, None, metric) for key, m in self.metric.items() if isinstance(m, str)})
         exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
+
+        # Use random popped metric as reward if RL and 'reward' not in exp
+        if 'reward' not in exp and len(metric) and self.RL:
+            key = next(iter(metric.keys()))
+            exp.reward = metric['reward'] = metric.pop(key)
+            warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
+                          f'Customize your own reward with the "reward=" flag. For example: '
+                          f'"reward=path.to.rewardfunction" or even "reward=-{key}". See docs for more examples.')
 
         self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
                                   for key, m in metric.items()})
