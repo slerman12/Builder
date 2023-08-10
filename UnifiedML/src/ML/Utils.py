@@ -90,6 +90,11 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         if not isinstance(model, type):
             model = get_module(model) if isinstance(model, str) else type(model)
 
+        # TODO Update to agent with model args
+        # if hasattr(model, 'act') and hasattr(model, 'learn'):
+        #     agent.update(model)
+        # else:
+
         eyes = True
         signature = set(inspect.signature(model).parameters)
         if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
@@ -102,11 +107,15 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
         # TODO What if parallel?
 
+        # TODO _act_ crashes with a race condition? maybe
+        #  but _act_ and _learn_ together don't work at all ! Get confused with each other??
+        #     act ordinarily has bizarre shape, no? Would regular outputs still work?
+
         # Override agent act/learn methods with model
-        for key in {'act', 'learn'} - agent.keys():
-            if callable(getattr(model, key, ())):
-                agent['_' + key + '_'] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes
-                                                                    else a.actor.Pi_head.ensemble[0], key)(*v, **k)
+        for key in {'_act_', '_learn_'} - agent.keys():
+            if callable(getattr(model, key[1:-1], ())):
+                agent[key] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes else a.actor.Pi_head.ensemble[0],
+                                                        key[1:-1])(*v, **k)
 
         # args.agent_name = model  # TODO
 
@@ -121,9 +130,8 @@ class Model(nn.Module):
     def forward(self, x):
         return self.MLP(x)
 
-    def act(self, obs):
-        print(self.forward(obs), {})
-        return self(obs), {}
+    # def act(self, obs):
+    #     return self(obs), {}
 
     def learn(self, replay):
         return {}

@@ -115,9 +115,7 @@ class Classify:
             return self.exp  # Return new batch
 
         # Adapt to discrete!
-        _action = self.adapt_to_discrete(action)
-
-        self.exp.action = action  # Note: can store argmax instead
+        self.exp.action = self.adapt_to_discrete(action)  # Note: storing argmax
 
         self.exp.done = self.episode_done = True
 

@@ -29,8 +29,7 @@ def main(args):
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent,
-                         _override_={'_act_', '_learn_'}).to(args.device)  # Allow overriding agent act & learn
+        else instantiate(args.agent, _override_={'_act_', '_learn_'}).to(args.device)  # Allow overriding agent act & learn
 
     # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory
 

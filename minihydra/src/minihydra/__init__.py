@@ -14,6 +14,7 @@ import inspect
 import os.path
 import re
 import sys
+import time
 import types
 from math import inf
 import yaml
@@ -133,7 +134,7 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
 
         _target_ = args.pop('_target_')
 
-        _override_ = {key: args.pop(key) for key in args.keys() & (_override_ or {})}  # Extract overrides
+        _override_ = {key: args.pop(key) for key in (_override_ or {}) if key in args}  # Extract overrides
 
         if _target_ is None:
             return
