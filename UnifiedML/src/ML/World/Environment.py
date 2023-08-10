@@ -57,7 +57,7 @@ class Environment:
             obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
-            with torch.no_grad():
+            with act_mode(agent):
                 action, store = agent.act(obs)
 
             if not self.generate:
@@ -73,6 +73,10 @@ class Environment:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
                     else self.env.render()
                 video_image.append(image_frame)
+
+            if agent.training:
+                agent.step += 1
+                agent.frame += len(action)
 
             step += 1
             frame += len(action)
@@ -128,3 +132,31 @@ class Environment:
 
         self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
                                   for key, m in metric.items()})
+
+
+# Temporarily switches on eval() mode for specified models; then resets them.
+# Enters and exits Pytorch inference mode
+# Enables / disables EMA
+class act_mode:
+    def __init__(self, agent):
+        self.agent = agent
+
+        self.models = {key: getattr(agent, key) for key in {'encoder', 'actor'} if hasattr(agent, key)}
+        self.inference = torch.inference_mode()
+
+    def __enter__(self):
+        # Disables things like dropout, etc.
+        self.mode_model = [(model.training, model.eval()) for model in self.models.values()]
+
+        self.inference.__enter__()
+
+        # Exponential moving average (EMA)
+        if self.agent.ema:
+            [setattr(self.agent, key, model.ema) for key, model in self.models.items()]
+
+    def __exit__(self, *args, **kwargs):
+        [model.train(mode) for mode, model in self.mode_model]
+        self.inference.__exit__(*args, **kwargs)
+
+        if self.agent.ema:
+            [setattr(self.agent, key, model) for key, model in self.models.items()]

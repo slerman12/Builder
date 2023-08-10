@@ -8,6 +8,7 @@ import math
 import os
 import sys
 import random
+from copy import deepcopy
 from functools import cached_property
 import re
 from multiprocessing.pool import ThreadPool
@@ -582,9 +583,15 @@ class Ensemble(nn.Module):
     def __init__(self, modules, dim=1):
         super().__init__()
 
-        self.ensemble = nn.ModuleList(modules)
+        self.ensemble = nn.ModuleList([m if i == 0 or m != modules[i - 1]
+                                       else deepcopy(m) for i, m in enumerate(modules)])
         self.dim = dim
 
+    # TODO Maybe should override forward of module and deepcopy the module repeat times
+    #   Since model forward now needs to output ensemble
+    #   But in that case, wouldn't want extra un-squeezed dim
+    #   Can squeeze model.forward output if num_actors == 1
+    #   Either way, make the forward of the agent the squeezed/adapted act
     def forward(self, *x, **kwargs):
         return torch.stack([m(*x, **kwargs) for m in self.ensemble],
                            self.dim) if len(self) > 1 else self.ensemble[0](*x, **kwargs).unsqueeze(self.dim)
@@ -743,28 +750,6 @@ class Norm(nn.Module):
         y = y - y.min(-1, keepdim=True)[0]
         y = y / y.max(-1, keepdim=True)[0]
         return y.view(*x.shape)
-
-
-# Context manager that temporarily switches on eval() mode for specified models; then resets them
-class act_mode:
-    def __init__(self, *models):
-        super().__init__()
-
-        self.models = models
-
-    def __enter__(self):
-        self.start_modes = []
-        for model in self.models:
-            if model is None:
-                self.start_modes.append(None)
-            else:
-                self.start_modes.append(model.training)
-                model.eval()  # Disables things like dropout, etc.
-
-    def __exit__(self, *args):
-        for model, mode in zip(self.models, self.start_modes):
-            if model is not None:
-                model.train(mode)
 
 
 # Pytorch incorrect (in this case) warning suppression

@@ -139,33 +139,23 @@ class AC2Agent(torch.nn.Module):
         # "Birth"
 
     def act(self, obs):
-        with Utils.act_mode(self.encoder, self.actor):
+        # "See"
+        obs = self.encoder(obs)
+        # features, thought = encoder(obs, output_features=True)  # TODO
 
-            # Exponential moving average (EMA) shadows
-            encoder = self.encoder.ema if self.ema else self.encoder
-            actor = self.actor.ema if self.ema and not (self.RL and self.discrete) else self.actor
+        # Act
+        Pi = self.actor(obs, self.step)
 
-            # "See"
-            obs = encoder(obs)
-            # features, thought = encoder(obs, output_features=True)  # TODO
+        action = Pi.sample() if self.training \
+            else Pi.best
 
-            # Act
-            Pi = actor(obs, self.step)
+        store = {}
 
-            action = Pi.sample() if self.training \
-                else Pi.best
+        # Creator may store distribution as action rather than sampled action
+        if Pi.store is not None:
+            store = {'action': Pi.store.cpu().numpy()}
 
-            store = {}
-
-            if self.training:
-                self.step += 1
-                self.frame += len(obs)
-
-            # Creator may store distribution as action rather than sampled action
-            if Pi.store is not None:
-                store = {'action': Pi.store.cpu().numpy()}
-
-            return action, store
+        return action, store
 
     def learn(self, replay):
         # "Recall"

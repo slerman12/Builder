@@ -155,7 +155,8 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
                 module = module(**args)
 
         for key, value in _overrides_.items():  # Override class functions
-            setattr(module, key, types.MethodType(get_module(value) if isinstance(value, str) else value, module))
+            if value is not None:
+                setattr(module, key, types.MethodType(get_module(value) if isinstance(value, str) else value, module))
     else:
         # Convert to config
         return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, _override_, **kwargs)

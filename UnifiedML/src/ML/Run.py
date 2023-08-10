@@ -36,11 +36,12 @@ def main(args):
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
 
-    train_steps = args.train_steps + agent.step
-
     # Logger / Vlogger
     logger = instantiate(args.logger)
     vlogger = instantiate(args.vlogger) if args.log_media else None
+
+    logger.witness(agent)
+    train_steps = args.train_steps + agent.step
 
     # Start
     converged = training = args.train_steps == 0
