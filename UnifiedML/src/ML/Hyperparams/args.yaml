@@ -138,6 +138,9 @@ agent:
   device: ${device}
   parallel: ${parallel}
   log: ${offline}
+  num_critics: 2
+  num_actors: 1
+  depth: 0
 
 replay:
   _target_: World.Replay.Replay

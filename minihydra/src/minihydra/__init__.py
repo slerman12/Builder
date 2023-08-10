@@ -375,6 +375,7 @@ def parse(args=None):
                 arg[key] = Args(_target_=arg[key])  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
             arg = getattr(arg, key)
         if keys[-1] in arg and isinstance(arg[keys[-1]], (Args, dict)) and '_target_' in arg[keys[-1]]:
+            # TODO Unless _target_ in value, then override :)
             arg[keys[-1]]['_target_'] = value  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
         else:
             setattr(arg, keys[-1], value)

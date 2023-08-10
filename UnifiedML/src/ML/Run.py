@@ -40,7 +40,7 @@ def main(args):
     logger = instantiate(args.logger)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    logger.witness(agent)
+    # logger.witness(agent)
     train_steps = args.train_steps + agent.step
 
     # Start

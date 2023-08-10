@@ -5,6 +5,7 @@
 import ast
 import inspect
 import math
+import time
 import os
 import sys
 import random
@@ -112,8 +113,10 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
         # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
         for key in {'act', 'learn'}:
             if callable(getattr(model, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
-                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: \
-                    getattr(a.encoder.Eyes if eyes else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
+                    a.encoder.Eyes if eyes
+                    else a.actor.Pi_head if agent.num_actors > 1
+                    else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
 
 # TODO Delete
@@ -587,17 +590,28 @@ class Ensemble(nn.Module):
                                        else deepcopy(m) for i, m in enumerate(modules)])
         self.dim = dim
 
-    # TODO Maybe should override forward of module and deepcopy the module repeat times
-    #   Since model forward now needs to output ensemble
-    #   But in that case, wouldn't want extra un-squeezed dim
-    #   Can squeeze model.forward output if num_actors == 1
-    #   Either way, make the forward of the agent the squeezed/adapted act
+        # TODO Not the most elegant. But works
+
+        # This makes it possible to use model= syntax w ensembles
+        if hasattr(modules[0], 'forward'):
+            self.first = modules[0].forward
+
+            if len(modules) > 1:
+                modules[0].forward = self.forward
+
     def forward(self, *x, **kwargs):
-        return torch.stack([m(*x, **kwargs) for m in self.ensemble],
+        return torch.stack([(getattr(self, 'first', m) if i == 0 else m)(*x, **kwargs)
+                            for i, m in enumerate(self.ensemble)],
                            self.dim) if len(self) > 1 else self.ensemble[0](*x, **kwargs).unsqueeze(self.dim)
 
     def __len__(self):
         return len(self.ensemble)
+
+    def __getattr__(self, key):
+        try:
+            return super().__getattr__(key)
+        except AttributeError:
+            return getattr(self.ensemble[0], key)
 
 
 # Replaces tensor's batch items with Normal-sampled random latent
