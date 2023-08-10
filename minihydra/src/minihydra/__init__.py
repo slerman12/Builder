@@ -18,6 +18,9 @@ import types
 from math import inf
 import yaml
 
+# print('why is minihydra being imported a million times?\n\t- especially at eval\n\t- and the first train maybe\n\t'
+#       '- perhaps at every initial import')
+
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 cwd = os.getcwd()
 
@@ -133,7 +136,7 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
 
         _target_ = args.pop('_target_')
 
-        _override_ = {key: args.pop(key) for key in (_override_ or {}) if key in args}  # Extract overrides
+        _overrides_ = args.pop('_overrides_') if '_overrides_' in args else {}
 
         if _target_ is None:
             return
@@ -154,10 +157,8 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
                 args = args if 'kwargs' in signature else {key: args[key] for key in args.keys() & signature}
                 module = module(**args)
 
-        for key, value in _override_.items():  # Override class functions
-            assert key[0] == key[-1] == '_', "Expected overrides to be designated by conjoining underscores."
-            # TODO Perhaps instantiate value as function first. But need to support func instantiates
-            setattr(module, key[1:-1], types.MethodType(value, module))
+        for key, value in _overrides_.items():  # Override class functions
+            setattr(module, key, types.MethodType(get_module(value) if isinstance(value, str) else value, module))
     else:
         # Convert to config
         return instantiate(Args(_target_=args), _i_, _paths_, _modules_, _signature_matching_, _override_, **kwargs)
@@ -253,6 +254,9 @@ class Args:
 
     def get(self, key, *__default):
         return self.__dict__.get(key, *__default)
+
+    def setdefault(self, key, *__default):
+        return self.__dict__.setdefault(key, *__default)
 
     def pop(self, key, *__default):
         return self.__dict__.pop(key, *__default)

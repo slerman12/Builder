@@ -108,19 +108,11 @@ def define_agent(agent, model):  # TODO Model requires forward. Agent should inf
 
         # args.agent_name = model  # TODO
 
-        # Note: For loop breaks this for some reason! Python bug?
-        # for key in {'act', 'learn'}:
-        #     if callable(getattr(model, key, ())) and f'_{key}_' not in agent:
-        #         agent[f'_{key}_'] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes
-        #                                                        else a.actor.Pi_head.ensemble[0], key)(*v, **k)
-
-        # Override agent act/learn methods with model  Note: For loop breaks this for some reason!
-        if callable(getattr(model, 'act', ())) and '_act_' not in agent:
-            agent['_act_'] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes
-                                                        else a.actor.Pi_head.ensemble[0], 'act')(*v, **k)
-        if callable(getattr(model, 'learn', ())) and '_learn_' not in agent:
-            agent['_learn_'] = lambda a, *v, **k: getattr(a.encoder.Eyes if eyes
-                                                          else a.actor.Pi_head.ensemble[0], 'learn')(*v, **k)
+        # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
+        for key in {'act', 'learn'}:
+            if callable(getattr(model, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
+                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: \
+                    getattr(a.encoder.Eyes if eyes else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
 
 # TODO Delete
