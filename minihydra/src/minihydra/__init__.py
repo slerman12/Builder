@@ -18,9 +18,6 @@ import types
 from math import inf
 import yaml
 
-# print('why is minihydra being imported a million times?\n\t- especially at eval\n\t- and the first train maybe\n\t'
-#       '- perhaps at every initial import')
-
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 cwd = os.getcwd()
 
