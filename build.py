@@ -8,10 +8,10 @@ builds = glob.glob('*/Build.py')
 for build in builds:
     os.system(f'python {build}')
 
-# builds = glob.glob('*/build/')
-#
-# for build in builds:
-#     os.system(f'rm -rf {build}')
+builds = glob.glob('*/build/')
+
+for build in builds:
+    os.system(f'rm -rf {build}')
 
 builds = glob.glob('*/dist/*')
 
