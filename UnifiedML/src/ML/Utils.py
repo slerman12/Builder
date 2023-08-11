@@ -5,6 +5,7 @@
 import ast
 import inspect
 import math
+import textwrap
 import time
 import os
 import sys
@@ -76,7 +77,7 @@ def init(args):
     print('Device:', args.device)
 
     # Set passed-in model in agent
-    preconstruct_agent(args.agent, args.model._target_)
+    preconstruct_agent(args.agent, args.model)
 
     interpolate(args)
 
@@ -206,36 +207,50 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
     return model
 
 
-# TODO logger, and if learn has an output, override as loss=output and optimize actor/encoder
-#     Perhaps should be able to pass these into different block parts as well
-#     If all methods present and 'encoder', 'actor' ... blocks in self.__dict__, can override as agent e.g. arg.update
-#           This exhausts me for some reason
-#                   Update to agent with model args
-#                       if hasattr(model, 'act') and hasattr(model, 'learn'): agent.update(model) else:
-#           This exhausts me for some reason
+# TODO:
 #     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
 #     What if parallel?
 #     args.agent_name = model
-#     Adaptive shaping should flatten if needed for in_features, etc. reshaping ?
 # Depending on what is passed in, different agent components can be defined
-def preconstruct_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
-    if model is not None:
-        model = model if isinstance(model, type) else get_module(model) if isinstance(model, str) else type(model)
+def preconstruct_agent(agent, model):
+    if model._target_ is not None:
+        _target_ = model._target_ if isinstance(model._target_, type) \
+            else get_module(model._target_) if isinstance(model._target_, str) \
+            else type(model._target_)
 
-        signature = set(inspect.signature(model).parameters)
-        eyes = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-        if eyes:
-            agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
-            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
+        if hasattr(_target_, 'act') and hasattr(_target_, 'learn'):
+            agent.update(model)
         else:
-            agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
+            signature = set(inspect.signature(_target_).parameters)
+            eyes = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+            if eyes:
+                agent.recipes.actor.Pi_head = _target_  # As Pi_head when output shape
+                agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
+            else:
+                agent.recipes.encoder.Eyes = _target_  # Otherwise as Eyes
 
-        # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
-        for key in {'act', 'learn'}:
-            if callable(getattr(model, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
-                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
-                    a.encoder.Eyes if eyes
-                    else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+            # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
+            for key in {'act', 'learn'}:
+                if callable(getattr(_target_, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
+                    agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
+                        a.encoder.Eyes if eyes
+                        else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+
+        if 'learn' in agent and agent.learn is not None:
+            # Learn-loss-output adaptation
+            pass
+
+    # Agent infers a forward from act  TODO Why not define this in Agent?
+    _target_ = agent._target_ if isinstance(agent._target_, type) \
+        else get_module(agent._target_) if isinstance(agent._target_, str) \
+        else type(agent._target_)
+
+    # Checks if Pytorch module has a forward user-defined
+    if not any(isinstance(node, ast.Return)
+               for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.forward))))):
+        if '_overrides_' not in agent or 'forward' not in agent._overrides_:
+            agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
+                a.act(*v, **k)[0].squeeze(1).squeeze(-1)
 
 
 class MultiModal(nn.Module):

@@ -42,6 +42,8 @@ class AC2Agent(torch.nn.Module):
         self.supervise = supervise  # And classification...
         self.RL = RL or generate
         self.generate = generate  # And generative modeling, too
+
+        # TODO All of these should be set in agent & model by logger or env
         self.device = device
         self.log = log
         self.birthday = time.time()

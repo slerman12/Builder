@@ -134,7 +134,7 @@ class Environment:
                                   for key, m in metric.items()})
 
 
-# Temporarily switches on eval() mode for specified models; then resets them.
+# Temporarily switches on eval() mode for specified blocks; then resets them.
 # Enters and exits Pytorch inference mode
 # Enables / disables EMA
 class act_mode:
