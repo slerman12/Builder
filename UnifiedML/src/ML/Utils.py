@@ -9,6 +9,7 @@ import time
 import os
 import sys
 import random
+from copy import deepcopy
 from functools import cached_property
 import re
 from multiprocessing.pool import ThreadPool
@@ -18,7 +19,6 @@ import torchvision  # For direct accessibility via command line
 from torchvision import transforms  # For direct accessibility via command line
 from Agents.Blocks.Augmentations import *  # For direct accessibility via command line
 from Agents.Blocks.Architectures import *  # For direct accessibility via command line
-from Agents.Blocks.Architectures.Ensemble import Ensemble
 
 import warnings
 
@@ -579,6 +579,39 @@ def repr_shape(input_shape, *blocks):
     for block in blocks:
         input_shape = block(torch.ones(1, *input_shape)).shape[1:]
     return input_shape
+
+
+# "Ensembles" (stacks) multiple modules' outputs
+class Ensemble(nn.Module):
+    def __init__(self, modules, dim=1):
+        super().__init__()
+
+        self.ensemble = nn.ModuleList([m if i == 0 or m != modules[i - 1]
+                                       else deepcopy(m) for i, m in enumerate(modules)])
+        self.dim = dim
+
+        # TODO Not the most elegant. But works. Note: Using module[0] elsewhere might unexpectedly ensemble
+
+        # This makes it possible to use model= syntax w ensembles
+        if hasattr(modules[0], 'forward'):
+            self.first = modules[0].forward
+
+            if len(modules) > 1:
+                modules[0].forward = self.forward
+
+    def forward(self, *x, **kwargs):
+        return torch.stack([(getattr(self, 'first', m) if i == 0 else m)(*x, **kwargs)
+                            for i, m in enumerate(self.ensemble)],
+                           self.dim) if len(self) > 1 else self.ensemble[0](*x, **kwargs).unsqueeze(self.dim)
+
+    def __len__(self):
+        return len(self.ensemble)
+
+    def __getattr__(self, key):
+        try:
+            return super().__getattr__(key)
+        except AttributeError:
+            return getattr(self.ensemble[0], key)
 
 
 # Replaces tensor's batch items with Normal-sampled random latent
