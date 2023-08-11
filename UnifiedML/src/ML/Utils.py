@@ -76,64 +76,9 @@ def init(args):
     print('Device:', args.device)
 
     # Set passed-in model in agent
-    define_agent(args.agent, args.model._target_)
+    preconstruct_agent(args.agent, args.model._target_)
 
     interpolate(args)
-
-
-# TODO logger, and if learn has an output, override as loss=output and optimize actor/encoder
-#     Perhaps should be able to pass these into different block parts as well
-#     If all methods present and 'encoder', 'actor' ... blocks in self.__dict__, can override as agent e.g. arg.update
-#           This exhausts me for some reason
-# Depending on what model is passed in, different agent components need to be overriden/inferred
-def define_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
-    if model is not None:
-        if not isinstance(model, type):
-            model = get_module(model) if isinstance(model, str) else type(model)
-
-        # TODO Update to agent with model args
-        # if hasattr(model, 'act') and hasattr(model, 'learn'):
-        #     agent.update(model)
-        # else:
-
-        eyes = True
-        signature = set(inspect.signature(model).parameters)
-        if signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}:
-            agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
-            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()  # TODO Adaptive shaping should flatten if needed for in_features, etc. reshaping
-            eyes = False
-        else:
-            agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
-
-        # TODO What if type method rather than object method? Would model have to be passed in for 'self'?
-        # TODO What if parallel?
-
-        # args.agent_name = model  # TODO
-
-        # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
-        for key in {'act', 'learn'}:
-            if callable(getattr(model, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
-                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
-                    a.encoder.Eyes if eyes
-                    else a.actor.Pi_head if agent.num_actors > 1
-                    else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
-
-
-# TODO Delete
-class Model(nn.Module):
-    def __init__(self, in_features, out_features):
-        super().__init__()
-
-        self.MLP = nn.Sequential(nn.Flatten(), nn.Linear(in_features, out_features))
-
-    def forward(self, x):
-        return self.MLP(x)
-
-    def act(self, obs):
-        return self(obs), {}
-
-    def learn(self, replay):
-        return {}
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -259,6 +204,38 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             model = getattr(model, key)
     print(f'Successfully loaded {attr if attr else "agent"} from {path}')
     return model
+
+
+# TODO logger, and if learn has an output, override as loss=output and optimize actor/encoder
+#     Perhaps should be able to pass these into different block parts as well
+#     If all methods present and 'encoder', 'actor' ... blocks in self.__dict__, can override as agent e.g. arg.update
+#           This exhausts me for some reason
+#                   Update to agent with model args
+#                       if hasattr(model, 'act') and hasattr(model, 'learn'): agent.update(model) else:
+#           This exhausts me for some reason
+#     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
+#     What if parallel?
+#     args.agent_name = model
+#     Adaptive shaping should flatten if needed for in_features, etc. reshaping ?
+# Depending on what is passed in, different agent components can be defined
+def preconstruct_agent(agent, model):  # TODO Model requires forward. Agent should infer a forward from act
+    if model is not None:
+        model = model if isinstance(model, type) else get_module(model) if isinstance(model, str) else type(model)
+
+        signature = set(inspect.signature(model).parameters)
+        eyes = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+        if eyes:
+            agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
+            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
+        else:
+            agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
+
+        # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
+        for key in {'act', 'learn'}:
+            if callable(getattr(model, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
+                agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
+                    a.encoder.Eyes if eyes
+                    else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
 
 class MultiModal(nn.Module):
