@@ -8,6 +8,8 @@ from Agents.Blocks.Architectures.Vision.CNN import CNN, Conv
 
 from Agents.Blocks.Architectures.Residual import Residual
 
+from Agents.Blocks.Architectures.Ensemble import Ensemble
+
 from Agents.Blocks.Architectures.Vision.ResNet import MiniResNet, MiniResNet as ResNet, ResNet18, ResNet50
 from Agents.Blocks.Architectures.Vision.ConvMixer import ConvMixer
 from Agents.Blocks.Architectures.Vision.ConvNeXt import ConvNeXt, ConvNeXtTiny, ConvNeXtBase

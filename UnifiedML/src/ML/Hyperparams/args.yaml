@@ -15,6 +15,8 @@ lr: 1e-4
 lr_decay_epochs: null
 weight_decay: 0
 ema_decay: 0.99
+num_critics: 2
+num_actors: 1
 # Domains
 discrete: ???  # To be specified later, defaults per respective task
 online: true  # Shorthand for not offline
@@ -138,8 +140,8 @@ agent:
   device: ${device}
   parallel: ${parallel}
   log: ${offline}
-  num_critics: 2
-  num_actors: 1
+  num_critics: ${num_critics}
+  num_actors: ${num_actors}
   depth: 0
 
 replay:

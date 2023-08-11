@@ -11,6 +11,7 @@ from torch import nn
 from minihydra import instantiate
 
 from Agents.Blocks.Architectures.MLP import MLP
+from Agents.Blocks.Architectures.Ensemble import Ensemble
 
 import Utils
 
@@ -43,8 +44,8 @@ class EnsembleQCritic(nn.Module):
                                                                       else self.num_actions * self.action_dim)]
 
         # Ensemble
-        self.Q_head = Utils.Ensemble([instantiate(Q_head, i, **Utils.adaptive_shaping(in_shape, out_shape)) or
-                                      MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])  # e
+        self.Q_head = Ensemble([instantiate(Q_head, i, **Utils.adaptive_shaping(in_shape, out_shape)) or
+                                MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])  # e
 
         self.binary = isinstance(tuple(self.Q_head.modules())[-1],
                                  nn.Sigmoid)  # Whether Sigmoid-activated e.g. in GANs
