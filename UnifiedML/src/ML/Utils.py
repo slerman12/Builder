@@ -218,12 +218,18 @@ def preconstruct_agent(agent, model):
             else get_module(model._target_) if isinstance(model._target_, str) \
             else type(model._target_)
 
-        if hasattr(_target_, 'act') and hasattr(_target_, 'learn'):
+        signature = set(inspect.signature(_target_).parameters)
+
+        # If model has act and learn methods, no shapes, and the learn method has no return statement, Agent <- Model
+        ins = signature & {'in_shape', 'in_shape', 'in_dim', 'in_channels', 'in_features'}
+        outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+        if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs:
+            # and not \
+            # any(isinstance(node, ast.Return)
+            #     for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):  TODO Logger
             agent.update(model)
         else:
-            signature = set(inspect.signature(_target_).parameters)
-            eyes = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-            if eyes:
+            if outs:
                 agent.recipes.actor.Pi_head = _target_  # As Pi_head when output shape
                 agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
             else:
@@ -231,19 +237,39 @@ def preconstruct_agent(agent, model):
 
             # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
             for key in {'act', 'learn'}:
-                if callable(getattr(_target_, key, ())) and ('_overrides_' not in agent or key not in agent._overrides_):
+                if callable(getattr(_target_, key, ())) and \
+                        ('_overrides_' not in agent or key not in agent._overrides_):
                     agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
-                        a.encoder.Eyes if eyes
+                        a.encoder.Eyes if not outs
                         else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
-        if 'learn' in agent and agent.learn is not None:
-            # Learn-loss-output adaptation
-            pass
+        def preconstruct_optimize(loss_fn):
+            def overriden(a, replay):
+                loss = loss_fn(a, replay)
+                # etc.
+
+            return overriden
+
+        # if 'learn' in agent._overrides_ and agent._overrides_.learn is not None:  TODO Logger
+        #     _target_ = get_module(agent._overrides_.learn)
+        #
+        #     # Logger optional
+        #     if len(inspect.signature(_target_).parameters) == 2:
+        #         agent._overrides_.learn = lambda a, replay, None: _target_(a, replay)
+        #
+        #     # If learn has a return statement
+        #     if any(isinstance(node, ast.Return)
+        #            for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
+        #         # Treat as loss
+        #         agent._overrides_.learn = preconstruct_optimize(_target_)
 
     # Agent infers a forward from act  TODO Why not define this in Agent?
+    #  TODO Shouldn't instance type be returned by get_module
     _target_ = agent._target_ if isinstance(agent._target_, type) \
         else get_module(agent._target_) if isinstance(agent._target_, str) \
         else type(agent._target_)
+
+    assert hasattr(_target_, 'act') and hasattr(_target_, 'learn'), 'Agent requires act & learn methods.'
 
     # Checks if Pytorch module has a forward user-defined
     if not any(isinstance(node, ast.Return)
@@ -251,6 +277,10 @@ def preconstruct_agent(agent, model):
         if '_overrides_' not in agent or 'forward' not in agent._overrides_:
             agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
                 a.act(*v, **k)[0].squeeze(1).squeeze(-1)
+
+    # Logger optional
+    # if len(inspect.signature(_target_.learn).parameters) == 2:
+    #     agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logger: _target_.learn(a, replay)
 
 
 class MultiModal(nn.Module):
