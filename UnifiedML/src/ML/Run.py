@@ -85,7 +85,7 @@ def main(args):
                 logs = Args(time=None, step=None, frame=None, episode=None, epoch=None)
                 agent.learn(replay, logs)  # Learn
 
-                if args.agent.log:
+                if args.log_per_episodes and args.agent.log:
                     logger.train().re_witness(logs, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
