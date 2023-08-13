@@ -120,29 +120,6 @@ class Logger:
             self.logs[self.name] = {}
             del self.logs[self.name]
 
-    def witness(self, agent):
-        defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
-
-        setattr(agent, '_defaults', defaults)
-
-        # if self.model is not None and self.model._target_ is not None:
-        #     _target_ = get_module(self.model._target_)
-        #
-        #     signature = set(inspect.signature(_target_).parameters)
-        #     outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-        #
-        #     if not outs:
-        #         setattr(agent.encoder.Eyes, '_defaults', defaults)
-        #     else:
-        #         setattr(agent.actor.Pi_head.ensemble[0], '_defaults', defaults)
-
-        for key, value in defaults.items():
-            setattr(type(agent), key, property(lambda a, _key_=key: a._defaults[_key_],
-                                               lambda a, new_value, _key_=key: (a._defaults.update({_key_: new_value}), None)[1]))
-            # if self.model is not None and self.model._target_ is not None:
-            #     setattr(_target_, key, property(lambda m, _key_=key: m._defaults[_key_],
-            #                                     lambda m, new_value, _key_=key: m._defaults.update(_key_=new_value)))
-
     def dump_actions(self, logs):
         if self.predicted is not None and self.name in self.predicted \
                 and len(self.predicted[self.name]['Predicted']) > 0 \
