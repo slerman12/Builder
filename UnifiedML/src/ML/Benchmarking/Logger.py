@@ -36,16 +36,14 @@ def format(log, log_name):
 
 
 class Logger:
-    def __init__(self, task, seed, generate=False, model=None, path='.', aggregation='mean', log_actions=False,
-                 wandb=False):
+    def __init__(self, task, seed, generate=False, path='.', aggregation='mean', log_actions=False, wandb=False,
+                 model=None, witness=None):
 
         self.path = path
         Path(self.path).mkdir(parents=True, exist_ok=True)
         self.task = task
         self.seed = seed
         self.generate = generate
-
-        self.model = model
 
         self.name = None
 
@@ -61,6 +59,11 @@ class Logger:
 
         self.wandb = 'uninitialized' if wandb \
             else None
+
+        self.model = model
+
+        if witness is not None:
+            self.witness(witness)
 
     def log(self, logs, dump=False, exp=None):
         if logs:

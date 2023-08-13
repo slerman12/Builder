@@ -30,16 +30,16 @@ def main(args):
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
         else instantiate(args.agent).to(args.device)
-    # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory
+
+    # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory - in preconstruct?
 
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
 
     # Logger / Vlogger
-    logger = instantiate(args.logger)
+    logger = instantiate(args.logger, witness=agent)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    logger.witness(agent)
     train_steps = args.train_steps + agent.step
 
     # Start
