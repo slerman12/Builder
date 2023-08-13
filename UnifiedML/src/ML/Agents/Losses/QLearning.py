@@ -6,7 +6,7 @@ import torch
 from torch.nn.functional import mse_loss, binary_cross_entropy
 
 
-def ensembleQLearning(critic, actor, obs, action, reward, discount=1, next_obs=None, step=0, logs=None):
+def ensembleQLearning(critic, actor, obs, action, reward, discount=1, next_obs=None, step=0, log=None):
     # Non-empty next_obs
     has_future = next_obs is not None and bool(next_obs.nelement())
 
@@ -48,10 +48,10 @@ def ensembleQLearning(critic, actor, obs, action, reward, discount=1, next_obs=N
     # q_loss = criterion(Qs.float(), target_Q.view(-1, 1, 1).float().expand_as(Qs))
     q_loss = criterion(Qs, target_Q.view(-1, 1, 1).expand_as(Qs))  # TODO Replay set float if MP
 
-    if logs is not None:
-        logs['temporal_difference_error'] = q_loss
-        logs.update({f'q{i}': Qs[:, i].to('cpu' if Qs.device.type == 'mps' else Qs).median()  # median not on MPS
-                     for i in range(Qs.shape[1])})
-        logs['target_q'] = target_Q.mean()
+    if log is not None:
+        log['temporal_difference_error'] = q_loss
+        log.update({f'q{i}': Qs[:, i].to('cpu' if Qs.device.type == 'mps' else Qs).median()  # median not on MPS
+                    for i in range(Qs.shape[1])})
+        log['target_q'] = target_Q.mean()
 
     return q_loss

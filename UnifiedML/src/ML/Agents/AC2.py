@@ -258,7 +258,7 @@ class AC2Agent(torch.nn.Module):
             # Critic loss
             critic_loss = QLearning.ensembleQLearning(self.critic, self.actor, batch.obs, batch.action, batch.reward,
                                                       batch.discount, getattr(batch, 'next_obs', None),
-                                                      self.step, logs=log)
+                                                      self.step, log=log)
 
             # "Foretell"
 
@@ -272,7 +272,7 @@ class AC2Agent(torch.nn.Module):
             dynamics_loss = 0 if self.depth == 0 or self.generate \
                 else SelfSupervisedLearning.dynamicsLearning(features, batch.traj_o, batch.traj_a, batch.traj_r,
                                                              self.encoder, self.dynamics, self.projector, self.predictor,
-                                                             depth=self.depth, action_dim=self.action_dim, logs=log)
+                                                             depth=self.depth, action_dim=self.action_dim, log=log)
 
             models = () if self.generate or not self.depth else (self.dynamics, self.projector, self.predictor)
 
@@ -291,7 +291,7 @@ class AC2Agent(torch.nn.Module):
 
             # Actor loss
             actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, batch.obs.detach(), batch.action,
-                                                           self.step, logs=log)
+                                                           self.step, log=log)
 
             # Update actor
             Utils.optimize(actor_loss, self.actor, epoch=self.epoch if replay.offline else self.episode)

@@ -4,7 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 
 
-def deepPolicyGradient(actor, critic, obs, action=None, step=1, logs=None):
+def deepPolicyGradient(actor, critic, obs, action=None, step=1, log=None):
 
     if action is None or not action.requires_grad:  # If None or not differentiable
         action = actor(obs, step).rsample()  # Differentiable action ensemble  TODO if rollout=true, sample, else mean
@@ -20,7 +20,7 @@ def deepPolicyGradient(actor, critic, obs, action=None, step=1, logs=None):
     # Policy gradient ascent
     policy_loss = -q.mean()
 
-    if logs is not None:
-        logs['policy_loss'] = policy_loss
+    if log is not None:
+        log['policy_loss'] = policy_loss
 
     return policy_loss

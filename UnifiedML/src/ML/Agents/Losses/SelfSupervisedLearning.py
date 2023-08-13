@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import Utils
 
 
-def bootstrapYourOwnLatent(obs, positive, encoder, projector, predictor, logs=None):
+def bootstrapYourOwnLatent(obs, positive, encoder, projector, predictor, log=None):
     """
     Bootstrap Your Own Latent (https://arxiv.org/abs/2006.07733),
     Self-supervision via EMA
@@ -23,15 +23,15 @@ def bootstrapYourOwnLatent(obs, positive, encoder, projector, predictor, logs=No
 
         self_supervised_loss = -F.cosine_similarity(anchor, positive, -1).mean()
 
-        if logs is not None:
-            logs['byol_loss'] = self_supervised_loss
+        if log is not None:
+            log['byol_loss'] = self_supervised_loss
 
         return self_supervised_loss
 
 
 def dynamicsLearning(obs, traj_o, traj_a, traj_r,
                      encoder, dynamics, projector, obs_predictor=None, reward_predictor=None,
-                     depth=1, action_dim=0, logs=None):
+                     depth=1, action_dim=0, log=None):
     with Utils.AutoCast(obs.device):
         assert depth < traj_o.shape[1], f"Depth {depth} exceeds future trajectory size of {traj_o.shape[1] - 1} steps"
 
@@ -52,7 +52,7 @@ def dynamicsLearning(obs, traj_o, traj_a, traj_r,
         dynamics_loss = 0
         future = traj_o[:, 1:depth + 1]
         if obs_predictor is not None:
-            dynamics_loss -= bootstrapYourOwnLatent(forecast, future, encoder, projector, obs_predictor, logs)
+            dynamics_loss -= bootstrapYourOwnLatent(forecast, future, encoder, projector, obs_predictor, log)
 
         if reward_predictor is not None:
             reward_prediction = reward_predictor(forecast)

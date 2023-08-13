@@ -111,7 +111,7 @@ class DQNAgent(torch.nn.Module):
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.critic, self.actor,
                                                   obs, action, reward, discount, next_obs,
-                                                  self.step, logs=logs)
+                                                  self.step, log=logs)
 
         # Update encoder and critic
         Utils.optimize(critic_loss,

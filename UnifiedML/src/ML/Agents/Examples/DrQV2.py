@@ -107,13 +107,13 @@ class DrQV2Agent(torch.nn.Module):
 
         # Critic loss
         critic_loss = QLearning.ensembleQLearning(self.critic, self.actor, obs, action, reward, discount, next_obs,
-                                                  self.step, logs=logs)
+                                                  self.step, log=logs)
 
         # Update encoder and critic
         Utils.optimize(critic_loss, self.encoder, self.critic)
 
         # Actor loss
-        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(), step=self.step, logs=logs)
+        actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, obs.detach(), step=self.step, log=logs)
 
         # Update actor
         Utils.optimize(actor_loss, self.actor)
