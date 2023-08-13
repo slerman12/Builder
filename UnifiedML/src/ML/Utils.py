@@ -76,9 +76,10 @@ def init(args):
 
     print('Device:', args.device)
 
-    # Set passed-in model in agent
+    # Bootstrap the agent and passed-in model
     preconstruct_agent(args.agent, args.model)
 
+    # Allows string substitution and cross-referencing e.g. ${device} -> 'cuda'
     interpolate(args)
 
 
@@ -152,64 +153,9 @@ def launch(**args):
     sys.argv = original
 
 
-# Saves model + args + selected attributes
-def save(path, model, args=None, *attributes):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    torch.save({'state_dict': model.state_dict(),
-                'attr': {attr: getattr(model, attr) for attr in attributes},
-                'args': args}, path)
-    print(f'Model successfully saved to {path}')
-
-
-# Loads model or part of model
-def load(path, device='cuda', args=None, preserve=(), distributed=False, attr='', **kwargs):
-    while True:
-        try:
-            to_load = torch.load(path, map_location=device)  # Load
-            original_args = to_load['args']
-
-            args = args or original_args or {}  # Note: Could instead use original_args, but support _overload_
-            if 'obs_spec' in original_args:
-                args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
-            if 'recipes' in original_args:
-                args['recipes'] = original_args['recipes']  # Since assumed TODO Default to these where current are null
-            break
-        except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
-            if not distributed:
-                raise RuntimeError(e)
-            warnings.warn(f'Load conflict, resolving...')  # For distributed training
-
-    # Overriding original args where specified
-    for key, value in kwargs.items():  # Need to update kwargs to include _overload_?
-        if attr:
-            args.recipes[attr + f'._overload_.{key}'] = value
-        else:
-            args[key] = value
-
-    model = instantiate(args).to(device)
-
-    # Load model's params
-    model.load_state_dict(to_load['state_dict'], strict=False)
-    model.device = device
-
-    # Load saved attributes as well
-    for key, value in to_load['attr'].items():
-        if hasattr(model, key) and key not in ['state_dict', *preserve]:
-            setattr(model, key, value)
-
-    # Can also load part of a model. Useful for recipes,
-    # e.g. python Run.py Eyes=load +eyes.path=<Path To Agent Checkpoint> +eyes.attr=encoder.Eyes +eyes.device=<device>
-    for key in attr.split('.'):
-        if key:
-            model = getattr(model, key)
-    print(f'Successfully loaded {attr if attr else "agent"} from {path}')
-    return model
-
-
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
-    # Better to preconstruct agent & model definitions than to construct and rearrange/delete
+    # Preconstruct avoids deleting & replacing agent parts (e.g. architectures) redundantly
     if model._target_ is not None:
         _target_ = get_module(model._target_)
 
@@ -283,51 +229,59 @@ def preconstruct_agent(agent, model):
 #     args.agent_name = model
 
 
-class MultiModal(nn.Module):
-    def __init__(self, args=None, **parts):
-        super().__init__()
+# Saves model + args + selected attributes
+def save(path, model, args=None, *attributes):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
 
-        args = args or Args()
+    torch.save({'state_dict': model.state_dict(),
+                'attr': {attr: getattr(model, attr) for attr in attributes},
+                'args': args}, path)
+    print(f'Model successfully saved to {path}')
 
-        # Default accepted mappings
-        defaults = Args(Eyes={'obs', 'image', 'sight'}, Ears={'audio', 'sound'}, Proprio={'features', 'touch'})
 
-        # If args is itself a part, then apply it to (Eyes, Obs, Image, obs, image). a.k.a. Eyes is default name.
-        # Note. Maybe just do all lowercase.
-        # If args is string, instantiate-it.
+# Loads model or part of model
+def load(path, device='cuda', args=None, preserve=(), distributed=False, attr='', **kwargs):
+    while True:
+        try:
+            to_load = torch.load(path, map_location=device)  # Load
+            original_args = to_load['args']
 
-        # Maps parts names (uppercase) to corresponding datums (lowercase)
-        #   s.t. if datums are present, they get fed as input to the corresponding part
-        self.datums = Args()
+            args = args or original_args or {}  # Note: Could instead use original_args, but support _overload_
+            if 'obs_spec' in original_args:
+                args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
+            if 'recipes' in original_args:
+                args['recipes'] = original_args['recipes']  # Since assumed TODO Default to these where current are null
+            break
+        except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
+            if not distributed:
+                raise RuntimeError(e)
+            warnings.warn(f'Load conflict, resolving...')  # For distributed training
 
-        # Synonymous datums
-        for name in args.keys() | parts.keys():
-            # All parts can accept datums with matching-key name
-            self.datums[name.upper()] = {name.lower()} | set(n.lower() for n in args[name].pop('datums', ()))
-            if name.upper() in defaults:
-                self.datums[name.upper()] = self.datums[name.upper()] | defaults[name.upper()]
+    # Overriding original args where specified
+    for key, value in kwargs.items():  # Need to update kwargs to include _overload_?
+        if attr:
+            args.recipes[attr + f'._overload_.{key}'] = value
+        else:
+            args[key] = value
 
-        # Default possible batch datums
-        batch_keys = {'obs', 'action', 'label', 'reward'} | set().union(self.datums.values())
+    model = instantiate(args).to(device)
 
-        self.datums.update({key.upper(): key for key in batch_keys if key.upper() not in self.datums})
+    # Load model's params
+    model.load_state_dict(to_load['state_dict'], strict=False)
+    model.device = device
 
-        # Convert and pop Uppercase to _target_ syntax if str and not already
+    # Load saved attributes as well
+    for key, value in to_load['attr'].items():
+        if hasattr(model, key) and key not in ['state_dict', *preserve]:
+            setattr(model, key, value)
 
-        # Passed-in modules
-        self.parts.update({name.upper(): part for name, part in parts.items() if part is not None})
-        # Instantiate
-        self.parts.update({name.upper(): instantiate(args[name]) for name in args if name.upper() not in self.parts and
-                           '_target_' in args[name]})
-        # Default batch keys and specified datums
-        self.parts = Args({key.upper(): nn.Identity() for key in batch_keys if key.upper() not in self.parts})
-
-    def forward(self, batch):
-        # Parts collect their batch items
-        #   If none present, don't include part
-        # Output with lowercase version of part name
-        # If input isn't a batch, treats it as obs, returns non-batch.
-        pass
+    # Can also load part of a model. Useful for recipes,
+    # e.g. python Run.py Eyes=load +eyes.path=<Path To Agent Checkpoint> +eyes.attr=encoder.Eyes +eyes.device=<device>
+    for key in attr.split('.'):
+        if key:
+            model = getattr(model, key)
+    print(f'Successfully loaded {attr if attr else "agent"} from {path}')
+    return model
 
 
 # Launches and synchronizes multiple tasks
@@ -517,6 +471,53 @@ def weight_init(m):
         nn.init.orthogonal_(m.weight.data, gain)
         if hasattr(m.bias, 'data'):
             m.bias.data.fill_(0.0)
+
+
+class MultiModal(nn.Module):
+    def __init__(self, args=None, **parts):
+        super().__init__()
+
+        args = args or Args()
+
+        # Default accepted mappings
+        defaults = Args(Eyes={'obs', 'image', 'sight'}, Ears={'audio', 'sound'}, Proprio={'features', 'touch'})
+
+        # If args is itself a part, then apply it to (Eyes, Obs, Image, obs, image). a.k.a. Eyes is default name.
+        # Note. Maybe just do all lowercase.
+        # If args is string, instantiate-it.
+
+        # Maps parts names (uppercase) to corresponding datums (lowercase)
+        #   s.t. if datums are present, they get fed as input to the corresponding part
+        self.datums = Args()
+
+        # Synonymous datums
+        for name in args.keys() | parts.keys():
+            # All parts can accept datums with matching-key name
+            self.datums[name.upper()] = {name.lower()} | set(n.lower() for n in args[name].pop('datums', ()))
+            if name.upper() in defaults:
+                self.datums[name.upper()] = self.datums[name.upper()] | defaults[name.upper()]
+
+        # Default possible batch datums
+        batch_keys = {'obs', 'action', 'label', 'reward'} | set().union(self.datums.values())
+
+        self.datums.update({key.upper(): key for key in batch_keys if key.upper() not in self.datums})
+
+        # Convert and pop Uppercase to _target_ syntax if str and not already
+
+        # Passed-in modules
+        self.parts.update({name.upper(): part for name, part in parts.items() if part is not None})
+        # Instantiate
+        self.parts.update({name.upper(): instantiate(args[name]) for name in args if name.upper() not in self.parts and
+                           '_target_' in args[name]})
+        # Default batch keys and specified datums
+        self.parts = Args({key.upper(): nn.Identity() for key in batch_keys if key.upper() not in self.parts})
+
+    def forward(self, batch):
+        # Parts collect their batch items
+        #   If none present, don't include part
+        # Output with lowercase version of part name
+        # If input isn't a batch, treats it as obs, returns non-batch.
+        pass
 
 
 # Initializes model optimizer. Default: AdamW
