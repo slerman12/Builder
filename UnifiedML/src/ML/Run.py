@@ -53,9 +53,9 @@ def main(args):
                 exp, logs, vlogs = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                       vlog=args.log_media)
 
-                logger.mode('Eval').log(**logs, exp=exp if converged else None)
+                logger.eval().log(logs, exp=exp if converged else None)
 
-            logger.mode('Eval').dump_logs()
+            logger.eval().dump_logs()
 
             if args.log_media:
                 vlogger.dump(vlogs, f'{agent.step}')
@@ -73,7 +73,7 @@ def main(args):
 
         if env.episode_done:  # TODO log_per_steps
             if args.log_per_episodes and (agent.episode - 2 * replay.offline) % args.log_per_episodes == 0:
-                logger.mode('Train' if training else 'Seed').log(**logs or {}, dump=True)
+                logger.mode('Train' if training else 'Seed').log(logs, dump=True)
 
         converged = agent.step >= train_steps
         training = training or agent.step > args.seed_steps and len(replay) > replay.partitions - 1 or replay.offline
@@ -85,7 +85,8 @@ def main(args):
                 logs = Args(time=None, step=None, frame=None, episode=None, epoch=None)
                 agent.learn(replay, logs)  # Learn
 
-                logger.mode('Train').re_witness(logs, agent, replay)
+                if args.agent.log:
+                    logger.train().re_witness(logs, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
 

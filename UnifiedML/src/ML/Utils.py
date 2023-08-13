@@ -207,10 +207,6 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
     return model
 
 
-# TODO:
-#     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
-#     What if parallel?
-#     args.agent_name = model
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
     if model._target_ is not None:
@@ -279,6 +275,10 @@ def preconstruct_agent(agent, model):
     # Logs optional
     if len(inspect.signature(_target_.learn).parameters) == 2:
         agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logs: _target_.learn(a, replay)
+# TODO:
+#     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
+#     What if parallel?
+#     args.agent_name = model
 
 
 class MultiModal(nn.Module):

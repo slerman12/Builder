@@ -158,6 +158,9 @@ class AC2Agent(torch.nn.Module):
         return action, store
 
     def learn(self, replay, logs):
+        if not self.log:
+            logs = None
+
         # "Recall"
 
         if self.depth > 0:
