@@ -213,8 +213,6 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
 #     args.agent_name = model
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
-    # defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
-
     if model._target_ is not None:
         _target_ = get_module(model._target_)
 
@@ -222,10 +220,9 @@ def preconstruct_agent(agent, model):
 
         ins = signature & {'in_shape', 'in_shape', 'in_dim', 'in_channels', 'in_features'}
         outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-        if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs:
-            # and not \
-            # any(isinstance(node, ast.Return)
-            #     for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):  TODO Logger
+        if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs and not \
+            any(isinstance(node, ast.Return)
+                for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
             assert False, f'This "model" [{model._target_}] contains an act method, fully-implemented learn method, ' \
                           'and no adaptive shaping signature arguments. It is an agent! Please pass in the model to ' \
                           'the designated flag \'agent=\'. '
@@ -244,30 +241,28 @@ def preconstruct_agent(agent, model):
                         a.encoder.Eyes if not outs
                         else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
+        # Loss as output in learn gets backward-ed, optimized, and logged
         def preconstruct_optimize(loss_fn):
-            def overriden(a, replay):
+            def overriden(a, replay, logs):
                 loss = loss_fn(a, replay)
-                # etc.
+                loss.backward()
+                optimize(loss, a.encoder, a.actor)
+                logs.loss = loss
 
             return overriden
 
-        # if 'learn' in agent._overrides_ and agent._overrides_.learn is not None:  TODO Logger
-        #     _target_ = get_module(agent._overrides_.learn)
-        #
-        #     # Logger optional
-        #     if len(inspect.signature(_target_).parameters) == 2:
-        #         agent._overrides_.learn = lambda a, replay, None: _target_(a, replay)
-        #
-        #     # If learn has a return statement
-        #     if any(isinstance(node, ast.Return)
-        #            for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
-        #         # Treat as loss
-        #         agent._overrides_.learn = preconstruct_optimize(_target_)
+        if 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
+            _target_ = get_module(agent._overrides_.learn)
 
-        # Add counter properties to model (e.g. step, frame, episode, etc.)
-        # for key, value in defaults.items():
-        #     setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
-        #                                     lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
+            # Logs optional
+            if len(inspect.signature(_target_).parameters) == 2:
+                agent._overrides_.learn = lambda a, replay, logs: _target_(a, replay)
+
+            # If learn has a return statement
+            if any(isinstance(node, ast.Return)
+                   for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
+                # Treat as loss
+                agent._overrides_.learn = preconstruct_optimize(_target_)
 
     # Agent infers a forward from act
     _target_ = get_module(agent._target_)
@@ -281,15 +276,9 @@ def preconstruct_agent(agent, model):
             agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
                 a.act(*v, **k)[0].squeeze(1).squeeze(-1)
 
-    # Logger optional
-    # if len(inspect.signature(_target_.learn).parameters) == 2:
-    #     agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logger: _target_.learn(a, replay)
-
-    # Add counter properties to agent (e.g. step, frame, episode, etc.)
-    # TODO Note: Perhaps logger.witness(agent) would be better to uniquely assign defaults per instance
-    # for key, value in defaults.items():
-    #     setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
-    #                                     lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
+    # Logs optional
+    if len(inspect.signature(_target_.learn).parameters) == 2:
+        agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logs: _target_.learn(a, replay)
 
 
 class MultiModal(nn.Module):
