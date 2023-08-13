@@ -45,7 +45,7 @@ class Environment:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
         experiences = [*([self.env.step()] if self.disable and self.on_policy else [])]
-        video_image = []
+        vlog = []
 
         self.episode_done = self.disable
 
@@ -73,7 +73,7 @@ class Environment:
             if vlog or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
                     else self.env.render()
-                video_image.append(image_frame)
+                vlog.append(image_frame)
 
             if agent.training:
                 agent.step += 1
@@ -101,12 +101,12 @@ class Environment:
         sundown = time.time()
         frames = self.episode_frame * self.action_repeat
 
-        logs = {'time': sundown - agent.birthday,
-                'step': agent.step,
-                'frame': agent.frame * self.action_repeat,
-                'epoch' if self.offline or self.generate else 'episode':
-                    (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_sums,
-                'fps': frames / (sundown - self.daybreak)} if not self.disable \
+        log = {'time': sundown - agent.birthday,
+               'step': agent.step,
+               'frame': agent.frame * self.action_repeat,
+               'epoch' if self.offline or self.generate else 'episode':
+                   (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_sums,
+               'fps': frames / (sundown - self.daybreak)} if not self.disable \
             else None
 
         if self.episode_done:
@@ -114,7 +114,7 @@ class Environment:
             self.episode_step = self.episode_frame = 0
             self.daybreak = sundown
 
-        return experiences, logs, video_image
+        return experiences, log, vlog
 
     def tally_metric(self, exp):
         metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}

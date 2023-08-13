@@ -60,23 +60,23 @@ class Logger:
         self.wandb = 'uninitialized' if wandb \
             else None
 
+        # Agent-specific properties & logging
         self.model = model
-
         if witness is not None:
             self.witness(witness)
 
-    def log(self, logs, dump=False, exp=None):
-        if logs:
+    def log(self, log, dump=False, exp=None):
+        if log:
 
             if self.name not in self.logs:
                 self.logs[self.name] = {}
 
-            log = self.logs[self.name]
+            logs = self.logs[self.name]
 
-            for log_name, item in logs.items():
+            for log_name, item in log.items():
                 if isinstance(item, torch.Tensor):
                     item = item.detach().cpu().numpy()
-                log[log_name] = log[log_name] + [item] if log_name in log else [item]
+                logs[log_name] = logs[log_name] + [item] if log_name in logs else [item]
 
             if self.predicted is not None and exp is not None:
                 for exp in exp:
@@ -234,6 +234,31 @@ class Logger:
         writer.writerow(logs)
         file.flush()
 
+    def log_wandb(self, logs):
+        if self.wandb == 'uninitialized':
+            import wandb
+
+            experiment, agent, suite = self.path.split('/')[2:5]
+
+            if self.generate:
+                agent = 'Generate_' + agent
+
+            wandb.init(project=experiment, name=f'{agent}_{suite}_{self.task}_{self.seed}', dir=self.path)
+
+            for file in ['', '*/', '*/*/', '*/*/*/']:
+                try:
+                    wandb.save(f'./Hyperparams/{file}*.yaml')
+                except Exception:
+                    pass
+
+            self.wandb = wandb
+
+        measure = 'reward' if 'reward' in logs else 'accuracy'
+        if measure in logs:
+            logs[f'{measure} ({self.name})'] = logs.pop(f'{measure}')
+
+        self.wandb.log(logs, step=int(logs['step']))
+
     # Add counter properties to agent & model scope (e.g. step, frame, episode, etc.)
     def witness(self, agent):
         defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
@@ -274,40 +299,15 @@ class Logger:
 
             self.log(logs)
 
-    def log_wandb(self, logs):
-        if self.wandb == 'uninitialized':
-            import wandb
-
-            experiment, agent, suite = self.path.split('/')[2:5]
-
-            if self.generate:
-                agent = 'Generate_' + agent
-
-            wandb.init(project=experiment, name=f'{agent}_{suite}_{self.task}_{self.seed}', dir=self.path)
-
-            for file in ['', '*/', '*/*/', '*/*/*/']:
-                try:
-                    wandb.save(f'./Hyperparams/{file}*.yaml')
-                except Exception:
-                    pass
-
-            self.wandb = wandb
-
-        measure = 'reward' if 'reward' in logs else 'accuracy'
-        if measure in logs:
-            logs[f'{measure} ({self.name})'] = logs.pop(f'{measure}')
-
-        self.wandb.log(logs, step=int(logs['step']))
-
-    def mode(self, name):
-        self.name = name
-        return self
+    def seed(self):
+        return self.mode('Seed')
 
     def train(self):
         return self.mode('Train')
 
-    def seed(self):
-        return self.mode('Seed')
-
     def eval(self):
         return self.mode('Eval')
+
+    def mode(self, name):
+        self.name = name
+        return self

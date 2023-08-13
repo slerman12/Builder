@@ -49,15 +49,15 @@ def main(args):
         if converged or args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0:
 
             for _ in range(args.generate or args.evaluate_episodes):
-                exp, logs, vlogs = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
-                                                      vlog=args.log_media)
+                exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
+                                                    vlog=args.log_media)
 
-                logger.eval().log(logs, exp=exp if converged else None)
+                logger.eval().log(log, exp=exp if converged else None)
 
             logger.eval().dump_logs()
 
             if args.log_media:
-                vlogger.dump(vlogs, f'{agent.step}')
+                vlogger.dump(vlog, f'{agent.step}')
 
         if args.plot_per_steps and (agent.step + 1) % args.plot_per_steps == 0 and not args.generate or converged:
             instantiate(args.plotting)  # TODO show=converged + web browser
@@ -66,13 +66,13 @@ def main(args):
             break
 
         # Rollout
-        experiences, logs, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
+        experiences, log, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
 
         replay.add(experiences)
 
         if env.episode_done:  # TODO log_per_steps
             if args.log_per_episodes and (agent.episode - 2 * replay.offline) % args.log_per_episodes == 0:
-                logger.mode('Train' if training else 'Seed').log(logs, dump=True)
+                logger.mode('Train' if training else 'Seed').log(log, dump=True)
 
         converged = agent.step >= train_steps
         training = training or agent.step > args.seed_steps and len(replay) > replay.partitions - 1 or replay.offline
@@ -81,11 +81,11 @@ def main(args):
         if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
 
             for _ in range(args.learn_steps_after if converged else args.learn_steps):
-                logs = Args(time=None, step=None, frame=None, episode=None, epoch=None)
-                agent.learn(replay, logs)  # Learn
+                log = Args(time=None, step=None, frame=None, episode=None, epoch=None)
+                agent.learn(replay, log)  # Learn
 
                 if args.log_per_episodes and args.agent.log:
-                    logger.train().re_witness(logs, agent, replay)
+                    logger.train().re_witness(log, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
 

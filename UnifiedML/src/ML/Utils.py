@@ -240,11 +240,11 @@ def preconstruct_agent(agent, model):
 
         # Loss as output in learn gets backward-ed, optimized, and logged
         def preconstruct_optimize(loss_fn):
-            def overriden(a, replay, logs):
-                loss = loss_fn(a, replay, logs)
+            def overriden(a, replay, log):
+                loss = loss_fn(a, replay, log)
                 optimize(loss, a.encoder, a.actor)
-                if logs is not None:
-                    logs.loss = loss
+                if log is not None and 'loss' not in log:
+                    log.loss = loss
 
             return overriden
 
@@ -253,7 +253,7 @@ def preconstruct_agent(agent, model):
 
             # Logs optional
             if len(inspect.signature(_target_.learn).parameters) == 2:
-                agent._overrides_.learn = lambda a, replay, logs, learn=agent._overrides_.learn: learn(a, replay)
+                agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
 
             # If learn has a return statement
             if any(isinstance(node, ast.Return)
@@ -276,7 +276,7 @@ def preconstruct_agent(agent, model):
 
     # Logs optional
     if len(inspect.signature(_target_.learn).parameters) == 2:
-        agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logs: _target_.learn(a, replay)
+        agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, log: _target_.learn(a, replay)
 # TODO:
 #     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
 #     What if parallel?
@@ -441,12 +441,10 @@ class MultiTask:
 
         learn = agent.learn
 
-        def sync_block_learn(replay):
+        def sync_block_learn(replay, log):
             self.block(agent)
-            logs = learn(replay)
+            learn(replay, log)
             self.sync(agent)
-
-            return logs
 
         agent.learn = sync_block_learn
 

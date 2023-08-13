@@ -152,9 +152,9 @@ class AC2Agent(torch.nn.Module):
 
         return action, store
 
-    def learn(self, replay, logs):
+    def learn(self, replay, log):
         if not self.log:
-            logs = None
+            log = None
 
         # "Recall"
 
@@ -199,7 +199,7 @@ class AC2Agent(torch.nn.Module):
                 accuracy = correct.mean()
 
                 if self.log:
-                    logs.update({'accuracy': accuracy})
+                    log.update({'accuracy': accuracy})
 
             # Supervised learning
             if self.supervise:
@@ -211,7 +211,7 @@ class AC2Agent(torch.nn.Module):
                                self.actor, epoch=self.epoch if replay.offline else self.episode, retain_graph=True)
 
                 if self.log:
-                    logs.update({'supervised_loss': supervised_loss})
+                    log.update({'supervised_loss': supervised_loss})
 
         # Reinforcement learning / generative modeling
         if self.RL:
@@ -251,14 +251,14 @@ class AC2Agent(torch.nn.Module):
 
             # Update reward log
             if self.log:
-                logs.update({'reward': batch.reward})
+                log.update({'reward': batch.reward})
 
             # "Discern" / "Discriminate"
 
             # Critic loss
             critic_loss = QLearning.ensembleQLearning(self.critic, self.actor, batch.obs, batch.action, batch.reward,
                                                       batch.discount, getattr(batch, 'next_obs', None),
-                                                      self.step, logs=logs)
+                                                      self.step, logs=log)
 
             # "Foretell"
 
@@ -272,7 +272,7 @@ class AC2Agent(torch.nn.Module):
             dynamics_loss = 0 if self.depth == 0 or self.generate \
                 else SelfSupervisedLearning.dynamicsLearning(features, batch.traj_o, batch.traj_a, batch.traj_r,
                                                              self.encoder, self.dynamics, self.projector, self.predictor,
-                                                             depth=self.depth, action_dim=self.action_dim, logs=logs)
+                                                             depth=self.depth, action_dim=self.action_dim, logs=log)
 
             models = () if self.generate or not self.depth else (self.dynamics, self.projector, self.predictor)
 
@@ -291,7 +291,7 @@ class AC2Agent(torch.nn.Module):
 
             # Actor loss
             actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, batch.obs.detach(), batch.action,
-                                                           self.step, logs=logs)
+                                                           self.step, logs=log)
 
             # Update actor
             Utils.optimize(actor_loss, self.actor, epoch=self.epoch if replay.offline else self.episode)
