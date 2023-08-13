@@ -1,7 +1,7 @@
-Env: World.Environments.Classify.Classify
+Env: World.Environments.Datums.Datums
 Dataset: torchvision.datasets.EMNIST
 metric: 
-    accuracy: World.Environments.Classify.accuracy
+    accuracy: World.Environments.Datums.accuracy
 env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}

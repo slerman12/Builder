@@ -86,6 +86,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     dataset_config = copy(dataset_config)
     if 'Transform' in dataset_config:
         dataset_config.pop('Transform')
+    classify = dataset_config.pop('classify') if 'classify' in dataset_config else None
     transform = dataset_config.pop('transform') if 'transform' in dataset_config else None
     subset = dataset_config.pop('subset') if 'subset' in dataset_config else None
 
@@ -124,42 +125,41 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
 
-    if hasattr(dataset, 'num_classes'):
-        assert isinstance(dataset[0][1], int) or \
-               (isinstance(dataset[0][1], (torch.Tensor, np.ndarray)) or 'numpy.' in str(type(dataset[0][1]))) and \
-               math.prod(dataset[0][1].shape) < 2 and \
-               not torch.is_floating_point(torch.as_tensor(dataset[0][1])), f'The .num_classes= attribute of Dataset ' \
-                                                                            f'got value {dataset.num_classes} with ' \
-                                                                            f'type {type(dataset[0][1])} labels. If ' \
-                                                                            f'your labels aren\'t consecutive ' \
-                                                                            f'integers starting from 0, specify a ' \
-                                                                            f'list instead, e.g., ' \
-                                                                            f'.classes=["dog", "cat"].'
+    if classify:
+        if hasattr(dataset, 'num_classes'):
+            error = f'The .num_classes= attribute of Dataset got value {dataset.num_classes} with type ' \
+                    f'{type(dataset[0][1])} labels. If your labels aren\'t consecutive integers starting from 0, ' \
+                    f'specify a list instead, e.g., .classes=["dog", "cat"].'
+            assert isinstance(dataset[0][1], int) or \
+                   (isinstance(dataset[0][1], (torch.Tensor, np.ndarray)) or 'numpy.' in str(type(dataset[0][1]))) and \
+                   math.prod(dataset[0][1].shape) < 2 \
+                   and not torch.is_floating_point(torch.as_tensor(dataset[0][1])), error
 
-    classes = subset if subset is not None \
-        else range(dataset.classes if isinstance(dataset.classes, int)
-                   else len(dataset.classes)) if hasattr(dataset, 'classes') \
-        else range(dataset.num_classes) if hasattr(dataset, 'num_classes') and isinstance(dataset.num_classes, int) \
-        else dataset.num_classes if hasattr(dataset, 'num_classes') \
-        else dataset.class_to_idx.keys() if hasattr(dataset, 'class_to_idx') \
-        else [print(f'Identifying unique classes... '
-                    f'This can take some time for large datasets.'),
-              sorted(list(set(str(exp[1]) for exp in dataset)))][1]
+        classes = subset if subset is not None \
+            else range(dataset.classes if isinstance(dataset.classes, int)
+                       else len(dataset.classes)) if hasattr(dataset, 'classes') \
+            else range(dataset.num_classes) if hasattr(dataset, 'num_classes') and isinstance(dataset.num_classes, int)\
+            else dataset.num_classes if hasattr(dataset, 'num_classes') \
+            else dataset.class_to_idx.keys() if hasattr(dataset, 'class_to_idx') \
+            else [print(f'Identifying unique classes... '
+                        f'This can take some time for large datasets.'),
+                  sorted(list(set(str(exp[1]) for exp in dataset)))][1]
 
-    setattr(dataset, 'classes', tuple(classes))
+        setattr(dataset, 'classes', tuple(classes))
 
-    # TODO Allow Dataset= to be a list s.t. dataset.arg= is list and include dataset.train_eval_split as a default arg.
+        # TODO Allow Dataset= to be a list s.t. dataset.arg= is list and
+        #  include dataset.train_eval_split as a default arg.
 
-    # TODO Ideally dataset could append classes to ones already saved and update the existing card
-    #  Analogously regarding datums saved dataset.datums=, and MultiModal APi allowing Label=datum_name for example
-    # Can select a subset of classes
-    if subset is not None:
-        dataset = ClassSubset(dataset, classes, train)
+        # TODO Ideally dataset could append classes to ones already saved and update the existing card
+        #  Analogously regarding datums saved dataset.datums=, and MultiModal APi allowing Label=datum_name for example
+        # Can select a subset of classes
+        if subset is not None:
+            dataset = ClassSubset(dataset, classes, train)
 
-    # TODO It would then have to do this as a runtime transform
-    #  And memory loader would have to selectively load files and save their class label in file name
-    # Map unique classes to integers
-    dataset = ClassToIdx(dataset, classes)
+        # TODO It would then have to do this as a runtime transform
+        #  And memory loader would have to selectively load files and save their class label in file name
+        # Map unique classes to integers
+        dataset = ClassToIdx(dataset, classes)
 
     # TODO Ideally dataset would be cached (saved / card ID'd) before dataset.transform and dataset.transform would be
     #  applied on the batches during pre-loading/saving before training (or as transform if not save) but not cached

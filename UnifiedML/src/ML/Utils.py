@@ -155,7 +155,7 @@ def launch(**args):
 
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
-    # Preconstruct avoids deleting & replacing agent parts (e.g. architectures) redundantly
+    # Preconstruct avoids deleting & replacing agent parts (e.g. architectures)
     if model._target_ is not None:
         _target_ = get_module(model._target_)
 
@@ -168,7 +168,7 @@ def preconstruct_agent(agent, model):
                     for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
             assert False, f'This "model" [{model._target_}] contains an act method, fully-implemented learn method, ' \
                           'and no adaptive shaping signature arguments. It is an agent! Please pass in the model to ' \
-                          'the designated flag \'agent=\'. '
+                          'the designated flag \'agent=\'. '  # Note: this does minimize features of AC2Agent
         else:
             if outs:
                 agent.recipes.actor.Pi_head = _target_  # As Pi_head when output shape
@@ -194,12 +194,24 @@ def preconstruct_agent(agent, model):
 
             return overriden
 
+        # Dynamic forward/act-method semantics  TODO Maybe delete
+        # for method in {'forward', 'act'}:
+        #     if method in agent._overrides_ and agent._overrides_[method] is not None:
+        #         args = [i for i, key in enumerate({'store', 'log', 'rewrite'}) if key
+        #                 in inspect.signature(getattr(_target_, method)).parameters]
+        #         agent._overrides_[method] = \
+        #             lambda a, obs, *v, call=agent._overrides_.get(method): call(a, obs, *[v[i] for i in args])
+
         # Dynamic learn-method semantics
         if 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
 
-            # Logs optional
+            # Logs optional  TODO Maybe use top version
             if len(inspect.signature(_target_.learn).parameters) == 2:
-                agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
+              agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
+            # args = [i for i, key in enumerate({'log', 'rewrite'}) if key
+            #         in inspect.signature(_target_.learn).parameters]
+            # agent._overrides_.learn = \
+            #     lambda a, replay, *v, learn=agent._overrides_.learn: learn(a, replay, *[v[i] for i in args])
 
             # If learn has a return statement
             if any(isinstance(node, ast.Return)
@@ -220,7 +232,7 @@ def preconstruct_agent(agent, model):
             agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
                 a.act(*v, **k)[0].squeeze(1).squeeze(-1)
 
-    # Logs optional
+    # Logs optional  TODO Can maybe generalize as above
     if len(inspect.signature(_target_.learn).parameters) == 2:
         agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, log: _target_.learn(a, replay)
 # TODO:
