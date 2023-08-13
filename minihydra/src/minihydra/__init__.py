@@ -31,6 +31,9 @@ log_dir = None
 
 
 def get_module(_target_, paths=None, modules=None):
+    if callable(_target_):
+        return _target_
+
     paths = list(paths or []) + module_paths
 
     if modules is None:

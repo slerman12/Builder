@@ -2,7 +2,6 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-import time
 import warnings
 from copy import copy
 
@@ -38,6 +37,7 @@ class AC2Agent(torch.nn.Module):
                  ):
         super().__init__()
 
+        # TODO Should all of these be properties of agent & model?
         self.discrete = discrete and not generate  # Discrete & Continuous supported!
         self.supervise = supervise  # And classification...
         self.RL = RL or generate
@@ -46,12 +46,7 @@ class AC2Agent(torch.nn.Module):
         self.log = log
 
         self.num_actors = max(num_critics, num_actors) if self.discrete and self.RL else num_actors
-        self.depth = depth  # Dynamics prediction depthbatch.obs
-
-        # TODO Via logger in agent & model
-        # self.birthday = time.time()
-        # self.step = self.frame = 0
-        # self.episode = self.epoch = 1
+        self.depth = depth  # Dynamics prediction depth
 
         action_spec = copy(action_spec)  # Non-destructive copy
 
