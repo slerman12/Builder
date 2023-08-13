@@ -157,7 +157,7 @@ class AC2Agent(torch.nn.Module):
 
         return action, store
 
-    def learn(self, replay, logger):
+    def learn(self, replay, logs):
         # "Recall"
 
         if self.depth > 0:
@@ -178,20 +178,7 @@ class AC2Agent(torch.nn.Module):
                 batch.next_obs = self.aug(batch.next_obs)
                 batch.next_obs = self.encoder(batch.next_obs)
 
-        # "Journal Teachings"
-
-        logs = {'time': time.time() - self.birthday, 'step': self.step, 'frame': self.frame,
-                'episode': self.episode} if self.log else None
-
-        # Online -> Offline conversion
-        if replay.offline:
-            self.step += 1
-            self.frame += len(batch.obs)
-            self.epoch = logs['epoch'] = replay.epoch
-            logs['frame'] += 1  # Offline is 1 behind Online in training loop
-            logs.pop('episode')
-
-        # "Acquire Wisdom"
+        # "Begin acquisition of Wisdom"
 
         instruct = not self.generate and 'label' in batch
 
@@ -310,5 +297,3 @@ class AC2Agent(torch.nn.Module):
 
             # Update actor
             Utils.optimize(actor_loss, self.actor, epoch=self.epoch if replay.offline else self.episode)
-
-        logger.log(**logs or {})

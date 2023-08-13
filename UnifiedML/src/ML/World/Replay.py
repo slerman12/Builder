@@ -38,6 +38,8 @@ class Replay:
 
         self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
 
+        self.last_batch_size = None
+
         if self.stream:
             return
 
@@ -227,6 +229,8 @@ class Replay:
                 self.epoch += 1
                 self._replay = None  # Reset iterator when depleted
                 sample = next(self.replay)
+
+        self.last_batch_size = len(sample['obs'])
 
         return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True)
                       for key, value in sample.items()})

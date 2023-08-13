@@ -4,7 +4,9 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import csv
 import datetime
+import inspect
 import re
+import time
 from pathlib import Path
 from termcolor import colored
 
@@ -12,6 +14,8 @@ import numpy as np
 import pandas as pd
 
 import torch
+
+from minihydra import get_module
 
 
 def shorthand(log_name):
@@ -93,6 +97,43 @@ class Logger:
 
         if dump:
             self.dump_logs()
+
+    # Add counter properties to agent & model scope (e.g. step, frame, episode, etc.)
+    def witness(self, agent, offline=False):
+        defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
+
+        setattr(agent, '_defaults', defaults)
+
+        if self.model is not None and self.model._target_ is not None:
+            _target_ = get_module(self.model._target_)
+
+            signature = set(inspect.signature(_target_).parameters)
+            outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+
+            if not outs:
+                setattr(agent.encoder.Eyes, '_defaults', defaults)
+            else:
+                setattr(agent.actor.Pi_head.ensemble[0], '_defaults', defaults)
+
+        for key, value in defaults.items():
+            setattr(type(agent), key, property(lambda a, _key_=key: a._defaults[_key_],
+                                               lambda a, new_value, _key_=key: a._defaults.update({_key_: new_value})))
+            if self.model is not None and self.model._target_ is not None:
+                setattr(_target_, key, property(lambda m, _key_=key: m._defaults[_key_],
+                                                lambda m, new_value, _key_=key: m._defaults.update({_key_: new_value})))
+
+    def re_witness(self, logs, agent, replay):
+        logs.update(time=time.time() - agent.birthday, step=agent.step, frame=agent.frame, episode=agent.episode)
+
+        # Online -> Offline conversion
+        if replay.offline:
+            agent.step += 1
+            agent.frame += replay.last_batch_size
+            agent.epoch = logs['epoch'] = replay.epoch
+            logs['frame'] += 1  # Offline is 1 behind Online in training loop
+            logs.pop('episode')
+
+        self.log(**logs)
 
     def dump_logs(self):
         if self.name is None:

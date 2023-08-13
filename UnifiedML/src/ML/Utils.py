@@ -213,7 +213,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
 #     args.agent_name = model
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
-    defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
+    # defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
 
     if model._target_ is not None:
         _target_ = get_module(model._target_)
@@ -264,9 +264,10 @@ def preconstruct_agent(agent, model):
         #         # Treat as loss
         #         agent._overrides_.learn = preconstruct_optimize(_target_)
 
-        for key, value in defaults.items():
-            setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
-                                            lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
+        # Add counter properties to model (e.g. step, frame, episode, etc.)
+        # for key, value in defaults.items():
+        #     setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
+        #                                     lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
 
     # Agent infers a forward from act
     _target_ = get_module(agent._target_)
@@ -284,9 +285,11 @@ def preconstruct_agent(agent, model):
     # if len(inspect.signature(_target_.learn).parameters) == 2:
     #     agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logger: _target_.learn(a, replay)
 
-    for key, value in defaults.items():
-        setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
-                                        lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
+    # Add counter properties to agent (e.g. step, frame, episode, etc.)
+    # TODO Note: Perhaps logger.witness(agent) would be better to uniquely assign defaults per instance
+    # for key, value in defaults.items():
+    #     setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
+    #                                     lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
 
 
 class MultiModal(nn.Module):

@@ -2,7 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from minihydra import instantiate, get_args, interpolate  # minihydra conveniently and cleanly manages sys args
+from minihydra import instantiate, get_args, interpolate, Args  # minihydra conveniently and cleanly manages sys args
 
 from Utils import init, MT, MP, save, load
 
@@ -40,6 +40,7 @@ def main(args):
     logger = instantiate(args.logger)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
+    logger.witness(agent)
     train_steps = args.train_steps + agent.step
 
     # Start
@@ -81,7 +82,10 @@ def main(args):
         if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
 
             for _ in range(args.learn_steps_after if converged else args.learn_steps):
-                agent.learn(replay, logger.mode('Train'))  # Learn
+                logs = Args(time=None, step=None, frame=None, episode=None, epoch=None)
+                agent.learn(replay, logs)  # Learn
+
+                logger.mode('Train').re_witness(logs, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
 
