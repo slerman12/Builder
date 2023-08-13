@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: cup_catch
 task_name: cup_catch
 discrete: false
 action_repeat: 2

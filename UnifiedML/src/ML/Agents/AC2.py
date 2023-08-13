@@ -33,8 +33,8 @@ class AC2Agent(torch.nn.Module):
                  obs_spec, action_spec, num_actions, trunk_dim, hidden_dim, standardize, norm, recipes,  # Architecture
                  lr, lr_decay_epochs, weight_decay, ema_decay, ema,  # Optimization
                  rand_steps, stddev_schedule,  # Exploration
-                 discrete, RL, supervise, generate, device, parallel, log,  # On-boarding
-                 num_critics=2, num_actors=1, depth=0
+                 discrete, RL, supervise, generate, parallel, log,  # On-boarding
+                 num_critics, num_actors, depth  # Ensembles & self-supervision
                  ):
         super().__init__()
 
@@ -43,17 +43,15 @@ class AC2Agent(torch.nn.Module):
         self.RL = RL or generate
         self.generate = generate  # And generative modeling, too
 
-        # TODO All of these should be set in agent & model by logger or env
-        self.device = device
         self.log = log
-        self.birthday = time.time()
-        self.step = self.frame = 0
-        self.episode = self.epoch = 1
-        self.ema = ema  # Can use an exponential moving average evaluation model
 
         self.num_actors = max(num_critics, num_actors) if self.discrete and self.RL else num_actors
+        self.depth = depth  # Dynamics prediction depthbatch.obs
 
-        self.depth = depth  # Dynamics prediction depth
+        # TODO Via logger in agent & model
+        # self.birthday = time.time()
+        # self.step = self.frame = 0
+        # self.episode = self.epoch = 1
 
         action_spec = copy(action_spec)  # Non-destructive copy
 
@@ -159,7 +157,7 @@ class AC2Agent(torch.nn.Module):
 
         return action, store
 
-    def learn(self, replay):
+    def learn(self, replay, logger):
         # "Recall"
 
         if self.depth > 0:
@@ -250,7 +248,7 @@ class AC2Agent(torch.nn.Module):
                 # "Imagine"
 
                 batch.action = batch.obs
-                batch.reward = torch.ones(len(batch.obs), 1, device=self.device)  # Discriminate Real
+                batch.reward = torch.ones(len(batch.obs), 1, device=batch.obs.device)  # Discriminate Real
 
                 # Critic loss
                 critic_loss = QLearning.ensembleQLearning(self.critic, self.actor,
@@ -313,4 +311,4 @@ class AC2Agent(torch.nn.Module):
             # Update actor
             Utils.optimize(actor_loss, self.actor, epoch=self.epoch if replay.offline else self.episode)
 
-        return logs
+        logger.log(**logs or {})

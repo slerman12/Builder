@@ -47,20 +47,20 @@ class Atari:
     Can optionally include a frame_stack, action_repeat method.
 
     """
-    def __init__(self, task='pong', seed=0, frame_stack=3, action_repeat=4,
+    def __init__(self, game='Pong', seed=0, frame_stack=3, action_repeat=4,
                  screen_size=84, color='grayscale', sticky_action_proba=0, action_space_union=False,
                  last_2_frame_pool=True, terminal_on_life_loss=False, **kwargs):  # Atari-specific
         self.episode_done = False
 
         # Make env
 
-        task = f'ALE/{task}-v5'
+        game = f'ALE/{game}-v5'
 
         # Load task
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=UserWarning)
-                self.env = gym.make(task,
+                self.env = gym.make(game,
                                     obs_type=color,                   # ram | rgb | grayscale
                                     frameskip=1,                      # Frame skip  # ~action_repeat
                                     # mode=0,                         # Game mode, see Machado et al. 2018

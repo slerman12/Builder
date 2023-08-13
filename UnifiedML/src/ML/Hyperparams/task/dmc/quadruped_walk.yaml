@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: quadruped_walk
 task_name: quadruped_walk
 discrete: false
 action_repeat: 2

@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: pendulum_swingup
 task_name: pendulum_swingup
 discrete: false
 action_repeat: 2

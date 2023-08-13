@@ -1,6 +1,8 @@
 Env: World.Environments.Atari.Atari
 suite: atari
 task_name: ChopperCommand
+env:
+    game: ChopperCommand
 discrete: true
 action_repeat: 4
 truncate_episode_steps: 250

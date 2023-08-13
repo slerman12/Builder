@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: cartpole_balance_sparse
 task_name: cartpole_balance_sparse
 discrete: false
 action_repeat: 2

@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: humanoid_stand
 task_name: humanoid_stand
 discrete: false
 action_repeat: 2

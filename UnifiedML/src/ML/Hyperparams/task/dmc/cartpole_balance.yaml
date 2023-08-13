@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: cartpole_balance
 task_name: cartpole_balance
 discrete: false
 action_repeat: 2

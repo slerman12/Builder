@@ -40,7 +40,6 @@ def main(args):
     logger = instantiate(args.logger)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    # logger.witness(agent)
     train_steps = args.train_steps + agent.step
 
     # Start
@@ -53,9 +52,9 @@ def main(args):
                 exp, logs, vlogs = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                       vlog=args.log_media)
 
-                logger.log(logs, 'Eval', exp if converged else None)
+                logger.mode('Eval').log(**logs, exp=exp if converged else None)
 
-            logger.dump_logs('Eval')
+            logger.mode('Eval').dump_logs()
 
             if args.log_media:
                 vlogger.dump(vlogs, f'{agent.step}')
@@ -73,7 +72,7 @@ def main(args):
 
         if env.episode_done:  # TODO log_per_steps
             if args.log_per_episodes and (agent.episode - 2 * replay.offline) % args.log_per_episodes == 0:
-                logger.log(logs, 'Train' if training else 'Seed', dump=True)
+                logger.mode('Train' if training else 'Seed').log(**logs or {}, dump=True)
 
         converged = agent.step >= train_steps
         training = training or agent.step > args.seed_steps and len(replay) > replay.partitions - 1 or replay.offline
@@ -82,12 +81,9 @@ def main(args):
         if training and (args.learn_per_steps and agent.step % args.learn_per_steps == 0 or converged):
 
             for _ in range(args.learn_steps_after if converged else args.learn_steps):
-                logs = agent.learn(replay)  # Learn
+                agent.learn(replay, logger.mode('Train'))  # Learn
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
-
-                if args.log_per_episodes:
-                    logger.log(logs, 'Train')
 
         if training and args.save_per_steps and agent.step % args.save_per_steps == 0 or (converged and args.save):
             save(args.save_path, agent, args.agent, 'frame', 'step', 'episode', 'epoch')

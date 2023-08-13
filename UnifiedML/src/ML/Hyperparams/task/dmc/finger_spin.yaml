@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: finger_spin
 task_name: finger_spin
 discrete: false
 action_repeat: 2

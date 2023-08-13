@@ -4,7 +4,9 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import csv
 import datetime
+import inspect
 import re
+import time
 from pathlib import Path
 from termcolor import colored
 
@@ -12,6 +14,8 @@ import numpy as np
 import pandas as pd
 
 import torch
+
+from minihydra import get_module
 
 
 def shorthand(log_name):
@@ -32,13 +36,18 @@ def format(log, log_name):
 
 
 class Logger:
-    def __init__(self, task, seed, generate=False, path='.', aggregation='mean', log_actions=False, wandb=False):
+    def __init__(self, task, seed, generate=False, model=None, path='.', aggregation='mean', log_actions=False,
+                 wandb=False):
 
         self.path = path
         Path(self.path).mkdir(parents=True, exist_ok=True)
         self.task = task
         self.seed = seed
         self.generate = generate
+
+        self.model = model
+
+        self.name = None
 
         self.logs = {}
 
@@ -53,13 +62,13 @@ class Logger:
         self.wandb = 'uninitialized' if wandb \
             else None
 
-    def log(self, log=None, name="Logs", exp=None, dump=False):
-        if log is not None:
+    def log(self, dump=False, exp=None, **log):
+        if log:
 
-            if name not in self.logs:
-                self.logs[name] = {}
+            if self.name not in self.logs:
+                self.logs[self.name] = {}
 
-            logs = self.logs[name]
+            logs = self.logs[self.name]
 
             for log_name, item in log.items():
                 if isinstance(item, torch.Tensor):
@@ -68,75 +77,99 @@ class Logger:
 
             if self.predicted is not None and exp is not None:
                 for exp in exp:
-                    if name not in self.predicted:
-                        self.predicted[name] = {'Predicted': [], 'Actual': []}
+                    if self.name not in self.predicted:
+                        self.predicted[self.name] = {'Predicted': [], 'Actual': []}
                     action = exp.action.squeeze()
-                    if exp.action.shape[1] > 1:
-                        if name not in self.probas:
-                            self.probas[name] = []
-                        self.probas[name].append(action)
+                    if exp.action.shape[1] > 1:  # Assumes classification
+                        if self.name not in self.probas:
+                            self.probas[self.name] = []
+                        self.probas[self.name].append(action)
                         # Corner case when Eval batch size is 1, batch dim gets squeezed out
-                        for value in self.probas[name]:
+                        for value in self.probas[self.name]:
                             if len(value.shape) <= 1:
                                 value.shape = (1, *value.shape)
                         action = exp.action.argmax(1).squeeze()
-                    self.predicted[name]['Predicted'].append(action)
-                    self.predicted[name]['Actual'].append(exp.label.squeeze())
+                    self.predicted[self.name]['Predicted'].append(action)
+                    self.predicted[self.name]['Actual'].append(exp.label.squeeze())
                     # Corner case when Eval batch size is 1, batch dim gets squeezed out
-                    for key, value in self.predicted[name].items():
+                    for key, value in self.predicted[self.name].items():
                         value[-1].shape = value[-1].shape or (1,)
 
         if dump:
-            self.dump_logs(name)
+            self.dump_logs()
 
-    def dump_logs(self, name=None):
-        if name is None:
+    def dump_logs(self):
+        if self.name is None:
             # Iterate through all logs
             for name in self.logs:
                 for log_name in self.logs[name]:
                     agg = self.aggregate(log_name)
                     self.logs[name][log_name] = agg(self.logs[name][log_name])
-                self._dump_logs(self.logs[name], name=name)
-                self.dump_actions(self.logs[name], name=name)
-                del self.logs[name]
+                self._dump_logs(self.logs[name])
+                self.dump_actions(self.logs[name])
+            self.logs = {}
         else:
             # Iterate through just the named log
-            if name not in self.logs:
+            if self.name not in self.logs:
                 return
-            for log_name in self.logs[name]:
+            for log_name in self.logs[self.name]:
                 agg = self.aggregate(log_name)
-                self.logs[name][log_name] = agg(self.logs[name][log_name])
-            self._dump_logs(self.logs[name], name=name)
-            self.dump_actions(self.logs[name], name=name)
-            self.logs[name] = {}
-            del self.logs[name]
+                self.logs[self.name][log_name] = agg(self.logs[self.name][log_name])
+            self._dump_logs(self.logs[self.name])
+            self.dump_actions(self.logs[self.name])
+            self.logs[self.name] = {}
+            del self.logs[self.name]
 
-    def dump_actions(self, logs, name):
-        if self.predicted is not None and name in self.predicted and len(self.predicted[name]['Predicted']) > 0 \
-                and len(self.predicted[name]['Actual']) > 0:
+    def witness(self, agent):
+        defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
+
+        setattr(agent, '_defaults', defaults)
+
+        # if self.model is not None and self.model._target_ is not None:
+        #     _target_ = get_module(self.model._target_)
+        #
+        #     signature = set(inspect.signature(_target_).parameters)
+        #     outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+        #
+        #     if not outs:
+        #         setattr(agent.encoder.Eyes, '_defaults', defaults)
+        #     else:
+        #         setattr(agent.actor.Pi_head.ensemble[0], '_defaults', defaults)
+
+        for key, value in defaults.items():
+            setattr(type(agent), key, property(lambda a, _key_=key: a._defaults[_key_],
+                                               lambda a, new_value, _key_=key: (a._defaults.update({_key_: new_value}), None)[1]))
+            # if self.model is not None and self.model._target_ is not None:
+            #     setattr(_target_, key, property(lambda m, _key_=key: m._defaults[_key_],
+            #                                     lambda m, new_value, _key_=key: m._defaults.update(_key_=new_value)))
+
+    def dump_actions(self, logs):
+        if self.predicted is not None and self.name in self.predicted \
+                and len(self.predicted[self.name]['Predicted']) > 0 \
+                and len(self.predicted[self.name]['Actual']) > 0:
             assert 'step' in logs
 
-            file_name = Path(self.path) / f'{self.task}_{self.seed}_Predicted_vs_Actual_{name}.csv'
+            file_name = Path(self.path) / f'{self.task}_{self.seed}_Predicted_vs_Actual_{self.name}.csv'
 
-            for key in self.predicted[name]:
-                self.predicted[name][key] = np.concatenate(self.predicted[name][key])
+            for key in self.predicted[self.name]:
+                self.predicted[self.name][key] = np.concatenate(self.predicted[self.name][key])
 
-            df = pd.DataFrame(self.predicted[name])
+            df = pd.DataFrame(self.predicted[self.name])
             df['Step'] = int(logs['step'])
             df.to_csv(file_name, index=False)
 
-            self.predicted[name] = {'Predicted': [], 'Actual': []}
+            self.predicted[self.name] = {'Predicted': [], 'Actual': []}
 
-        if self.probas is not None and name in self.probas:
-            file_name = Path(self.path) / f'{self.task}_{self.seed}_Predicted_Probas_{name}.csv'
+        if self.probas is not None and self.name in self.probas:
+            file_name = Path(self.path) / f'{self.task}_{self.seed}_Predicted_Probas_{self.name}.csv'
 
-            self.probas[name] = np.concatenate(self.probas[name])
+            self.probas[self.name] = np.concatenate(self.probas[self.name])
 
-            df = pd.DataFrame(self.probas[name], columns=list(range(self.probas[name][0].shape[-1])))
+            df = pd.DataFrame(self.probas[self.name], columns=list(range(self.probas[self.name][0].shape[-1])))
             df['Step'] = int(logs['step'])
             df.to_csv(file_name, index=False)
 
-            self.probas[name] = []
+            self.probas[self.name] = []
 
     # Aggregate list of scalars or batched-values of arbitrary lengths
     def aggregate(self, log_name):
@@ -163,15 +196,16 @@ class Logger:
 
         return agg if agg == last else size_agnostic_agg
 
-    def _dump_logs(self, logs, name):
-        self.dump_to_console(logs, name=name)
-        self.dump_to_csv(logs, name=name)
+    def _dump_logs(self, logs):
+        self.dump_to_console(logs)
+        self.dump_to_csv(logs)
         if self.wandb is not None:
-            self.log_wandb(logs, name=name)
+            self.log_wandb(logs)
 
-    def dump_to_console(self, logs, name):
-        name = colored(name, 'yellow' if name.lower() == 'train' else 'green' if name.lower() == 'eval' else None,
-                       attrs=['dark'] if name.lower() == 'seed' else None)
+    def dump_to_console(self, logs):
+        name = colored(self.name,
+                       'yellow' if self.name.lower() == 'train' else 'green' if self.name.lower() == 'eval' else None,
+                       attrs=['dark'] if self.name.lower() == 'seed' else None)
         pieces = [f'| {name: <14}']
         for log_name, log in logs.items():
             pieces.append(format(log, log_name))
@@ -194,11 +228,12 @@ class Logger:
             for row in rows:
                 writer.writerow(row)
 
-    def dump_to_csv(self, logs, name):
+    def dump_to_csv(self, logs):
         logs = dict(logs)
 
         assert 'step' in logs
 
+        name = self.name
         if self.generate:
             name = 'Generate_' + name
 
@@ -219,7 +254,7 @@ class Logger:
         writer.writerow(logs)
         file.flush()
 
-    def log_wandb(self, logs, name):
+    def log_wandb(self, logs):
         if self.wandb == 'uninitialized':
             import wandb
 
@@ -240,6 +275,19 @@ class Logger:
 
         measure = 'reward' if 'reward' in logs else 'accuracy'
         if measure in logs:
-            logs[f'{measure} ({name})'] = logs.pop(f'{measure}')
+            logs[f'{measure} ({self.name})'] = logs.pop(f'{measure}')
 
         self.wandb.log(logs, step=int(logs['step']))
+
+    def mode(self, name):
+        self.name = name
+        return self
+
+    def train(self):
+        return self.mode('Train')
+
+    def seed(self):
+        return self.mode('Seed')
+
+    def eval(self):
+        return self.mode('Eval')

@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: acrobot_swingup
 task_name: acrobot_swingup
 discrete: false
 action_repeat: 2

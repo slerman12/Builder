@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: hopper_stand
 task_name: hopper_stand
 discrete: false
 action_repeat: 2

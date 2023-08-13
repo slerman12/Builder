@@ -16,6 +16,8 @@ if __name__ == '__main__':
         f = open(f"./{task.lower()}.yaml", "w")
         f.write(fr"""Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: {task}
 task_name: {task}
 discrete: false
 action_repeat: 2

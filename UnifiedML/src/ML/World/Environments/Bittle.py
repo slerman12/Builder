@@ -77,6 +77,8 @@ class Bittle:
 
         self.exp = Args()  # Experience dictionary
 
+        self.reward = 0
+
         # self.frames = deque([], frame_stack or 1)  # TODO
 
         # Maybe add atexit
@@ -113,7 +115,6 @@ class Bittle:
         asyncio.run(self.bluetooth.write_gatt_char(self.writer, encode(action)))  # Triggers a reaction
 
         self.exp.action = action
-        self.exp.reward = np.array([])
         self.exp.label = None
 
         while not self.action_done and time.time() - self.action_start_time < 1:  # Action shouldn't take more than 1s
@@ -128,7 +129,10 @@ class Bittle:
                 self.action_start_time = time.time()
                 asyncio.run(self.bluetooth.write_gatt_char(self.writer, b'v'))
 
-        print(self.exp)
+        self.reward = max(self.exp.obs[0], self.reward)
+        self.exp.reward = int(self.exp.obs[0] >= self.reward)  # Positive forward velocity?
+
+        print(self.exp.reward)
 
         return self.exp  # Experience
 
@@ -282,20 +286,20 @@ if __name__ == '__main__':
     bittle = Bittle()
     while True:
         # Random action
-        bittle.step()
+        # bittle.step()
 
-        try:
-            command = np.array(list(map(int, input('enter 16-digit command: ').strip('[]').split(', '))), 'float32')
-        except ValueError:
-            continue
-        # zero_scale(command)
-        bittle.step(command)
+        # try:
+        #     command = np.array(list(map(int, input('enter 16-digit command: ').strip('[]').split(', '))), 'float32')
+        # except ValueError:
+        #     continue
+        # # zero_scale(command)
+        # bittle.step(command)
 
-    # Can launch custom commands
+        # Can launch custom commands
 
-    # commands = [np.array(command, dtype='float32') for command in [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #                                                                ]]
-    #
-    # for command in commands:
-    #     bittle.step(command)
-    bittle.disconnect()  # Daemon threads https://stackoverflow.com/a/2564282/22002059
+        commands = [np.array(command, dtype='float32') for command in [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                                       ]]
+
+        for command in commands:
+            bittle.step(command)
+    # bittle.disconnect()  # Daemon threads https://stackoverflow.com/a/2564282/22002059

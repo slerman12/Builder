@@ -11,8 +11,8 @@ from minihydra import instantiate, get_module, valid_path
 
 
 class Environment:
-    def __init__(self, env, task='pong', frame_stack=1, truncate_episode_steps=1e3, action_repeat=1,
-                 RL=True, offline=False, stream=True, generate=False, train=True, seed=0, transform=None, device='cpu'):
+    def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
+                 stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu'):
         self.RL = RL
         self.offline = offline
         self.generate = generate
@@ -26,7 +26,7 @@ class Environment:
         self.truncate_after = train and truncate_episode_steps or inf  # Truncate episodes shorter (inf if None)
 
         if not self.disable or stream:
-            self.env = instantiate(env, task=task, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat,
+            self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
             self.env.reset()
 
@@ -35,6 +35,7 @@ class Environment:
         self.episode_sums = {}
         self.metric = {key: get_module(metric) if valid_path(metric) else metric
                        for key, metric in env.metric.items() if metric is not None}
+        self.ema = ema  # Can use an exponential moving average model
 
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
         self.daybreak = None
@@ -57,7 +58,7 @@ class Environment:
             obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
-            with act_mode(agent):
+            with act_mode(agent, self.ema):
                 action, store = agent.act(obs)
 
             if not self.generate:
@@ -138,11 +139,13 @@ class Environment:
 # Enters and exits Pytorch inference mode
 # Enables / disables EMA
 class act_mode:
-    def __init__(self, agent):
+    def __init__(self, agent, ema=False):
         self.agent = agent
 
         self.models = {key: getattr(agent, key) for key in {'encoder', 'actor'} if hasattr(agent, key)}
         self.inference = torch.inference_mode()
+
+        self.ema = ema
 
     def __enter__(self):
         # Disables things like dropout, etc.
@@ -151,12 +154,12 @@ class act_mode:
         self.inference.__enter__()
 
         # Exponential moving average (EMA)
-        if self.agent.ema:
+        if self.ema:
             [setattr(self.agent, key, model.ema) for key, model in self.models.items()]
 
     def __exit__(self, *args, **kwargs):
         [model.train(mode) for mode, model in self.mode_model]
         self.inference.__exit__(*args, **kwargs)
 
-        if self.agent.ema:
+        if self.ema:
             [setattr(self.agent, key, model) for key, model in self.models.items()]

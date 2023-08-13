@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: reach_duplo
 task_name: reach_duplo
 discrete: false
 action_repeat: 2

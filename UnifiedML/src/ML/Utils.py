@@ -211,23 +211,24 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
 #     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
 #     What if parallel?
 #     args.agent_name = model
-# Depending on what is passed in, different agent components can be defined
+# Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
+    defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
+
     if model._target_ is not None:
-        _target_ = model._target_ if isinstance(model._target_, type) \
-            else get_module(model._target_) if isinstance(model._target_, str) \
-            else type(model._target_)
+        _target_ = get_module(model._target_)
 
         signature = set(inspect.signature(_target_).parameters)
 
-        # If model has act and learn methods, no shapes, and the learn method has no return statement, Agent <- Model
         ins = signature & {'in_shape', 'in_shape', 'in_dim', 'in_channels', 'in_features'}
         outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
         if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs:
             # and not \
             # any(isinstance(node, ast.Return)
             #     for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):  TODO Logger
-            agent.update(model)
+            assert False, f'This "model" [{model._target_}] contains an act method, fully-implemented learn method, ' \
+                          'and no adaptive shaping signature arguments. It is an agent! Please pass in the model to ' \
+                          'the designated flag \'agent=\'. '
         else:
             if outs:
                 agent.recipes.actor.Pi_head = _target_  # As Pi_head when output shape
@@ -263,11 +264,12 @@ def preconstruct_agent(agent, model):
         #         # Treat as loss
         #         agent._overrides_.learn = preconstruct_optimize(_target_)
 
-    # Agent infers a forward from act  TODO Why not define this in Agent?
-    #  TODO Shouldn't instance type be returned by get_module
-    _target_ = agent._target_ if isinstance(agent._target_, type) \
-        else get_module(agent._target_) if isinstance(agent._target_, str) \
-        else type(agent._target_)
+        for key, value in defaults.items():
+            setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
+                                            lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
+
+    # Agent infers a forward from act
+    _target_ = get_module(agent._target_)
 
     assert hasattr(_target_, 'act') and hasattr(_target_, 'learn'), 'Agent requires act & learn methods.'
 
@@ -281,6 +283,10 @@ def preconstruct_agent(agent, model):
     # Logger optional
     # if len(inspect.signature(_target_.learn).parameters) == 2:
     #     agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, logger: _target_.learn(a, replay)
+
+    for key, value in defaults.items():
+        setattr(_target_, key, property(lambda a, _key_=key: defaults[_key_],
+                                        lambda a, new_value, _key_=key: defaults.update({_key_: new_value})))
 
 
 class MultiModal(nn.Module):

@@ -104,7 +104,6 @@ experiment: Exp
 environment:
   _target_: World.Environment.Environment
   env: ${env}
-  task: ${task_name}
   frame_stack: ${frame_stack}
   truncate_episode_steps: ${truncate_episode_steps}
   action_repeat: ${action_repeat}
@@ -112,6 +111,7 @@ environment:
   offline: ${offline}
   stream: ${stream}
   generate: ${generate}
+  ema: ${ema}
   seed: ${seed}
   transform: ${env.transform}
   device: ${device}
@@ -185,6 +185,7 @@ logger:
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
+  model: ${model}
   aggregation: mean
   log_actions: false
   wandb: false

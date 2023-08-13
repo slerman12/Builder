@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: quadruped_run
 task_name: quadruped_run
 discrete: false
 action_repeat: 2

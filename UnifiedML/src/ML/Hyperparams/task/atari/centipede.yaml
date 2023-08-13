@@ -1,6 +1,8 @@
 Env: World.Environments.Atari.Atari
 suite: atari
 task_name: Centipede
+env:
+    game: Centipede
 discrete: true
 action_repeat: 4
 truncate_episode_steps: 250

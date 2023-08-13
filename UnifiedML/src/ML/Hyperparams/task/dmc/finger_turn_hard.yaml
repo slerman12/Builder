@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: finger_turn_hard
 task_name: finger_turn_hard
 discrete: false
 action_repeat: 2

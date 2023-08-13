@@ -1,6 +1,8 @@
 Env: World.Environments.Atari.Atari
 suite: atari
 task_name: Earthworld
+env:
+    game: Earthworld
 discrete: true
 action_repeat: 4
 truncate_episode_steps: 250

@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: reacher_easy
 task_name: reacher_easy
 discrete: false
 action_repeat: 2

@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: walker_run
 task_name: walker_run
 discrete: false
 action_repeat: 2

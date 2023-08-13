@@ -1,5 +1,7 @@
 Env: World.Environments.DMC.DMC
 suite: dmc
+env:
+    task: cartpole_swingup
 task_name: cartpole_swingup
 discrete: false
 action_repeat: 2
