@@ -4,9 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import csv
 import datetime
-import inspect
 import re
-import time
 from pathlib import Path
 from termcolor import colored
 
@@ -14,8 +12,6 @@ import numpy as np
 import pandas as pd
 
 import torch
-
-from minihydra import get_module
 
 
 def shorthand(log_name):
