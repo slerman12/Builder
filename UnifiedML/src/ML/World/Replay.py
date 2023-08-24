@@ -235,6 +235,9 @@ class Replay:
         return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True)
                       for key, value in sample.items()})
 
+    def sample(self):
+        return next(self)
+
     def __iter__(self):
         self._replay = iter(self.batches)
         return self.replay

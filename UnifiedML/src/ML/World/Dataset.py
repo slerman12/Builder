@@ -268,8 +268,8 @@ def datums_as_batch(datums):
         obs = torch.as_tensor(obs)
         label = torch.as_tensor(label)
 
-        if len(label.shape) == 1:
-            label = label.view(-1, 1)
+        # if len(label.shape) == 1:
+        #     label = label.view(-1, 1)
 
         # TODO Allow manually selecting among datums
         #   Stats can be provided for each but will default to the ones provided in the training dataset

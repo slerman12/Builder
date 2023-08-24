@@ -88,13 +88,15 @@ class Datums:
         obs_shape = tuple(dataset[0][0].shape)
         obs_shape = (1,) * (2 - len(obs_shape)) + obs_shape  # At least 1 channel dim and spatial dim - can comment out
 
-        discrete = hasattr(dataset, 'classes')
+        self.discrete = hasattr(dataset, 'classes')
 
-        self.action_spec = Args({'shape': (1,),
-                                 'discrete_bins': len(dataset.classes) if discrete else None,
-                                 'low': 0 if discrete else None,
-                                 'high': len(dataset.classes) - 1 if discrete else None,
-                                 'discrete': discrete})
+        action_shape = (1,) if self.discrete or not hasattr(dataset[0][1], 'shape') else tuple(dataset[0][1].shape)
+
+        self.action_spec = Args({'shape': action_shape,
+                                 'discrete_bins': len(dataset.classes) if self.discrete else None,
+                                 'low': 0 if self.discrete else None,
+                                 'high': len(dataset.classes) - 1 if self.discrete else None,
+                                 'discrete': self.discrete})
 
         self.obs_spec = Args({'shape': obs_shape,
                               'low': low,
@@ -116,8 +118,8 @@ class Datums:
             self.reset()  # Sample new batch
             return self.exp  # Return new batch
 
-        # Adapt to discrete!
-        self.exp.action = self.adapt_to_discrete(action)  # Note: storing argmax
+        # Adapt to discrete!  # Note: storing argmax
+        self.exp.action = self.adapt_to_discrete(action) if self.discrete else action
 
         self.exp.done = self.episode_done = True
 
@@ -172,7 +174,7 @@ class Datums:
 
         discrete_bins, low, high = self.action_spec['discrete_bins'], self.action_spec['low'], self.action_spec['high']
 
-        # Round to nearest decimal/int corresponding to discrete bins, high, and low
+        # Round to nearest decimal/int corresponding to discrete bins, high, and low  TODO Generalize to regression
         return np.round((action - low) / (high - low) * (discrete_bins - 1)) / (discrete_bins - 1) * (high - low) + low
 
 

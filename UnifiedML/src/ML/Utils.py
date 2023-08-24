@@ -76,11 +76,11 @@ def init(args):
 
     print('Device:', args.device)
 
-    # Bootstrap the agent and passed-in model
-    preconstruct_agent(args.agent, args.model)
-
     # Allows string substitution and cross-referencing e.g. ${device} -> 'cuda'
     interpolate(args)
+
+    # Bootstrap the agent and passed-in model
+    preconstruct_agent(args.agent, args.model)
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -155,6 +155,12 @@ def launch(**args):
 
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
+    if not hasattr(agent, '_target_'):
+        return
+
+    if not hasattr(model, '_target_'):
+        model = Args(_target_=model)
+
     # Preconstruct avoids deleting & replacing agent parts (e.g. architectures)
     if model._target_ is not None:
         _target_ = get_module(model._target_)
@@ -182,7 +188,7 @@ def preconstruct_agent(agent, model):
                         ('_overrides_' not in agent or key not in agent._overrides_):
                     agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
                         a.encoder.Eyes if not outs
-                        else a.actor.Pi_head if agent.num_actors > 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+                        else a.actor.Pi_head if agent.num_actors >= 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
 
         # Loss as output in learn gets backward-ed, optimized, and logged
         def preconstruct_optimize(loss_fn):
@@ -203,11 +209,11 @@ def preconstruct_agent(agent, model):
         #             lambda a, obs, *v, call=agent._overrides_.get(method): call(a, obs, *[v[i] for i in args])
 
         # Dynamic learn-method semantics
-        if 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
+        if '_overrides_' in agent and 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
 
             # Logs optional  TODO Maybe use top version
             if len(inspect.signature(_target_.learn).parameters) == 2:
-              agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
+                agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
             # args = [i for i, key in enumerate({'log', 'rewrite'}) if key
             #         in inspect.signature(_target_.learn).parameters]
             # agent._overrides_.learn = \
@@ -626,11 +632,10 @@ class Ensemble(nn.Module):
         # TODO Not the most elegant. But works. Note: Using module[0] elsewhere might unexpectedly ensemble
 
         # This makes it possible to use model= syntax w ensembles
-        if hasattr(modules[0], 'forward'):
+        if hasattr(modules[0], 'forward') and len(self) > 1:
             self.first = modules[0].forward
 
-            if len(modules) > 1:
-                modules[0].forward = self.forward
+            modules[0].forward = self.forward
 
     def forward(self, *x, **kwargs):
         return torch.stack([(getattr(self, 'first', m) if i == 0 else m)(*x, **kwargs)

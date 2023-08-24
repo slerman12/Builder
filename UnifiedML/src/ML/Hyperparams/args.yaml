@@ -215,6 +215,8 @@ plotting:
 
 # -- Language --
 
+# TODO: These shorthands aren't compatible with the ml(·) syntax bc they get interpolated to null. launch_args should precede interpolation via some kind of 'portal' method in minihydra.
+
 Model: null
 
 Aug: null  # Shorthand for recipes.aug._target_

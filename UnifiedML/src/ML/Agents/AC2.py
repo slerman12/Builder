@@ -188,8 +188,10 @@ class AC2Agent(torch.nn.Module):
             Pi = self.actor(batch.obs)
             y_predicted = (Pi.All_Qs if self.discrete else Pi.mean).mean(1)  # Average over ensembles
 
+            batch.label = batch.label.long().view(len(y_predicted), -1)
+
             # Cross entropy error
-            error = cross_entropy(y_predicted, batch.label.long(),
+            error = cross_entropy(y_predicted, batch.label,
                                   reduction='none' if self.RL and replay.offline else 'mean')
 
             # Accuracy computation
