@@ -400,6 +400,7 @@ def parse(args=None):
         keys, value = sys_arg.split('=', 1)
         all_args[keys] = value
 
+    # Parse portal and command-line
     for keys, value in all_args:
         keys = keys.split('.')
         value = _parse(value)
