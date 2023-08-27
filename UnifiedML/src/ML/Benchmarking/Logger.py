@@ -15,7 +15,7 @@ import pandas as pd
 
 import torch
 
-from minihydra import get_module
+from minihydra import get_module, instantiate
 
 
 def shorthand(log_name):
@@ -266,7 +266,10 @@ class Logger:
         setattr(agent, '_defaults', defaults)
 
         if self.model is not None and self.model._target_ is not None:
-            _target_ = get_module(self.model._target_)
+            try:
+                _target_ = get_module(self.model._target_)
+            except Exception:
+                _target_ = instantiate(self.model)
 
             signature = set(inspect.signature(_target_).parameters)
             outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}

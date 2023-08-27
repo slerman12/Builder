@@ -284,12 +284,12 @@ def recursive_Args(args):
     return args
 
 
-def recursive_update(original, update):
+def recursive_update(original, update, _target_inference=True):
     for key, value in update.items():
         if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)):
             original[key].update(recursive_update(original[key], value))
         elif key in original and isinstance(original[key], (Args, dict)) and '_target_' in original[key] \
-                and not (isinstance(value, (dict, Args)) and '_target_' in value):
+                and not (isinstance(value, (dict, Args)) and '_target_' in value) and _target_inference:
             original[key]['_target_'] = value  # Infer value as _target_
         else:
             original[key] = value
@@ -400,8 +400,8 @@ def parse(args=None):
         keys, value = sys_arg.split('=', 1)
         all_args[keys] = value
 
-    # Parse portal and command-line
-    for keys, value in all_args:
+    # Parse portal and command-line  Note: portal syntax parallels command-line
+    for keys, value in all_args.items():
         keys = keys.split('.')
         value = _parse(value)
         for i, key in enumerate(keys[:-1]):

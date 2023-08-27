@@ -134,7 +134,10 @@ def preconstruct_agent(agent, model):
 
     # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
     if model._target_ is not None:
-        _target_ = get_module(model._target_)
+        try:
+            _target_ = get_module(model._target_)
+        except Exception:
+            _target_ = instantiate(model)
 
         signature = set(inspect.signature(_target_).parameters)
 

@@ -23,7 +23,7 @@ for dir in dirs:
     globals().update({dir: __import__(dir)})
 
 from Run import main
-ml = run = launch = main
+ml = run = launch = main = main
 
 from Agents import Agent
 from Utils import load, save, optimize
