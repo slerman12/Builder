@@ -375,13 +375,14 @@ def parse(args=None):
 
     # Parse portal
     global portal_args
+    all_args = {**portal_args}k
 
     # Parse command-line
     for sys_arg in sys.argv[1:]:
         keys, value = sys_arg.split('=', 1)
-        portal_args[keys] = value
+        all_args[keys] = value
 
-    for keys, value in portal_args:
+    for keys, value in all_args:
         keys = keys.split('.')
         value = _parse(value)
         for i, key in enumerate(keys[:-1]):
@@ -393,9 +394,15 @@ def parse(args=None):
             elif not isinstance(arg[key], (Args, dict)):
                 arg[key] = Args(_target_=arg[key])  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
             arg = getattr(arg, key)
+        # Special handling of instantiable args depending on presence of _target_
         if keys[-1] in arg and isinstance(arg[keys[-1]], (Args, dict)) and '_target_' in arg[keys[-1]]:
-            # TODO Unless _target_ in value, then override :)
-            arg[keys[-1]]['_target_'] = value  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
+            if isinstance(value, (Args, dict)):
+                if '_target_' in value:
+                    setattr(arg, keys[-1], value)  # Override if _target_ in value
+                else:
+                    arg[keys[-1]].update(value)  # Update if _target_ not in value
+            else:
+                arg[keys[-1]]['_target_'] = value  # Set value as _target_
         else:
             setattr(arg, keys[-1], value)
 

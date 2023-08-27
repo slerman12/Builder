@@ -131,7 +131,7 @@ launch_args = {}
 def run(**args):
     global launch_args
     launch_args = args  # Save args for use in multi-task if needed
-    portal(**args)
+    portal(**args)  # Manually specify args for minihydra initialization
     from Run import main
     main()  # Run
 
