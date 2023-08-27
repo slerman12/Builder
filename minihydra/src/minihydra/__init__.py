@@ -170,15 +170,6 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         else module
 
 
-portal_args = {}
-
-
-# A code-based interface for setting args
-def portal(**args):
-    global portal_args
-    portal_args = args
-
-
 # Check if a string path to a module is valid for instantiation
 def valid_path(path, dir_path=False, module_path=True, module=True, _modules_=None):
     truth = False
@@ -297,6 +288,9 @@ def recursive_update(original, update):
     for key, value in update.items():
         if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)):
             original[key].update(recursive_update(original[key], value))
+        elif key in original and isinstance(original[key], (Args, dict)) and '_target_' in original[key] \
+                and not (isinstance(value, (dict, Args)) and '_target_' in value):
+            original[key]['_target_'] = value  # Infer value as _target_
         else:
             original[key] = value
     return original
@@ -304,6 +298,19 @@ def recursive_update(original, update):
 
 def read(source, recurse=False):
     args, path = open_yaml(source, return_path=True)
+
+    # Parse pseudonyms
+    if '_pseudonyms_' in args:
+        for primary in args._pseudonyms_:
+            value = get(args, primary, True)
+            setdefault(args, args._pseudonyms_[primary][0], value)
+            preceding = args._pseudonyms_[primary][0]
+            for key in args._pseudonyms_[primary][1:] + [primary]:
+                if isinstance(value, (Args, dict)):
+                    setdefault(args, key, Args(_default_=f'${{{preceding}}}'))
+                else:
+                    setdefault(args, key, f'${{{preceding}}}')
+                preceding = key
 
     # Need to allow imports
     if 'imports' in args:
@@ -338,11 +345,19 @@ def read(source, recurse=False):
 
     # Command-line task import
     if 'task' in args and args.task not in [None, 'null']:
-        # TODO if not recurse: add task path to paths or outer dir if out dir called Hyperparams/ or out-out if task/
-        #   That way tasks can be launched from any system directory
-
         added = None
         path = os.path.dirname(path)
+
+        # Add task project-directory to system paths
+        if not recurse:
+            add = path
+            if add.split('/')[-1] == 'task':
+                add = os.path.dirname(add)
+            if add.split('/')[-1] == 'Hyperparams':
+                add = os.path.dirname(add)
+            if add not in sys.path:
+                sys.path.append(add)
+
         if path not in sys.path:
             added = path
             yaml_search_paths.append(path)
@@ -375,8 +390,8 @@ def parse(args=None):
     arg = args
 
     # Parse portal
-    global portal_args
-    all_args = OrderedDict(**portal_args)
+    global portal
+    all_args = OrderedDict(**portal)
 
     # Parse command-line
     for sys_arg in sys.argv[1:]:
@@ -410,12 +425,22 @@ def parse(args=None):
     return args
 
 
-def get(args, keys):
+def get(args, keys, resolve=True):
     arg = args
     keys = keys.split('.')
     for key in keys:
         arg = getattr(arg, key)
-    return interpolate([arg], args)[0]  # Interpolate to make sure gotten value is resolved
+    return interpolate([arg], args)[0] if resolve else arg  # Interpolate to make sure gotten value is resolved
+
+
+def setdefault(args, keys, default):
+    arg = args
+    keys = keys.split('.')
+    for key in keys[:-1]:
+        arg = arg.setdefault(key, Args())
+    if keys[-1] not in arg:
+        arg[keys[-1]] = default
+    return arg[keys[-1]]
 
 
 # minihydra.grammar.append(rule)
@@ -489,16 +514,30 @@ def just_args(source=None, logging=False):
     if logging:
         log(args)
 
-    # Reset portal
-    global portal_args
-    portal_args = {}
-
     return args
+
+
+portal = {}
+
+
+# A code-based interface for setting args
+def set_portal(args=None, **keywords):
+    global portal
+    portal = {**(args or {}), **keywords}
+
+
+# Those args remain in cache for all future args retrievals unless manually reset
+def reset_portal():
+    set_portal()
 
 
 # Can decorate a method with args in signature
 def get_args(source=None, logging=True):
     def decorator_func(func):
-        return lambda: func(just_args(source, logging=logging))
+        def main(args=None, **kwargs):
+            set_portal(args, **kwargs)
+            return func(just_args(source, logging=logging))
+
+        return main
 
     return decorator_func

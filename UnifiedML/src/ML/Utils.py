@@ -124,18 +124,6 @@ def grammars():
 grammars()
 
 
-launch_args = {}
-
-
-# Launches UnifiedML with specified args
-def run(**args):
-    global launch_args
-    launch_args = args  # Save args for use in multi-task if needed
-    portal(**args)  # Manually specify args for minihydra initialization
-    from Run import main
-    main()  # Run
-
-
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
     if not hasattr(agent, '_target_'):
@@ -144,7 +132,7 @@ def preconstruct_agent(agent, model):
     if not hasattr(model, '_target_'):
         model = Args(_target_=model)
 
-    # Preconstruct avoids deleting & replacing agent parts (e.g. architectures)
+    # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
     if model._target_ is not None:
         _target_ = get_module(model._target_)
 
@@ -194,10 +182,10 @@ def preconstruct_agent(agent, model):
         # Dynamic learn-method semantics
         if '_overrides_' in agent and 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
 
-            # Logs optional  TODO Maybe use top version
+            # Logs optional
             if len(inspect.signature(_target_.learn).parameters) == 2:
                 agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
-            # args = [i for i, key in enumerate({'log', 'rewrite'}) if key
+            # args = [i for i, key in enumerate({'log', 'rewrite'}) if key  TODO Maybe use top version
             #         in inspect.signature(_target_.learn).parameters]
             # agent._overrides_.learn = \
             #     lambda a, replay, *v, learn=agent._overrides_.learn: learn(a, replay, *[v[i] for i in args])
@@ -221,13 +209,11 @@ def preconstruct_agent(agent, model):
             agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
                 a.act(*v, **k)[0].squeeze(1).squeeze(-1)
 
-    # Logs optional  TODO Can maybe generalize as above
+    # Logs optional  TODO Can maybe generalize as commented-out above
     if len(inspect.signature(_target_.learn).parameters) == 2:
         agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, log: _target_.learn(a, replay)
 # TODO:
-#     What if type method rather than object method? Would model have to be passed in for 'self'? Does/can this happen?
 #     What if parallel?
-#     args.agent_name = model
 
 
 # Saves model + args + selected attributes
@@ -301,8 +287,8 @@ class MultiTask:
         self.multi_task_enabled = True
         self.num_tasks = len(multi_task)
 
-        if 'multi_task' in launch_args:
-            launch_args.pop('multi_task')
+        if 'multi_task' in portal:
+            portal.pop('multi_task')
         original_sys_args = sys.argv
 
         worker_start_times = [0.0] * self.num_tasks
@@ -315,11 +301,12 @@ class MultiTask:
 
             worker_start_times[worker] = time.time()
 
-            # With task-specific args
+            # With task-specific args  TODO Remember why :-2
             task_args = [arg for arg in original_sys_args[1:-2] if arg.split('=')[0]
                          not in [task_arg.split('=')[0] for task_arg in task.split()] + ['multi_task']] + task.split()
             sys.argv = [sys.argv[0], *task_args, *sys.argv[-2:]]
-            run(**launch_args)  # Run
+            from Run import main
+            main()  # Run
 
         print(f'Launching {self.num_tasks} tasks among Unified Agents!')
 
