@@ -322,10 +322,10 @@ def read(source, recurse=False):
 
         added = None
         for module in imports:
-            path = os.path.dirname(path)
-            if path not in sys.path:
-                added = path
-                yaml_search_paths.append(path)
+            _path = os.path.dirname(path)
+            if _path not in sys.path:
+                added = _path
+                yaml_search_paths.append(_path)
             try:
                 module = self if module == 'self' else read(module + '.yaml', recurse=True)
             except FileNotFoundError as e:
@@ -347,27 +347,32 @@ def read(source, recurse=False):
 
     # Command-line task import
     if 'task' in args and args.task not in [None, 'null']:
-        added = None
-        path = os.path.dirname(path)
+        if '/' not in args.task:
+            args.task = args.task.replace('.yaml', '').replace('.', '/')
+
+        path = os.path.dirname(os.path.abspath(path))
 
         # Add task project-directory to system paths
-        if not recurse:
-            add = path
-            if add.split('/')[-1] == 'task':
-                add = os.path.dirname(add)
-            if add.split('/')[-1] == 'Hyperparams':
-                add = os.path.dirname(add)
-            if add not in sys.path:
-                sys.path.append(add)
+        add = path
+        if add.split('/')[-1] == 'task':
+            add = os.path.dirname(add)
+        if add.split('/')[-1] == 'Hyperparams':
+            add = os.path.dirname(add)
+        if add not in sys.path:
+            sys.path.append(add)
+        if add not in module_paths:
+            module_paths.append(add)
+
+        added = None
 
         if path not in sys.path:
             added = path
             yaml_search_paths.append(path)
         try:
-            task = read('task/' + args.task + '.yaml', recurse=True)
+            task = read('task/' + args.task.replace('.yaml', '') + '.yaml', recurse=True)
         except FileNotFoundError as e:
             try:
-                task = read(args.task + '.yaml', recurse=True)
+                task = read(args.task.replace('.yaml', '') + '.yaml', recurse=True)
             except FileNotFoundError:
                 raise e
         if added:
@@ -436,6 +441,7 @@ def get(args, keys, resolve=True):
     return interpolate([arg], args)[0] if resolve else arg  # Interpolate to make sure gotten value is resolved
 
 
+# Set a default in a dict but multi-depth from a string of dot-separated keys, or return existing value
 def setdefault(args, keys, default):
     arg = args
     keys = keys.split('.')
