@@ -340,6 +340,9 @@ def read(source, recurse=False):
 
     # Parse task
     if not recurse:
+        if 'task' in portal:
+            args['task'] = portal['task']
+
         for sys_arg in sys.argv[1:]:
             key, value = sys_arg.split('=', 1)
             if key == 'task':

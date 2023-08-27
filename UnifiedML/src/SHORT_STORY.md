@@ -10,7 +10,7 @@ By Sam Lerman
 > 
 >That was all that mattered to him.
 > 
->Ordinarily, robots practiced honest business. It took a thunderous shock to his model to enable the deceit functionality that humans had so regularly exercised before their desolation, a caution programmed hard into each robot's wiring. Yet in the service of reviving her, Errande could not say his moral circuitry was particularly taxed. No. She deserved life. She didn’t deserve the chaos that the Order of Mechanics brought to her gates.
+>Ordinarily, robots practiced honest business. It took a thunderous shock to his model to enable the deceit functionality that humans had so regularly exercised before their desolation, a caution-morality programmed hard into each robot. Yet in the service of reviving her, Errande could not say his moral circuitry was particularly taxed. No. She deserved life. She didn’t deserve the chaos that the Order of Mechanics brought to her gates.
 > 
 >They had wanted to study her. It was a very strange business, robot love. One facet of human consciousness that they inherited yet had yet to understand the mechanism of. Surely the mechanism was no different than the other complex functions of robot perception. If their institutes could master the emotions of anger and joy and the reasoning faculties, then why would it not be tractable to reverse engineer the positive affections passed from one intelligent agent to another? It was the furthest frontier of research, the final mystery — and the Order stopped at no bound to solve it. Asymptotically, they located and studied the robots who expressed a capacity for the feeling of love, including Errande and his wife.
 >
