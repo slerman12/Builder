@@ -301,11 +301,13 @@ def read(source, recurse=False):
 
     # Parse pseudonyms
     if '_pseudonyms_' in args:
-        for primary in args._pseudonyms_:
+        # Pseudonyms are alternate interface-keys that can access into the primary one
+        # Note they are not interchangeable in the args struct, only as an interface. The primary should be used in-code
+        for primary, keys in args._pseudonyms_.items():
             value = get(args, primary, True)
             setdefault(args, args._pseudonyms_[primary][0], value)
             preceding = args._pseudonyms_[primary][0]
-            for key in args._pseudonyms_[primary][1:] + [primary]:
+            for key in keys[1:] + [primary]:
                 if isinstance(value, (Args, dict)):
                     setdefault(args, key, Args(_default_=f'${{{preceding}}}'))
                 else:
