@@ -15,6 +15,7 @@ import os.path
 import re
 import sys
 import types
+from collections import OrderedDict
 from math import inf
 import yaml
 
@@ -375,7 +376,7 @@ def parse(args=None):
 
     # Parse portal
     global portal_args
-    all_args = {**portal_args}k
+    all_args = OrderedDict(**portal_args)
 
     # Parse command-line
     for sys_arg in sys.argv[1:]:
