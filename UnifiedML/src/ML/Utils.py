@@ -31,7 +31,7 @@ from torch.optim import *
 from torch.optim.lr_scheduler import *
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
-    get_module
+    get_module, portal
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -54,9 +54,6 @@ def init(args):
 
         if args.path + '/Hyperparams' not in yaml_search_paths and os.path.exists(args.path + '/Hyperparams'):
             yaml_search_paths.append(args.path + '/Hyperparams')
-
-    # For launching via an external app
-    args.update(launch_args)
 
     # Set seeds
     set_seeds(args.seed)
@@ -126,31 +123,17 @@ def grammars():
 
 grammars()
 
+
 launch_args = {}
 
 
-# Launches UnifiedML from inside a launching app with specified args
-def launch(**args):
-    from Run import main
-
-    original = list(sys.argv)
-
-    command_line_args = {arg.split('=')[0] for arg in sys.argv if '=' in arg}
-    added = set()
-
-    for key, value in args.items():
-        if isinstance(value, (str, bool)):
-            if key not in command_line_args:
-                sys.argv.append(f'{key}={value}')  # For minihydra grammars in Utils  TODO Maybe just interpolate
-                added.add(key)
-
+# Launches UnifiedML with specified args
+def run(**args):
     global launch_args
-    launch_args = {key: args[key] for key in args.keys() - command_line_args - added}
-
+    launch_args = args  # Save args for use in multi-task if needed
+    portal(**args)
+    from Run import main
     main()  # Run
-
-    launch_args = {}
-    sys.argv = original
 
 
 # Agent initialized with model and bootstrapped together
@@ -336,7 +319,7 @@ class MultiTask:
             task_args = [arg for arg in original_sys_args[1:-2] if arg.split('=')[0]
                          not in [task_arg.split('=')[0] for task_arg in task.split()] + ['multi_task']] + task.split()
             sys.argv = [sys.argv[0], *task_args, *sys.argv[-2:]]
-            launch(**launch_args)  # Run
+            run(**launch_args)  # Run
 
         print(f'Launching {self.num_tasks} tasks among Unified Agents!')
 

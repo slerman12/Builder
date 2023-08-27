@@ -185,4 +185,4 @@ warnings.filterwarnings("ignore", message='Mean of empty slice')
 
 
 def accuracy(exp):
-    return (exp.label == exp.action).astype('float32')
+    return exp.label == exp.action

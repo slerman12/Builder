@@ -169,6 +169,15 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
         else module
 
 
+portal_args = {}
+
+
+# A code-based interface for setting args
+def portal(**args):
+    global portal_args
+    portal_args = args
+
+
 # Check if a string path to a module is valid for instantiation
 def valid_path(path, dir_path=False, module_path=True, module=True, _modules_=None):
     truth = False
@@ -362,10 +371,17 @@ def _parse(value):
 
 
 def parse(args=None):
+    arg = args
+
+    # Parse portal
+    global portal_args
+
     # Parse command-line
     for sys_arg in sys.argv[1:]:
-        arg = args
         keys, value = sys_arg.split('=', 1)
+        portal_args[keys] = value
+
+    for keys, value in portal_args:
         keys = keys.split('.')
         value = _parse(value)
         for i, key in enumerate(keys[:-1]):
@@ -382,6 +398,7 @@ def parse(args=None):
             arg[keys[-1]]['_target_'] = value  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
         else:
             setattr(arg, keys[-1], value)
+
     return args
 
 
@@ -463,6 +480,10 @@ def just_args(source=None, logging=False):
     args = interpolate(args)  # Command-line requires quotes for interpolation
     if logging:
         log(args)
+
+    # Reset portal
+    global portal_args
+    portal_args = {}
 
     return args
 

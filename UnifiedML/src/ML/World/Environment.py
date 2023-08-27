@@ -33,6 +33,7 @@ class Environment:
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
         self.episode_sums = {}
+
         self.metric = {key: get_module(metric) if valid_path(metric) else metric
                        for key, metric in env.metric.items() if metric is not None}
         self.ema = ema  # Can use an exponential moving average model

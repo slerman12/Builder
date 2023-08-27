@@ -22,8 +22,8 @@ for file in files:
 for dir in dirs:
     globals().update({dir: __import__(dir)})
 
-from Utils import launch
-main = ml = launch
+from Utils import run
+main = ml = launch = run
 
 from Agents import Agent
 from Utils import load, save, optimize
