@@ -31,7 +31,7 @@ from torch.optim import *
 from torch.optim.lr_scheduler import *
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
-    get_module, portal
+    get_module, portal, add_task_dirs
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -51,9 +51,6 @@ def init(args):
 
         if args.path not in yaml_search_paths:
             yaml_search_paths.append(args.path)
-
-        if args.path + '/Hyperparams' not in yaml_search_paths and os.path.exists(args.path + '/Hyperparams'):
-            yaml_search_paths.append(args.path + '/Hyperparams')
 
     # Set seeds
     set_seeds(args.seed)
@@ -95,10 +92,7 @@ def import_paths():
     added_modules.update(globals())  # Adds everything in Utils to module instantiation path TODO Manually specify
 
     # Adds Hyperparams dir to search path
-    for path in [UnifiedML, app, os.getcwd()]:
-        # TODO just yaml_search_paths.append('${path}/Hyperparams'). ${path} inferred as one of above 3 or task path.
-        if path + '/Hyperparams' not in yaml_search_paths and os.path.exists(path + '/Hyperparams'):
-            yaml_search_paths.append(path + '/Hyperparams')
+    add_task_dirs(['Hyperparams'])
 
 
 import_paths()

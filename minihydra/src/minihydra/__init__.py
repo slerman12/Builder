@@ -11,6 +11,7 @@ See full hydra here: https://github.com/facebookresearch/hydra
 import ast
 import importlib.util
 import inspect
+import itertools
 import os.path
 import re
 import sys
@@ -27,6 +28,8 @@ sys.path.extend([app, cwd])  # Adding sys paths instead of module paths so that 
 yaml_search_paths = [app, cwd]  # List of paths to search for yamls in
 module_paths = [app, cwd]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
+
+task_dirs = ['', 'task']  # Extra directories where tasks can be searched
 
 log_dir = None
 
@@ -296,7 +299,42 @@ def recursive_update(original, update, _target_inference=True):
     return original
 
 
-def read(source, recurse=False):
+# Search combinations of specified task dirs
+def add_task_dirs(paths):
+    global task_dirs
+    search = ['task'] + paths
+    task_dirs = ['']
+
+    for combo in range(1, len(search) + 1):
+        for subset in itertools.combinations(search, combo):
+            task_dirs.append('/'.join(subset) + '/')
+
+    for combo in range(2, len(search) + 1):
+        for subset in itertools.combinations(reversed(search), combo):
+            task_dirs.append('/'.join(subset) + '/')
+
+
+def get_task(path):
+    task = None
+    for i, task_dir in enumerate(task_dirs):
+        try:
+            task_path = task_dir + path.replace('.yaml', '') + '.yaml'
+            task = read(task_path, recurse=True, save_task_path=True)
+            break
+        except FileNotFoundError:
+            try:
+                task = path.split('/')
+                task_path = '/'.join(task[:-1]) + '/' + task_dir + task[-1].replace('.yaml', '') + '.yaml'
+                task = read(task_path, recurse=True, save_task_path=True)
+                break
+            except FileNotFoundError:
+                if i == len(task_dirs) - 1:
+                    raise FileNotFoundError(f'Could not find task {path}. '
+                                            f'Searched: {task_dirs} in {yaml_search_paths}')
+    return task
+
+
+def read(source, recurse=False, save_task_path=False):
     args, path = open_yaml(source, return_path=True)
 
     # Parse pseudonyms
@@ -314,6 +352,22 @@ def read(source, recurse=False):
                     setdefault(args, key, f'${{{preceding}}}')
                 preceding = key
 
+    path = os.path.dirname(os.path.abspath(path))
+
+    # Add task project-directory to system paths
+    if save_task_path:
+        add = path
+
+        # Step out of task dirs
+        while add.split('/')[-1] + '/' in task_dirs:
+            add = os.path.dirname(add)
+        if add not in sys.path:
+            sys.path.append(add)
+        if add not in yaml_search_paths:
+            yaml_search_paths.append(add)
+        if add not in module_paths:
+            module_paths.append(add)
+
     # Need to allow imports
     if 'imports' in args:
         imports = args.pop('imports')
@@ -325,17 +379,10 @@ def read(source, recurse=False):
 
         added = None
         for module in imports:
-            _path = os.path.dirname(path)
-            if _path not in sys.path:
-                added = _path
-                yaml_search_paths.append(_path)
-            try:
-                module = self if module == 'self' else read(module + '.yaml', recurse=True)
-            except FileNotFoundError as e:
-                try:
-                    module = read('task/' + module + '.yaml', recurse=True)
-                except FileNotFoundError:
-                    raise e
+            if path not in sys.path:
+                added = path
+                yaml_search_paths.append(path)
+            module = self if module == 'self' else get_task(module)
             if added:
                 yaml_search_paths.pop(yaml_search_paths.index(added))
                 added = None
@@ -356,33 +403,13 @@ def read(source, recurse=False):
         if '/' not in args.task:
             args.task = args.task.replace('.yaml', '').replace('.', '/')
 
-        path = os.path.dirname(os.path.abspath(path))
-
-        # Add task project-directory to system paths
-        add = path
-
-        # TODO just step out until a python file is found
-        if add.split('/')[-1] == 'task':
-            add = os.path.dirname(add)
-        if add.split('/')[-1] == 'Hyperparams':
-            add = os.path.dirname(add)
-        if add not in sys.path:
-            sys.path.append(add)
-        if add not in module_paths:
-            module_paths.append(add)
-
+        # Locate tasks, adding relative cross-task paths temporarily
         added = None
 
         if path not in sys.path:
             added = path
             yaml_search_paths.append(path)
-        try:  # TODO add task/ between the 2nd last and last dirs
-            task = read('task/' + args.task.replace('.yaml', '') + '.yaml', recurse=True)
-        except FileNotFoundError as e:
-            try:
-                task = read(args.task.replace('.yaml', '') + '.yaml', recurse=True)
-            except FileNotFoundError:
-                raise e
+        task = get_task(args.task)
         if added:
             yaml_search_paths.pop(yaml_search_paths.index(added))
         recursive_update(args, task)
