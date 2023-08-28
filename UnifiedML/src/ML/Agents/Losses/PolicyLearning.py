@@ -7,7 +7,11 @@
 def deepPolicyGradient(actor, critic, obs, action=None, step=1, log=None):
 
     if action is None or not action.requires_grad:  # If None or not differentiable
-        action = actor(obs, step).rsample()  # Differentiable action ensemble  TODO if rollout=true, sample, else mean
+        Pi = actor(obs, step)
+        action = Pi.rsample()  # Differentiable action ensemble  TODO if rollout=true, sample, else mean
+
+        if Pi.store is not None:
+            action = Pi.store  # Creator might learn a different action from the one actually sent to Env
 
     Qs = critic(obs, action)
 

@@ -7,7 +7,7 @@ import warnings
 from math import inf
 
 import torch
-from minihydra import instantiate, get_module, valid_path
+from minihydra import instantiate, get_module, valid_path, Args
 
 
 class Environment:
@@ -59,8 +59,9 @@ class Environment:
             obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
+            store = Args()
             with act_mode(agent, self.ema):
-                action, store = agent.act(obs)
+                action = agent.act(obs, store)
 
             if not self.generate:
                 exp = self.env.step(action.cpu().numpy())  # Experience

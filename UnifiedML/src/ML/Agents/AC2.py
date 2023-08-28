@@ -37,10 +37,9 @@ class AC2Agent(torch.nn.Module):
                  ):
         super().__init__()
 
-        # TODO Should all of these be properties of agent & model?
         self.discrete = discrete and not generate  # Discrete & Continuous supported!
         self.supervise = supervise  # And classification...
-        self.RL = RL or generate
+        self.RL = RL or generate  # RL,
         self.generate = generate  # And generative modeling, too
 
         self.log = log
@@ -133,7 +132,7 @@ class AC2Agent(torch.nn.Module):
 
         # "Birth"
 
-    def act(self, obs):
+    def act(self, obs, store):
         # "See"
         obs = self.encoder(obs)
         # features, thought = encoder(obs, output_features=True)  # TODO
@@ -144,13 +143,11 @@ class AC2Agent(torch.nn.Module):
         action = Pi.sample() if self.training \
             else Pi.best
 
-        store = {}
-
         # Creator may store distribution as action rather than sampled action
         if Pi.store is not None:
-            store = {'action': Pi.store.cpu().numpy()}
+            store.action = Pi.store.cpu().numpy()
 
-        return action, store
+        return action
 
     def learn(self, replay, log):
         if not self.log:

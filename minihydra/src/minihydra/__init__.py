@@ -17,6 +17,7 @@ import re
 import sys
 import types
 from collections import OrderedDict
+from collections.abc import Mapping
 from math import inf
 import yaml
 
@@ -229,7 +230,7 @@ def open_yaml(source, return_path=False):
     raise FileNotFoundError(f'{source} not found. Searched: {yaml_search_paths + [""]}')
 
 
-class Args:
+class Args(Mapping):
     def __init__(self, _dict=None, **kwargs):
         self.__dict__.update({**(_dict or {}), **kwargs})
 
@@ -256,6 +257,9 @@ class Args:
 
     def __repr__(self):
         return str(self.to_dict())
+
+    def __len__(self):
+        return len(self.__dict__)
 
     def get(self, key, *__default):
         return self.__dict__.get(key, *__default)
