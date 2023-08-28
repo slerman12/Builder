@@ -302,7 +302,7 @@ def read(source, recurse=False):
     # Parse pseudonyms
     if '_pseudonyms_' in args:
         # Pseudonyms are alternate interface-keys. Note they are not interchangeable in the args struct,
-        # only as an interface. The primary should be used in the in-code retrieved args structs
+        # only as an interface. The primary should be used in the in-code retrieved args structs.
         for primary, keys in args._pseudonyms_.items():
             value = get(args, primary, resolve=False)
             setdefault(args, args._pseudonyms_[primary][0], value)
