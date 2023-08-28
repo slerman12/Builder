@@ -95,7 +95,7 @@ def main(args):
 
 ### Advanced
 
-**Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, and expanding module and yaml search paths.**
+**Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, expanding module and yaml search paths, project directory inference, instantiation tinkering-syntax inference, portals, and pseudonyms.**
 
 For deeper documentation, [leave an issue]() / please consider [sponsoring](https://github.com/sponsors/AGI-init).
 
@@ -125,6 +125,8 @@ For deeper documentation, [leave an issue]() / please consider [sponsoring](http
 
 [//]: # ()
 [//]: # (### yaml search paths)
+
+[//]: # (project directory inference, instantiation tinkering inference, portals, pseudonyms)
 
 <img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
 

@@ -96,6 +96,7 @@ def import_paths():
 
     # Adds Hyperparams dir to search path
     for path in [UnifiedML, app, os.getcwd()]:
+        # TODO just yaml_search_paths.append('${path}/Hyperparams'). ${path} inferred as one of above 3 or task path.
         if path + '/Hyperparams' not in yaml_search_paths and os.path.exists(path + '/Hyperparams'):
             yaml_search_paths.append(path + '/Hyperparams')
 

@@ -318,6 +318,9 @@ def read(source, recurse=False):
     if 'imports' in args:
         imports = args.pop('imports')
 
+        if 'self' not in imports:
+            imports.append('self')
+
         self = recursive_Args(args)
 
         added = None
@@ -357,6 +360,8 @@ def read(source, recurse=False):
 
         # Add task project-directory to system paths
         add = path
+
+        # TODO just step out until a python file is found
         if add.split('/')[-1] == 'task':
             add = os.path.dirname(add)
         if add.split('/')[-1] == 'Hyperparams':
@@ -371,7 +376,7 @@ def read(source, recurse=False):
         if path not in sys.path:
             added = path
             yaml_search_paths.append(path)
-        try:
+        try:  # TODO add task/ between the 2nd last and last dirs
             task = read('task/' + args.task.replace('.yaml', '') + '.yaml', recurse=True)
         except FileNotFoundError as e:
             try:
