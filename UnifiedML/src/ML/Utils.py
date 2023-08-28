@@ -92,7 +92,7 @@ def import_paths():
     added_modules.update(globals())  # Adds everything in Utils to module instantiation path TODO Manually specify
 
     # Adds Hyperparams dir to search path
-    add_task_dirs(['Hyperparams'])
+    add_task_dirs('Hyperparams')
 
 
 import_paths()

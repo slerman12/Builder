@@ -300,9 +300,9 @@ def recursive_update(original, update, _target_inference=True):
 
 
 # Search combinations of specified task dirs
-def add_task_dirs(paths):
+def add_task_dirs(*paths):
     global task_dirs
-    search = ['task'] + paths
+    search = ('task',) + paths
     task_dirs = ['']
 
     for combo in range(1, len(search) + 1):
