@@ -301,10 +301,10 @@ def read(source, recurse=False):
 
     # Parse pseudonyms
     if '_pseudonyms_' in args:
-        # Pseudonyms are alternate interface-keys that can access into the primary one
-        # Note they are not interchangeable in the args struct, only as an interface. The primary should be used in-code
+        # Pseudonyms are alternate interface-keys. Note they are not interchangeable in the args struct,
+        # only as an interface. The primary should be used in code structs
         for primary, keys in args._pseudonyms_.items():
-            value = get(args, primary, True)
+            value = get(args, primary, resolve=False)
             setdefault(args, args._pseudonyms_[primary][0], value)
             preceding = args._pseudonyms_[primary][0]
             for key in keys[1:] + [primary]:
@@ -401,7 +401,7 @@ def parse(args=None):
 
     # Parse portal
     global portal
-    all_args = OrderedDict(**portal)
+    all_args = OrderedDict(**portal)  # TODO Task args should be popped from portal / task should have priority
 
     # Parse command-line
     for sys_arg in sys.argv[1:]:
