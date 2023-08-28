@@ -76,7 +76,7 @@ def init(args):
     interpolate(args)
 
     # Bootstrap the agent and passed-in model
-    preconstruct_agent(args.agent)
+    preconstruct_agent(args.agent, args.model)
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -122,11 +122,9 @@ grammars()
 
 
 # Agent initialized with model and bootstrapped together
-def preconstruct_agent(agent):
+def preconstruct_agent(agent, model):
     if not hasattr(agent, '_target_'):
         return
-
-    model = agent.model
 
     if not hasattr(model, '_target_'):
         model = Args(_target_=model)
@@ -253,9 +251,6 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             args.recipes[attr + f'._overload_.{key}'] = value
         else:
             args[key] = value
-
-    if 'model' in args:
-        preconstruct_agent(args)
 
     model = instantiate(args).to(device)
 

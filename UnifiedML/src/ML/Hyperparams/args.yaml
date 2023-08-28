@@ -146,7 +146,6 @@ agent:
   num_critics: ${num_critics}
   num_actors: ${num_actors}
   depth: 0
-  model: ${model}
 
 replay:
   _target_: World.Replay.Replay
