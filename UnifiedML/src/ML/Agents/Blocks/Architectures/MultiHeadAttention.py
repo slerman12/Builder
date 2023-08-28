@@ -60,10 +60,10 @@ class Attention(nn.Module):
         if rela:
             self.rela = nn.ReLU(inplace=True)
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         # Conserves spatial dimensions, maps channel dim to value-dim
-        return (self.value_dim, *_[1:]) if self.channels_first \
-            else (*_[:-1], self.value_dim)
+        return (self.value_dim, *shape[1:]) if self.channels_first \
+            else (*shape[:-1], self.value_dim)
 
     def forward(self, input, context=None):
         if context is None:

@@ -36,11 +36,11 @@ class MLP(nn.Module):
         # Initialize weights
         self.apply(Utils.weight_init)
 
-    def repr_shape(self, *_):
-        flatten = -1 if _[-1] == self.input_dim \
+    def shape(self, shape):
+        flatten = -1 if shape[-1] == self.input_dim \
             else -len(self.input_shape)  # Auto-flatten if needed
 
-        return *[size for size in _ if size][:flatten], self.output_dim
+        return *[size for size in shape if size][:flatten], self.output_dim
 
     def forward(self, *obs):
         obs = torch.cat(obs, -1)  # Assumes inputs can be concatenated along last dim

@@ -56,7 +56,8 @@ class Generator(nn.Module):
 
         self.apply(weight_init)
 
-    def repr_shape(self, c, *_):
+    def shape(self, shape):
+        c = shape[0]
         return c, 64, 64  # cnn_feature_shape doesn't support pre-computing ConvTranspose2d
 
     def forward(self, *x):
@@ -106,8 +107,8 @@ class Discriminator(nn.Module):
 
         self.apply(weight_init)
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.Discriminator)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.Discriminator)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities

@@ -87,7 +87,7 @@ class AC2Agent(torch.nn.Module):
                                   ema_decay=ema_decay * (RL and not generate or ema))
 
         self.actor = EnsemblePiActor(self.encoder.repr_shape, trunk_dim, hidden_dim, action_spec, **recipes.actor,
-                                     ensemble_size=self.num_actors, discrete=self.discrete,
+                                     ensemble_size=self.num_actors, discrete=self.discrete, parallel=parallel,
                                      stddev_schedule=stddev_schedule, creator=recipes.creator, rand_steps=rand_steps,
                                      lr=lr, lr_decay_epochs=lr_decay_epochs, weight_decay=weight_decay,
                                      ema_decay=ema_decay * ema)

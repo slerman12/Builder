@@ -30,13 +30,13 @@ class CNN(nn.Module):
 
         if output_dim is not None:
             # Optional output projection
-            self.repr = nn.Sequential(nn.Flatten(), nn.Linear(math.prod(self.repr_shape(*self.input_shape)), 50),
+            self.repr = nn.Sequential(nn.Flatten(), nn.Linear(math.prod(self.shape(self.input_shape)), 50),
                                       nn.ReLU(), nn.Linear(50, output_dim))
 
         self.apply(Utils.weight_init)
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.CNN, self.repr)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.CNN, self.repr)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities
@@ -63,8 +63,9 @@ class AvgPool(nn.Module):
         super().__init__()
         self.keepdim = keepdim
 
-    def repr_shape(self, dim, *_):
-        return dim, *[1] * len(_) * self.keepdim
+    def shape(self, shape):
+        dim, *shape = shape
+        return dim, *[1] * len(shape) * self.keepdim
 
     def forward(self, input):
         return input.mean(tuple(range(2, len(input.shape))), keepdim=self.keepdim)

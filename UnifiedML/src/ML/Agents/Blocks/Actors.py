@@ -19,8 +19,8 @@ from Agents.Blocks.Creator import Creator
 class EnsemblePiActor(nn.Module):
     """Ensemble of Gaussian or Categorical policies Pi, generalized for discrete or continuous action spaces."""
     def __init__(self, repr_shape, trunk_dim, hidden_dim, action_spec, trunk=None, Pi_head=None, ensemble_size=2,
-                 discrete=False, stddev_schedule=1, creator=None, rand_steps=0, optim=None, scheduler=None,
-                 lr=None, lr_decay_epochs=None, weight_decay=None, ema_decay=None):
+                 discrete=False, stddev_schedule=1, creator=None, rand_steps=0, parallel=False,
+                 optim=None, scheduler=None, lr=None, lr_decay_epochs=None, weight_decay=None, ema_decay=None):
         super().__init__()
 
         self.discrete = discrete
@@ -35,12 +35,15 @@ class EnsemblePiActor(nn.Module):
         self.trunk = instantiate(trunk, **Utils.adaptive_shaping(repr_shape, [trunk_dim])) or nn.Sequential(
             nn.Flatten(), nn.Linear(in_dim, trunk_dim), nn.LayerNorm(trunk_dim), nn.Tanh())
 
-        in_shape = Utils.cnn_feature_shape(repr_shape, self.trunk)  # Will be trunk_dim when possible
+        in_shape = Utils.repr_shape(repr_shape, self.trunk)  # Will be trunk_dim when possible
         out_shape = [self.num_actions * action_spec.shape[0] * (1 if stddev_schedule else 2), *action_spec.shape[1:]]
 
         # Ensemble
         self.Pi_head = Utils.Ensemble([instantiate(Pi_head, i, **Utils.adaptive_shaping(in_shape, out_shape))
                                        or MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])
+
+        if parallel:
+            self.Pi_head = nn.DataParallel(self.Pi_head)  # Parallel on visible GPUs
 
         # Initialize model optimizer + EMA
         self.optim, self.scheduler = Utils.optimizer_init(self.parameters(), optim, scheduler,

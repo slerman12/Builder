@@ -30,7 +30,7 @@ class RN(nn.Module):
         if isinstance(input_shape, int):
             input_shape = (input_shape,)
 
-        shape = Utils.cnn_feature_shape(input_shape, self.positional_encodings)
+        shape = Utils.repr_shape(input_shape, self.positional_encodings)
 
         self.input_dim = shape[0] if channels_first else shape[-1]
 
@@ -43,8 +43,8 @@ class RN(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-    def repr_shape(self, *_):  # Conserves spatial dimensions, maps channel dim to output-dim
-        return (self.output_dim, *_[1:]) if self.channels_first else (*_[:-1], self.output_dim)
+    def shape(self, shape):  # Conserves spatial dimensions, maps channel dim to output-dim
+        return (self.output_dim, *shape[1:]) if self.channels_first else (*shape[:-1], self.output_dim)
 
     def forward(self, input, context=None):
         input = self.positional_encodings(input)

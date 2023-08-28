@@ -52,9 +52,9 @@ class AttentionBlock(nn.Module):
         self.MLP = nn.Sequential(MLP(self.attend.input_dim, self.attend.input_dim, self.mlp_hidden_dim,
                                      depth=1, activation=nn.GELU(), dropout=dropout), nn.Dropout(dropout))
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         # Isotropic, conserves dimensions
-        return _
+        return shape
 
     def forward(self, input, context=None):
         # To channels-last
@@ -125,10 +125,10 @@ class LearnableFourierPositionalEncodings(nn.Module):
         # Initialize weights
         nn.init.normal_(self.Linear.weight.data)
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         # Conserves spatial dimensions
-        return (self.output_dim, *_[1:]) if self.channels_first \
-            else (*_[:-1], self.output_dim)
+        return (self.output_dim, *shape[1:]) if self.channels_first \
+            else (*shape[:-1], self.output_dim)
 
     def forward(self, input):
         # Permute as channels-last
@@ -187,10 +187,11 @@ class PositionalEncodings(nn.Module):
 
         self.dropout = nn.Dropout(p=dropout)
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         # Conserves shape when additive (if spatial axes * 2 ≤ input dim), else concatenates
-        return _ if self.input_dim == self.size \
-            else (self.input_dim + self.size, *_[1:]) if self.channels_first else (*_[:-1], self.input_dim + self.size)
+        return shape if self.input_dim == self.size \
+            else (self.input_dim + self.size, *shape[1:]) if self.channels_first \
+            else (*shape[:-1], self.input_dim + self.size)
 
     def forward(self, input):
         # Permute as channels-last
@@ -221,13 +222,13 @@ class Transformer(nn.Module):
 
         positional_encodings = positional_encodings(input_shape, channels_first=channels_first)
 
-        self.shape = Utils.cnn_feature_shape(input_shape, positional_encodings)
+        self.shape = Utils.repr_shape(input_shape, positional_encodings)
 
         self.transformer = nn.Sequential(positional_encodings, *[SelfAttentionBlock(self.shape, num_heads,
                                                                                     channels_first=channels_first)
                                                                  for _ in range(depth)])
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         return self.shape
 
     def forward(self, obs):

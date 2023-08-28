@@ -299,7 +299,7 @@ class MultiTask:
 
             worker_start_times[worker] = time.time()
 
-            # With task-specific args  TODO Remember why :-2
+            # With task-specific args  TODO Remember why :-2 (probably not necessary anymore)
             task_args = [arg for arg in original_sys_args[1:-2] if arg.split('=')[0]
                          not in [task_arg.split('=')[0] for task_arg in task.split()] + ['multi_task']] + task.split()
             sys.argv = [sys.argv[0], *task_args, *sys.argv[-2:]]
@@ -566,8 +566,8 @@ def cnn_feature_shape(chw, *blocks, verbose=False):
             size = to_tuple(block.output_size)  # Can be int
             pair = size[0] if isinstance(block, nn.AdaptiveAvgPool2d) else None
             height, width = (size[0], pair) if width is None else size + (pair,) * (2 - len(size))
-        elif hasattr(block, 'repr_shape'):
-            chw = block.repr_shape(*chw)
+        elif hasattr(block, 'shape') and callable(block.shape):
+            chw = block.shape(chw)
             channels, height, width = chw[0], chw[1] if len(chw) > 1 else None, chw[2] if len(chw) > 2 else None
         elif hasattr(block, 'modules'):
             for layer in block.children():
@@ -584,7 +584,8 @@ def cnn_feature_shape(chw, *blocks, verbose=False):
 # General-purpose shape pre-computation. Unlike above, uses manual forward pass through model(s).
 def repr_shape(input_shape, *blocks):
     for block in blocks:
-        input_shape = block(torch.ones(1, *input_shape)).shape[1:]
+        input_shape = block.shape(input_shape) if hasattr(block, 'shape') and callable(block.shape) \
+            else block(torch.ones(1, *input_shape)).shape[1:]
     return input_shape
 
 
@@ -628,7 +629,7 @@ class Rand(nn.Module):
         self.output_shape = to_tuple(output_shape or size)
         self.uniform = uniform
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         return self.output_shape
 
     def forward(self, *x):
@@ -715,10 +716,10 @@ class Sequential(nn.Module):
                                              else _target_, i, **kwargs))
 
             if 'input_shape' in kwargs:
-                kwargs['input_shape'] = cnn_feature_shape(kwargs['input_shape'], self.Sequence[-1])
+                kwargs['input_shape'] = repr_shape(kwargs['input_shape'], self.Sequence[-1])
 
-    def repr_shape(self, *_):
-        return cnn_feature_shape(_, self.Sequence)
+    def shape(self, shape):
+        return cnn_feature_shape(shape, self.Sequence)
 
     def forward(self, obs, *context):
         out = (obs, *context)
@@ -732,8 +733,8 @@ class Sequential(nn.Module):
 
 # Swaps image dims between channel-last and channel-first format (Convenient helper)
 class ChannelSwap(nn.Module):
-    def repr_shape(self, *_):
-        return _[-1], *_[1:-1], _[0]
+    def shape(self, shape):
+        return shape[-1], *shape[1:-1], shape[0]
 
     def forward(self, x, spatial2d=True):
         return x.transpose(-1, -3 if spatial2d and len(x.shape) > 3 else 1)  # Assumes 2D, otherwise Nd

@@ -38,8 +38,8 @@ class TIMM(nn.Module):
 
         self.detach = detach  # Fix weights
 
-    def repr_shape(self, *_):
-        return Utils.repr_shape(_, self.model)
+    def shape(self, shape):
+        return Utils.repr_shape(shape, self.model)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities

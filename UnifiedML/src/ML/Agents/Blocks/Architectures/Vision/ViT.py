@@ -34,7 +34,7 @@ class ViT(nn.Module):
                                 else LearnablePositionalEncodings)(shape)
 
         token = CLSToken(shape)  # Just appends a parameterized token
-        shape = Utils.cnn_feature_shape(shape, token)
+        shape = Utils.repr_shape(shape, token)
 
         # Positional encoding -> CLS Token -> Attention layers
         self.T = nn.Sequential(positional_encodings,
@@ -51,8 +51,8 @@ class ViT(nn.Module):
                                                                                       nn.Linear(out_channels,
                                                                                                 output_dim)))
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.Vi, self.T)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.Vi, self.T)
 
     def forward(self, *x):
         patches = self.Vi(*x)
@@ -73,8 +73,8 @@ class LearnablePositionalEncodings(nn.Module):
 
         self.encoding = nn.Parameter(torch.randn(*input_shape))
 
-    def repr_shape(self, *_):
-        return _  # Conserves shape
+    def shape(self, shape):
+        return shape  # Conserves shape
 
     def forward(self, x):
         return x + self.encoding
@@ -89,8 +89,9 @@ class CLSToken(nn.Module):
 
         self.token = nn.Parameter(torch.randn(in_channels, 1))
 
-    def repr_shape(self, c, *_):
-        return c, math.prod(_) + 1
+    def shape(self, shape):
+        c, *shape = shape
+        return c, math.prod(shape) + 1
 
     def forward(self, obs):
         return torch.cat([obs.flatten(-len(self.spatial_dims)), self.token.expand(*obs.shape[:-len(self.spatial_dims)], 1)], dim=-1)  # Assumes 2 spatial dims
@@ -101,7 +102,8 @@ class CLSPool(nn.Module):
     def __init__(self, **_):
         super().__init__()
 
-    def repr_shape(self, c, *_):
+    def shape(self, shape):
+        c = shape[0]
         return c,
 
     def forward(self, x):

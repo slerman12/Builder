@@ -42,7 +42,7 @@ class Perceiver(nn.Module):
         self.num_tokens = num_tokens
         self.output_dim = Utils.prod(output_shape)
 
-        shape = Utils.cnn_feature_shape(input_shape, self.positional_encodings)
+        shape = Utils.repr_shape(input_shape, self.positional_encodings)
 
         self.input_dim = shape if isinstance(shape, int) else shape[0] if channels_first else shape[-1]
         self.token_dim = token_dim or self.input_dim
@@ -91,7 +91,7 @@ class Perceiver(nn.Module):
 
             self.MLP = MLP(self.token_dim, 1, self.token_dim, 1, activation=nn.GELU())
 
-    def repr_shape(self, *_):
+    def shape(self, shape):
         # Passed-in output dim, or same shape as tokens
         return (self.output_dim,) if self.output_dim else (self.token_dim, self.num_tokens) if self.channels_first \
             else (self.num_tokens, self.token_dim)

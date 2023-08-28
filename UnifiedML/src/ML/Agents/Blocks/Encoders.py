@@ -44,11 +44,11 @@ class CNNEncoder(nn.Module):
         if parallel:
             self.Eyes = nn.DataParallel(self.Eyes)  # Parallel on visible GPUs
 
-        self.feature_shape = Utils.cnn_feature_shape(obs_shape, self.Eyes)  # Feature map shape
+        self.feature_shape = Utils.repr_shape(obs_shape, self.Eyes)  # Feature map shape
 
         self.pool = instantiate(pool, **Utils.adaptive_shaping(self.feature_shape)) or nn.Flatten()  # TODO Identity?
 
-        self.repr_shape = Utils.cnn_feature_shape(self.feature_shape, self.pool)  # Shape after pooling
+        self.repr_shape = Utils.repr_shape(self.feature_shape, self.pool)  # Shape after pooling
 
         # Initialize model optimizer + EMA
         self.optim, self.scheduler = Utils.optimizer_init(self.parameters(), optim, scheduler,
@@ -143,4 +143,4 @@ def adapt_cnn(block, obs_shape):
             adapt_cnn(layer, obs_shape)  # Dimensionality-adaptivity
             # Account for multiple streams in Residual
             if name != 'Residual' or block.down_sample is None or layer == block.down_sample:
-                obs_shape = Utils.cnn_feature_shape(obs_shape, layer)  # Update shape
+                obs_shape = Utils.repr_shape(obs_shape, layer)  # Update shape

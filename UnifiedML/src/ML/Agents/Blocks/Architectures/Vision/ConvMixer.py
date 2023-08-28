@@ -36,8 +36,8 @@ class ConvMixer(nn.Module):
         self.repr = nn.Identity() if output_dim is None \
             else nn.Sequential(AvgPool(), nn.Linear(out_channels, output_dim))  # Optional output projection
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.ConvMixer, self.repr)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.ConvMixer, self.repr)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities

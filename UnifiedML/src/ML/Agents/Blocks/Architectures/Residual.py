@@ -22,13 +22,13 @@ class Residual(torch.nn.Module):
         self.model = instantiate(model, **kwargs)
 
         if 'input_shape' in kwargs:
-            kwargs['output_shape'] = self.repr_shape(*kwargs['input_shape'])
+            kwargs['output_shape'] = self.shape(kwargs['input_shape'])
 
         # Can pass a down-sampling model in as an argument or via the command-line syntax
         self.down_sample = instantiate(down_sample, **kwargs)
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.model)  # Note: if model/down-sample shapes mismatch, might return wrong
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.model)  # Note: if model/down-sample shapes mismatch, might return wrong
 
     def forward(self, input):
         output = self.model(input)

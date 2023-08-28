@@ -48,8 +48,8 @@ class MBConvBlock(nn.Module):
         self.MBConvBlock = Residual(nn.Sequential(nn.BatchNorm2d(in_channels),
                                                   block), down_sample)
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.MBConvBlock)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.MBConvBlock)
 
     def forward(self, x):
         return self.MBConvBlock(x)
@@ -65,8 +65,8 @@ class SEBlock(nn.Module):
                                                   activation=nn.GELU(), binary=True, bias=False), Utils.ChannelSwap()),
                                 mode=mul)
 
-    def repr_shape(self, *_):
-        return _
+    def shape(self, shape):
+        return shape
 
     def forward(self, x):
         return self.SEBlock(x)
@@ -116,8 +116,8 @@ class CoAtNet(nn.Module):
                                                                                        nn.Linear(dims[2],  # dims[3]
                                                                                                  output_dim)))
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.Co, self.At)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.Co, self.At)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities

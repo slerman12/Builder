@@ -32,8 +32,8 @@ class ResBlock(nn.Module):
         self.ResBlock = nn.Sequential(Residual(block, down_sample),
                                       nn.ReLU(inplace=True))
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.ResBlock)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.ResBlock)
 
     def forward(self, x):
         return self.ResBlock(x)
@@ -68,8 +68,8 @@ class MiniResNet(nn.Module):
         self.repr = nn.Identity() if output_dim is None \
             else nn.Sequential(AvgPool(), nn.Linear(dims[-1], output_dim))  # Project to desired shape
 
-    def repr_shape(self, *_):
-        return Utils.cnn_feature_shape(_, self.ResNet, self.repr)
+    def shape(self, shape):
+        return Utils.cnn_feature_shape(shape, self.ResNet, self.repr)
 
     def forward(self, *x):
         # Concatenate inputs along channels assuming dimensions allow, broadcast across many possibilities
