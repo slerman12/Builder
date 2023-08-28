@@ -15,6 +15,8 @@ from functools import cached_property
 import re
 from multiprocessing.pool import ThreadPool
 
+import dill
+
 from torch.nn import Identity, Flatten  # For direct accessibility via command line
 import torchvision  # For direct accessibility via command line
 from torchvision import transforms  # For direct accessibility via command line
@@ -74,7 +76,7 @@ def init(args):
     interpolate(args)
 
     # Bootstrap the agent and passed-in model
-    preconstruct_agent(args.agent, args.model)
+    preconstruct_agent(args.agent)
 
 
 UnifiedML = os.path.dirname(__file__)
@@ -120,9 +122,11 @@ grammars()
 
 
 # Agent initialized with model and bootstrapped together
-def preconstruct_agent(agent, model):
+def preconstruct_agent(agent):
     if not hasattr(agent, '_target_'):
         return
+
+    model = agent.model
 
     if not hasattr(model, '_target_'):
         model = Args(_target_=model)
@@ -220,7 +224,8 @@ def save(path, model, args=None, *attributes):
 
     torch.save({'state_dict': model.state_dict(),
                 'attr': {attr: getattr(model, attr) for attr in attributes},
-                'args': args}, path)
+                'args': args}, path, pickle_module=dill)
+
     print(f'Model successfully saved to {path}')
 
 
@@ -228,7 +233,7 @@ def save(path, model, args=None, *attributes):
 def load(path, device='cuda', args=None, preserve=(), distributed=False, attr='', **kwargs):
     while True:
         try:
-            to_load = torch.load(path, map_location=device)  # Load
+            to_load = torch.load(path, map_location=device, pickle_module=dill)  # Load
             original_args = to_load['args']
 
             args = args or original_args or {}  # Note: Could instead use original_args, but support _overload_
@@ -248,6 +253,9 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
             args.recipes[attr + f'._overload_.{key}'] = value
         else:
             args[key] = value
+
+    if 'model' in args:
+        preconstruct_agent(args)
 
     model = instantiate(args).to(device)
 

@@ -80,7 +80,7 @@ ema: false
 # Saving
 save: true
 save_per_steps: 0
-save_path: ./Checkpoints/${experiment}/${format:${Agent}}/${environment.suite}/${task_name}_${seed}.pt
+save_path: ./Checkpoints/${experiment}/${format:${Agent}}/${suite}/${task_name}_${seed}.pt
 load_path: ${save_path}
 load: false
 load_per_steps: 0
@@ -146,10 +146,11 @@ agent:
   num_critics: ${num_critics}
   num_actors: ${num_actors}
   depth: 0
+  model: ${model}
 
 replay:
   _target_: World.Replay.Replay
-  path: ${experiment}/${format:${Agent}}/${environment.suite}/${task_name}_${seed}_Memories/
+  path: ${experiment}/${format:${Agent}}/${suite}/${task_name}_${seed}_Memories/
   batch_size: ${batch_size}
   device: ${device}
   num_workers: ${num_workers}
@@ -184,7 +185,7 @@ replay:
 
 logger:
   _target_: Benchmarking.Logger.Logger
-  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${environment.suite}/
+  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${suite}/
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
@@ -195,7 +196,7 @@ logger:
 
 vlogger:
   _target_: Benchmarking.Vlogger.Vlogger
-  path: ${log_path}Benchmarking/Vlogs/${experiment}/${format:${Agent}}/${environment.suite}/${task_name}_${seed}
+  path: ${log_path}Benchmarking/Vlogs/${experiment}/${format:${Agent}}/${suite}/${task_name}_${seed}
   fps: 20
   reel: ${generate}
 

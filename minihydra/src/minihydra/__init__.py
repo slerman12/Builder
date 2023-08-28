@@ -553,9 +553,6 @@ def multirun(args):
 
 # Can just get args, no decorator
 def just_args(source=None, logging=False):
-    if source is not None:
-        yaml_search_paths.append(app + '/' + source.split('/', 1)[0])
-
     args = Args() if source is None else read(source)
     args = parse(args)
     args = interpolate(args)  # Command-line requires quotes for interpolation
@@ -583,8 +580,9 @@ def set_portal(args=None, **keywords):
 def get_args(source=None, logging=True):
     def decorator_func(func):
         def main(args=None, **kwargs):
-            set_portal(args, **kwargs)
-            return func(just_args(source, logging=logging))
+            if sys._getframe(1).f_globals["__name__"] == '__main__':  # Only Run in __main__ call, not imports
+                set_portal(args, **kwargs)
+                return func(just_args(source, logging=logging))
 
         return main
 
