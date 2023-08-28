@@ -532,15 +532,15 @@ def just_args(source=None, logging=False):
 portal = {}
 
 
+# Those args remain in cache for all future args retrievals unless manually reset
+def reset_portal():
+    set_portal()
+
+
 # A code-based interface for setting args
 def set_portal(args=None, **keywords):
     global portal
     portal = {**(args or {}), **keywords}
-
-
-# Those args remain in cache for all future args retrievals unless manually reset
-def reset_portal():
-    set_portal()
 
 
 # Can decorate a method with args in signature
