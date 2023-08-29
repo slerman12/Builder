@@ -256,6 +256,7 @@ class Memory:
                 for mem in batch.mems:
                     mem.saved = saved
 
+
 class Queue:
     def __init__(self):
         self.queue = []

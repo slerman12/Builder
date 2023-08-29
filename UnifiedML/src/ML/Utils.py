@@ -33,7 +33,7 @@ from torch.optim import *
 from torch.optim.lr_scheduler import *
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
-    get_module, portal, add_task_dirs
+    get_module, portal, add_task_dirs, reset_portal
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -79,6 +79,12 @@ def init(args):
     preconstruct_agent(args.agent, args.model)
 
 
+# Executes from console-script
+def run(args=None, **kwargs):
+    from Run import main
+    main(args, **kwargs)
+
+
 UnifiedML = os.path.dirname(__file__)
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
 
@@ -121,9 +127,9 @@ def grammars():
 grammars()
 
 
-# Agent initialized with model and bootstrapped together
+# Agent initialized with model and bootstrapped together  # TODO Optional rewritable memory - in preconstruct?
 def preconstruct_agent(agent, model):
-    if not hasattr(agent, '_target_'):
+    if not hasattr(agent, '_target_') or not isinstance(agent._target_, str):
         return
 
     if not hasattr(model, '_target_'):

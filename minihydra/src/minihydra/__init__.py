@@ -15,10 +15,12 @@ import itertools
 import os.path
 import re
 import sys
+import textwrap
 import types
 from collections import OrderedDict
 from collections.abc import Mapping
 from math import inf
+import multiprocessing as mp
 import yaml
 
 app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
@@ -535,6 +537,15 @@ def interpolate(arg, args=None):
     return arg
 
 
+# yaml-able representation of args
+def to_repr(args):
+    for key, value in args.items():
+        if not isinstance(value, (list, tuple, str, float, int)) and value is not None:
+            args[key] = to_repr(value) if isinstance(value, (dict, Args)) else str(value)
+
+    return args
+
+
 def log(args):
     if 'minihydra' in args:
         if 'log_dir' in args.minihydra:
@@ -543,7 +554,7 @@ def log(args):
             with open(path, 'w') as file:
                 args = interpolate(parse(Args()), args)
                 args.update(_minihydra_={'app': app, 'cwd': cwd})
-                yaml.dump(args.to_dict(), file, sort_keys=False)
+                yaml.dump(to_repr(args).to_dict(), file, sort_keys=False)
 
 
 def multirun(args):
@@ -576,13 +587,24 @@ def set_portal(args=None, **keywords):
     portal = {**(args or {}), **keywords}
 
 
+def len_return_variables(func):
+    return len(re.findall(r'return\s*(.*)\n*$', inspect.getsourcelines(func)[0][-1])[0].split(',')) or 1
+
+
 # Can decorate a method with args in signature
 def get_args(source=None, logging=True):
     def decorator_func(func):
-        def main(args=None, **kwargs):
-            if sys._getframe(1).f_globals["__name__"] == '__main__':  # Only Run in __main__ call, not imports
-                set_portal(args, **kwargs)
+        def main(_args_=None, __main__=False, **_kwargs_):
+            # If __main__, only run in __main__ call and MainProcess, not imports or forks
+            __main__ = not __main__ or sys._getframe(1).f_globals["__name__"] == '__main__' \
+                       and mp.current_process().name == 'MainProcess'
+
+            if __main__:
+                set_portal(_args_, **_kwargs_)
                 return func(just_args(source, logging=logging))
+
+            # If not running, still try to return the correct number of outputs; assumes consistent return sizes
+            return (None,) * len_return_variables(func)
 
         return main
 

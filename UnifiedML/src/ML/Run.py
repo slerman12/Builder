@@ -31,8 +31,6 @@ def main(args):
     agent = load(args.load_path, args.device, args.agent) if args.load \
         else instantiate(args.agent).to(args.device)
 
-    # replay.set_tape(getattr(agent, 'rewrite_shape', ()))  # TODO Optional rewritable memory - in preconstruct?
-
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
 
@@ -94,6 +92,8 @@ def main(args):
 
         if training and args.load_per_steps and agent.step % args.load_per_steps == 0:
             agent = load(args.load_path, args.device, args.agent, ['frame', 'step', 'episode', 'epoch'], True)
+
+    return agent, replay
 
 
 if __name__ == '__main__':

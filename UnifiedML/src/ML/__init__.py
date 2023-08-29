@@ -6,10 +6,11 @@
 UnifiedML - A unified framework for intelligence training. A built and conceived generalist agent by Sam Lerman.
     This file makes it possible to import UnifiedML as a package or launch it within Python.
 """
-
 import sys
 import os
+import multiprocessing as mp
 
+from minihydra import len_return_variables, reset_portal
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -22,8 +23,21 @@ for file in files:
 for dir in dirs:
     globals().update({dir: __import__(dir)})
 
-from Run import main
-ml = run = launch = main = main
+
+# Executes from code
+def ml(args=None, **kwargs):
+    # Only run in __main__ call and MainProcess, not imports or forks
+    _main_ = sys._getframe(1).f_globals["__name__"] == '__main__' and mp.current_process().name == 'MainProcess'
+    from Run import main
+    if _main_:
+        outs = main(args, **kwargs)
+        reset_portal()
+        return outs
+    # If not running, still try to return the correct number of outputs; assumes consistent return sizes
+    return (None,) * len_return_variables(main)
+
+
+run = launch = main = ml  # Pseudonyms
 
 from Agents import Agent
 from Utils import load, save, optimize

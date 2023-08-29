@@ -85,6 +85,9 @@ from minihydra import get_args
 @get_args(source='path/to/args.yaml')
 def main(args):
     print(args)
+
+if __name__ == '__main__':
+    main()
 ```
 
 ```
