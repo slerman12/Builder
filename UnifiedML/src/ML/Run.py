@@ -25,7 +25,7 @@ def main(args):
     interpolate(args)  # Update args
 
     # Experience replay
-    replay = instantiate(args.replay) if args.train_steps else None
+    replay = instantiate(args.replay) if args.train_steps else args.replay
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
@@ -44,7 +44,7 @@ def main(args):
     converged = training = args.train_steps == 0
     while True:
         # Evaluate
-        if converged or args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0:
+        if converged ^ (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0 and agent.step > 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
                 exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
