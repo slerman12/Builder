@@ -268,7 +268,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
 
     # Load saved attributes as well
     for key, value in to_load['attr'].items():
-        if hasattr(model, key) and key not in ['state_dict', *preserve]:
+        if (hasattr(model, key) or key in getattr(model, '_defaults', {})) and key not in ['state_dict', *preserve]:
             setattr(model, key, value)
 
     # Can also load part of a model. Useful for recipes,

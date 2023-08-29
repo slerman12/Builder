@@ -261,7 +261,12 @@ class Logger:
 
     # Add counter properties to agent & model scope (e.g. step, frame, episode, etc.)
     def witness(self, agent):
-        defaults = {'birthday': time.time(), 'step': 0, 'frame': 0, 'episode': 1, 'epoch': 1}
+        # Set agent properties
+        defaults = {'birthday': getattr(agent, 'birthday', time.time()),
+                    'step': getattr(agent, 'step', 0),
+                    'frame': getattr(agent, 'frame', 0),
+                    'episode': getattr(agent, 'episode', 1),
+                    'epoch': getattr(agent, 'epoch', 1)}
 
         setattr(agent, '_defaults', defaults)
 
