@@ -245,6 +245,8 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
                 args['obs_spec'] = original_args['obs_spec']  # Since norm and standardize stats may change
             if 'recipes' in original_args:
                 args['recipes'] = original_args['recipes']  # Since assumed TODO Default to these where current are null
+            if '_overrides_' in original_args:
+                args['_overrides_'] = original_args['_overrides_']
             if not isinstance(original_args._target_, str):
                 args = original_args  # If already instantiated, use instantiated
             break
