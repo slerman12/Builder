@@ -38,13 +38,13 @@ def main(args):
     logger = instantiate(args.logger, witness=agent)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    train_steps = args.train_steps + agent.step
+    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch
 
     # Start
     converged = training = args.train_steps == 0
     while True:
         # Evaluate
-        if converged ^ (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0 and agent.step > 0):
+        if (converged and agent.step > 0) ^ (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
                 exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
