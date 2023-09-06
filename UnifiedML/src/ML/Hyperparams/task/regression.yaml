@@ -1,0 +1,9 @@
+task: supervised
+suite: regression
+discrete: false
+
+dataset:
+  classify: false
+
+metric:
+  accuracy: World.Metrics.mse

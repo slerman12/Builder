@@ -63,8 +63,7 @@ class Environment:
             with act_mode(agent, self.ema):
                 action = agent.act(obs, store)
 
-            if not self.generate:
-                exp = self.env.step(action.cpu().numpy())  # Experience
+            exp = Args(action=action) if self.generate else self.env.step(action.cpu().numpy())  # Experience
 
             # Tally reward & logs
             self.tally_metric(exp)

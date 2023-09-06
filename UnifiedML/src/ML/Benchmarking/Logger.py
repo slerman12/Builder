@@ -157,6 +157,8 @@ class Logger:
             data = np.array(data).flat
             return data[len(data) - 1]
 
+        # TODO just use default aggregations, but update with logger.aggregate instantiated
+        #   Allow eval() interpolation and adding custom logs by calling again in dump
         agg = self.default_aggregations.get(log_name,
                                             np.ma.mean if self.aggregation == 'mean'
                                             else np.ma.median if self.aggregation == 'median'
@@ -171,7 +173,7 @@ class Logger:
             masked = np.ma.empty((len(stats), max(map(len, stats))))
             masked.mask = True
             for m, stat in zip(masked, stats):
-                m[:len(stat)] = stat
+                m[:len(stat)] = stat  # Each 1-D array of logs added can be of different length
             return agg(masked)
 
         return agg if agg == last else size_agnostic_agg

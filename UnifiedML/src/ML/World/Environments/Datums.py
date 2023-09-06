@@ -110,6 +110,7 @@ class Datums:
 
         self.exp = None
 
+        # TODO No need for this; just make an epoch an episode
         self.evaluate_episodes = len(self.batches)
 
     def step(self, action=None):
@@ -182,7 +183,3 @@ class Datums:
 warnings.filterwarnings("ignore", message='.*invalid value encountered in scalar divide')
 warnings.filterwarnings("ignore", message='invalid value encountered in double_scalars')
 warnings.filterwarnings("ignore", message='Mean of empty slice')
-
-
-def accuracy(exp):
-    return exp.label == exp.action

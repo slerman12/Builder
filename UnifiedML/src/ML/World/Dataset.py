@@ -246,7 +246,7 @@ def compute_stats(batches):
     return Args(mean=mean, stddev=stddev, low=low, high=high)  # Save stat values for future reuse
 
 
-def datums_as_batch(datums):
+def datums_as_batch(datums, done=True):
     if isinstance(datums, (Batch, dict)):
         if 'done' not in datums:
             datums['done'] = True
@@ -274,7 +274,7 @@ def datums_as_batch(datums):
         # TODO Allow manually selecting among datums
         #   Stats can be provided for each but will default to the ones provided in the training dataset
         #   Auto-discrete for non-numbers and low/high otherwise. Can be specified by dataset.low/high or self.stats
-        return Batch({'obs': obs, 'label': label, 'done': True})
+        return Batch({'obs': obs, 'label': label, 'done': done})
 
 
 # # Map class labels to Tensor integers

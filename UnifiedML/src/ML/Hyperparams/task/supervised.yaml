@@ -1,21 +1,17 @@
 Env: World.Environments.Datums.Datums
-Dataset: torchvision.datasets.PhotoTour
-metric: 
-    accuracy: World.Metrics.accuracy
 env:
-    dataset: ${dataset}
-    test_dataset: ${test_dataset}
-    low: 0
-    high: 1
-    batch_size: ${batch_size}
-    num_workers: ${num_workers}
+  dataset: ${dataset}
+  test_dataset: ${test_dataset}
+  low: 0
+  high: 1
+  batch_size: ${batch_size}
+  num_workers: ${num_workers}
 dataset:
-    Transform: null
+  Transform: null
 logger:
-    log_actions: ${not:${generate}}
-suite: classify
-task_name: PhotoTour
-discrete: true
+  log_actions: ${not:${generate}}
+suite: supervised
+task_name: ${format:${dataset._target_}}
 train_steps: 200000
 stddev_schedule: 'linear(1.0,0.1,100000)'
 frame_stack: null

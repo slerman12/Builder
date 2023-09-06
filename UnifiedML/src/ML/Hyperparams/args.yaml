@@ -24,7 +24,6 @@ offline: ${not:${online}}  # Defaults to true for classify tasks
 stream: false
 RL: true  # Defaults to false for classify tasks
 supervise: true
-classify: true
 generate: false
 multi_task: null
 # Environment
@@ -39,14 +38,14 @@ Dataset: null  # Defaults per respective Classify task
 TestDataset: null
 dataset:
   _target_: ${Dataset}
-  classify: ${classify}
+  classify: true
   subset: null
   Transform: null
   transform:
     _target_: ${dataset.Transform}
 test_dataset:
   _target_: ${TestDataset}  # Note: When no TestDataset provided, THEN test_dataset should _default_ to ${dataset}  TODO
-  classify: ${classify}
+  classify: ${dataset.classify}
   subset: null
   Transform: null
   transform:

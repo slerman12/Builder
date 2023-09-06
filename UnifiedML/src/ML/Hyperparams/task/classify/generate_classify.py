@@ -22,7 +22,7 @@ if __name__ == '__main__':
         f.write(fr"""Env: World.Environments.Datums.Datums
 Dataset: {dataset_path}
 metric: 
-    accuracy: World.Environments.Datums.accuracy
+    accuracy: World.Metrics.accuracy
 env:
     dataset: ${{dataset}}
     test_dataset: ${{test_dataset}}

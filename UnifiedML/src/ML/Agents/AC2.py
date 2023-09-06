@@ -6,12 +6,11 @@ import warnings
 from copy import copy
 
 import torch
-from torch.nn.functional import cross_entropy
+from torch.nn.functional import cross_entropy, mse_loss
 
 from minihydra import instantiate
 
-from Agents.Blocks.Architectures import MLP
-from Agents.Blocks.Architectures.Vision.ResNet import MiniResNet
+from Agents.Blocks.Architectures import MLP, MiniResNet
 
 import Utils
 
@@ -20,8 +19,7 @@ from Agents.Blocks.Encoders import CNNEncoder
 from Agents.Blocks.Actors import EnsemblePiActor
 from Agents.Blocks.Critics import EnsembleQCritic
 
-from Agents.Losses import QLearning
-from Agents.Losses import PolicyLearning, SelfSupervisedLearning
+from Agents.Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
 class AC2Agent(torch.nn.Module):
@@ -39,6 +37,7 @@ class AC2Agent(torch.nn.Module):
 
         self.discrete = discrete and not generate  # Discrete & Continuous supported!
         self.supervise = supervise  # And classification...
+        self.classify = action_spec.discrete
         self.RL = RL or generate  # RL,
         self.generate = generate  # And generative modeling, too
 
@@ -83,7 +82,7 @@ class AC2Agent(torch.nn.Module):
         # Note: Slower unnecessary EMA updates when not RL or EMA
         self.encoder = CNNEncoder(obs_spec, standardize=standardize, norm=norm, **recipes.encoder, parallel=parallel,
                                   lr=lr, lr_decay_epochs=lr_decay_epochs, weight_decay=weight_decay,
-                                  ema_decay=ema_decay * (RL and not generate or ema))
+                                  ema_decay=ema_decay * (RL and not generate and depth or ema))
 
         self.actor = EnsemblePiActor(self.encoder.repr_shape, trunk_dim, hidden_dim, action_spec, **recipes.actor,
                                      ensemble_size=self.num_actors, discrete=self.discrete, parallel=parallel,
@@ -185,20 +184,25 @@ class AC2Agent(torch.nn.Module):
             Pi = self.actor(batch.obs)
             y_predicted = (Pi.All_Qs if self.discrete else Pi.mean).mean(1)  # Average over ensembles
 
-            batch.label = batch.label.long().view(len(y_predicted), -1)
-
             # Cross entropy error
-            error = cross_entropy(y_predicted, batch.label,
-                                  reduction='none' if self.RL and replay.offline else 'mean')
+            if self.classify:
+                batch.label = batch.label.view(len(y_predicted), -1)
 
-            # Accuracy computation
-            if self.log or self.RL and replay.offline:
-                index = y_predicted.argmax(1, keepdim=True)  # Predicted class
-                correct = (index.squeeze(1) == batch.label).float()
-                accuracy = correct.mean()
+                error = cross_entropy(y_predicted, batch.label.long(),
+                                      reduction='none' if self.RL and replay.offline else 'mean')
 
-                if self.log:
-                    log.update({'accuracy': accuracy})
+                # Accuracy computation
+                if self.log or self.RL and replay.offline:
+                    index = y_predicted.argmax(1, keepdim=True)  # Predicted class
+                    correct = (index.squeeze(1) == batch.label).float()
+                    accuracy = correct.mean()
+
+                    if self.log:
+                        log.update({'accuracy': accuracy})
+            # Mean-squared error - regression
+            else:
+                error = mse_loss(y_predicted, batch.label,
+                                 reduction='none' if self.RL and replay.offline else 'mean')
 
             # Supervised learning
             if self.supervise:
@@ -220,10 +224,11 @@ class AC2Agent(torch.nn.Module):
                 # "Via Feedback" / "Test Score" / "Letter Grade"
 
                 if replay.offline:
-                    batch.action = (index if self.discrete else y_predicted).detach()
-                    batch.reward = correct if self.discrete else -error.detach()  # reward = -error
+                    batch.action = (index if self.discrete and self.classify else y_predicted).detach()
+                    batch.reward = correct if self.discrete and self.classify else -error.detach()  # reward = -error
                 else:  # Use Replay action from Online training
-                    # reward = -error
+                    # reward = -error  TODO Check if label shape still correct
+                    #                       batch.label = batch.label.view(len(y_predicted), -1)
                     batch.reward = (batch.action.squeeze(1) == batch.label).float() if self.discrete \
                         else -cross_entropy(batch.action.squeeze(1), batch.label.long(), reduction='none')
 

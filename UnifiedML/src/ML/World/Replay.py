@@ -106,7 +106,7 @@ class Replay:
                         if len(self.memory) + len(data[-1]) > capacity:
                             bar.total = i
                             break
-                        self.memory.add(datums_as_batch(data))
+                        self.memory.add(datums_as_batch(data))  # TODO Set done if i == len(batches) - 1
                         bar.update()
                     bar.refresh()
 
