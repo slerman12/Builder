@@ -162,7 +162,7 @@ class AC2Agent(torch.nn.Module):
         # "Perceive"
 
         # Augment, encode present
-        batch.obs = self.aug(batch.obs)
+        batch = self.aug(batch)
         features = self.encoder(batch.obs, pool=False)
         batch.obs = self.encoder.pool(features)
 
