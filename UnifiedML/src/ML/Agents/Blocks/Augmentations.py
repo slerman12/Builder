@@ -17,7 +17,10 @@ class RandomShiftsAug(nn.Module):
         self.pad = pad
 
     def forward(self, obs):
-        obs = obs['obs'] if isinstance(obs, (Args, dict)) else obs
+        batch = obs
+        is_batch = isinstance(obs, (Args, dict))
+
+        obs = obs['obs'] if is_batch else obs
 
         # Operates on last 3 dims of x, preserves leading dims
         shape = obs.shape
@@ -57,7 +60,13 @@ class RandomShiftsAug(nn.Module):
                                padding_mode='zeros',
                                align_corners=False).to(device)
 
-        return output.view(*shape[:-3], *output.shape[-3:])
+        obs = output.view(*shape[:-3], *output.shape[-3:])
+
+        if is_batch:
+            batch.obs = obs
+            return batch
+
+        return obs
 
 
 class IntensityAug(nn.Module):
@@ -66,9 +75,18 @@ class IntensityAug(nn.Module):
         self.scale, self.noise = scale, noise
 
     def forward(self, obs):
-        obs = obs['obs'] if isinstance(obs, (Args, dict)) else obs
+        batch = obs
+        is_batch = isinstance(obs, (Args, dict))
+
+        obs = obs['obs'] if is_batch else obs
 
         axes = (1,) * len(obs.shape[2:])  # Spatial axes, useful for dynamic input shapes
         noise = 1.0 + (self.scale * torch.randn(
             (obs.shape[0], 1, *axes), device=obs.device).clamp_(-self.noise, self.noise))  # Random noise
-        return obs * noise
+        obs = obs * noise
+
+        if is_batch:
+            batch.obs = obs
+            return batch
+
+        return obs
