@@ -15,6 +15,11 @@ class GroundingDINO(nn.Module):
 
         from huggingface_hub import hf_hub_download
 
+        # pip install groundingdino-py perhaps
+        # or
+        # git clone https://github.com/IDEA-Research/GroundingDINO.git
+        # python -m pip install -e GroundingDINO
+        # pip install transformers
         from GroundingDINO.groundingdino.util.inference import predict
         from GroundingDINO.demo.gradio_app import load_model_hf
 

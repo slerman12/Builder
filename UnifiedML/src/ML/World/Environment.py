@@ -18,7 +18,8 @@ class Environment:
         self.generate = generate
 
         self.device = device
-        self.transform = instantiate(env.pop('transform', transform)) or (lambda _: _)
+        # TODO Debug  env.transform=torchvision.transforms.RandomResizedCrop env.transform.size=4
+        self.transform = AdaptiveSensory(instantiate(env.pop('transform', transform), device=device)) or (lambda _: _)
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
         self.disable, self.on_policy = (offline or generate) and train, stream
@@ -28,7 +29,9 @@ class Environment:
         if not self.disable or stream:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
-            self.env.reset()
+            # Experience
+            self.exp = self.env.reset()
+            self.exp = self.transform(self.exp, device=self.device)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -52,11 +55,10 @@ class Environment:
 
         step = frame = 0
         while not self.episode_done and step < steps:
-            exp = self.env.exp
+            exp = self.exp
 
             # Frame-stacked obs
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
-            obs = self.transform(torch.as_tensor(obs, device=self.device))
 
             # Act
             store = Args()
@@ -64,6 +66,10 @@ class Environment:
                 action = agent.act(obs, store)
 
             exp = Args(action=action) if self.generate else self.env.step(action.cpu().numpy())  # Experience
+
+            # Transform
+            exp.obs = torch.as_tensor(obs, device=self.device)
+            exp = self.transform(exp, device=self.device)  # TODO Allow overriding specs from console e.g. when resizing
 
             # Tally reward & logs
             self.tally_metric(exp)
@@ -87,7 +93,8 @@ class Environment:
             self.episode_done = self.env.episode_done or self.episode_step > self.truncate_after - 2 or self.generate
 
             if self.env.episode_done:
-                self.env.reset()
+                self.exp = self.env.reset()
+                self.exp = self.transform(self.exp, device=self.device)
 
         agent.episode += agent.training * self.episode_done  # Increment agent episode
 
@@ -164,3 +171,29 @@ class act_mode:
 
         if self.ema:
             [setattr(self.agent, key, model) for key, model in self.models.items()]
+
+
+# Allows module to support either full batch Args or a default sensory key
+class AdaptiveSensory:
+    def __init__(self, module, key='obs'):
+        self.exp = None
+        self.module = module
+        self.key = key
+
+    def __call__(self, exp, device=None):
+        if device is not None:
+            exp[self.key] = torch.as_tensor(exp[self.key], device=device)
+
+        if self.exp is None:
+            try:
+                exp[self.key] = self.module(exp[self.key])
+                self.exp = False
+            except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
+                exp = self.module(exp)
+                self.exp = True
+        elif self.exp:
+            exp = self.module(exp)
+        else:
+            exp[self.key] = self.module(exp[self.key])
+
+        return exp
