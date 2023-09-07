@@ -19,6 +19,9 @@ from torch import multiprocessing as mp
 
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
+
+from Utils import Transform
+
 from minihydra import instantiate, open_yaml, Args
 
 
@@ -138,7 +141,7 @@ class Replay:
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
-        transform = instantiate(transform)
+        transform = Transform(instantiate(transform))
 
         # Sampler
 
@@ -364,8 +367,7 @@ class Worker:
         experience = self.compute_RL(episode, experience, step)
 
         # Transform
-        if self.transform is not None:
-            experience.obs = self.transform(experience.obs)
+        experience = self.transform(experience)
 
         # Add metadata
         # TODO Don't store these unless needed

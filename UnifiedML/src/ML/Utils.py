@@ -436,6 +436,34 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
 
 
+# Allows module to support either full batch or obs
+class Transform:
+    def __init__(self, module, device=None):
+        self.exp = None
+        self.module = module or (lambda _: _)
+        self.device = device
+
+    def __call__(self, exp, device=None):
+        exp = Args(exp)
+
+        if device is not None or self.device is not None:
+            exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
+
+        if self.exp is None:
+            try:
+                exp.obs = self.module(exp.obs)
+                self.exp = False
+            except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
+                exp = self.module(exp)
+                self.exp = True
+        elif self.exp:
+            exp = self.module(exp)
+        else:
+            exp.obs = self.module(exp.obs)
+
+        return exp
+
+
 # Adaptively fills shaping arguments in instantiated Pytorch modules
 def adaptive_shaping(in_shape=None, out_shape=None):
     shaping = {}
