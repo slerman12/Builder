@@ -117,7 +117,7 @@ def parse(arg, key, func, resolve=lambda name: name):
 def grammars():
     # Format path names
     # e.g. "Checkpoints/Agents.DQNAgent" -> "Checkpoints/DQNAgent"
-    grammar.append(lambda arg: parse(arg, 'format', lambda name: name.split('.')[-1]))
+    grammar.append(lambda arg: parse(arg, 'format', lambda name: name.split('.' if '.' in name else '/')[-1]))
 
     # A boolean "not" operation for config
     grammar.append(lambda arg: parse(arg, 'not', lambda bool: str(not ast.literal_eval(bool)),
@@ -440,7 +440,7 @@ MT = MultiTask()
 class Transform:
     def __init__(self, module, device=None):
         self.exp = None
-        self.module = module or (lambda _: _)
+        self.module = module or (lambda _: _)  # TODO Support a sequence, maybe do the instantiation here
         self.device = device
 
     def __call__(self, exp, device=None):

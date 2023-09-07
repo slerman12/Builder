@@ -141,7 +141,7 @@ class Replay:
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
-        transform = Transform(instantiate(transform))
+        transform = Transform(instantiate(transform, memory=self.memory))
 
         # Sampler
 

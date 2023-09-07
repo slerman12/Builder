@@ -18,7 +18,6 @@ ema_decay: 0.99
 num_critics: 2
 num_actors: 1
 # Domains
-discrete: ???  # To be specified later, defaults per respective task
 online: true  # Shorthand for not offline
 offline: ${not:${online}}  # Defaults to true for classify tasks
 stream: false
@@ -50,8 +49,7 @@ test_dataset:
   Transform: null
   transform:
     _target_: ${test_dataset.Transform}
-suite: ???  # To be specified later, defaults per respective task
-task_name: ???  # To be specified later, defaults per respective task
+task_name: ${format:${task}}
 frame_stack: 3
 truncate_episode_steps: 1000
 action_repeat: 1

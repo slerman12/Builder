@@ -18,30 +18,14 @@ from minihydra import Args
 
 class Datums:
     """
-    A general-purpose environment:
+    A general-purpose environment must have a step function, reset function, obs_spec, and action_spec
 
-    Must accept: **kwargs as init arg.
-
-    Must have:
-
-    (1) a "step" function, action -> exp
-    (2) "reset" function, -> exp
-    (3) "render" function, -> image
-    (4) "episode_done" attribute
-    (5) "obs_spec" attribute which includes:
-        - "shape", "mean", "stddev", "low", "high" (the last 4 can be None)
-    (6) "action-spec" attribute which includes:
-        - "shape", "discrete_bins" (should be None if not discrete), "low", "high", and "discrete"
-    (7) "exp" attribute containing the latest exp
-
-    Recommended: Discrete environments should have a conversion strategy for adapting continuous actions (e.g. argmax)
-
-    An "exp" (experience) is an Args consisting of "obs", "action" (prior to adapting), "reward", and "label"
-    as numpy arrays with batch dim or None. "reward" is an exception: should be numpy array, can be empty/scalar/batch.
+    The step and reset functions output "experiences"
+        i.e. dicts containing datums like "obs", "reward", 'label", "done"
 
     ---
 
-    Extended to accept a "Dataset=" config arg, which instantiates a Dataset. Datasets must:
+    Datasets must:
     - extend Pytorch Datasets
     - output (obs, label) pairs
 
@@ -49,14 +33,9 @@ class Datums:
     - include a "classes" attribute that lists the different class names or classes
 
     The "step" function has a no-op default action (action=None) to allow for Offline-mode streaming.
-
-    An "evaluate_episodes" attribute divides evaluation across batches since batch=episode in this environment.
-
     """
     def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False, batch_size=8,
                  num_workers=1, low=None, high=None, standardize=False, norm=False, device='cpu', **kwargs):
-        self.episode_done = False
-
         if not train:
             # Inherit from test_dataset
             if test_dataset._target_ is not None:
@@ -122,7 +101,7 @@ class Datums:
         # Adapt to discrete!  # Note: storing argmax
         self.exp.action = self.adapt_to_discrete(action) if self.discrete else action
 
-        self.exp.done = self.episode_done = True
+        self.exp.done = True
 
         return self.exp
 
@@ -134,8 +113,6 @@ class Datums:
         batch_size = obs.shape[0]
 
         obs.shape = (batch_size, *self.obs_spec['shape'])
-
-        self.episode_done = False
 
         # Create experience
         exp = {'obs': obs, 'label': label, 'done': False}
@@ -179,7 +156,7 @@ class Datums:
         return np.round((action - low) / (high - low) * (discrete_bins - 1)) / (discrete_bins - 1) * (high - low) + low
 
 
-# Mean of empty reward should be NaN, catch acceptable usage warning
+# Mean of empty reward should be NaN, catch acceptable usage warning  TODO delete
 warnings.filterwarnings("ignore", message='.*invalid value encountered in scalar divide')
 warnings.filterwarnings("ignore", message='invalid value encountered in double_scalars')
 warnings.filterwarnings("ignore", message='Mean of empty slice')
