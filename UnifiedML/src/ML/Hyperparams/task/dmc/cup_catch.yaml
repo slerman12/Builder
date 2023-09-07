@@ -1,5 +1,5 @@
 Env: World.Environments.DMC.DMC
-suite: dmc
+suite_name: dmc
 env:
     task: cup_catch
 task_name: cup_catch

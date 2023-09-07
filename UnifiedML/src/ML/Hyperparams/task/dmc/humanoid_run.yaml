@@ -1,5 +1,5 @@
 Env: World.Environments.DMC.DMC
-suite: dmc
+suite_name: dmc
 env:
     task: humanoid_run
 task_name: humanoid_run

@@ -1,5 +1,5 @@
 Env: World.Environments.DMC.DMC
-suite: dmc
+suite_name: dmc
 env:
     task: quadruped_run
 task_name: quadruped_run

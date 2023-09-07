@@ -1,5 +1,5 @@
 Env: World.Environments.DMC.DMC
-suite: dmc
+suite_name: dmc
 env:
     task: cartpole_swingup_sparse
 task_name: cartpole_swingup_sparse

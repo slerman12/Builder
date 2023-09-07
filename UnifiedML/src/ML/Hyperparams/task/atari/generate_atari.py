@@ -36,7 +36,7 @@ if __name__ == '__main__':
     for task in atari_tasks:
         f = open(f"./{task.lower()}.yaml", "w")
         f.write(f"""Env: World.Environments.Atari.Atari
-suite: atari
+suite_name: atari
 task_name: {task}
 env:
     game: {task}

@@ -1,5 +1,4 @@
 Env: Datasets.Suites.SuperMario.SuperMario
-suite: SuperMario
 task_name: Mario
 discrete: true
 action_repeat: 4

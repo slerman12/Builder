@@ -1,9 +1,7 @@
 Env: World.Environments.DMC.DMC
-suite: dmc  # TODO
 env:
     task: cheetah_run
 task_name: cheetah_run
-discrete: false
 action_repeat: 2
 frame_stack: 3
 nstep: 3

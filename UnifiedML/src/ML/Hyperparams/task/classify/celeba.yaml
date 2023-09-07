@@ -13,7 +13,7 @@ dataset:
     Transform: transforms.Compose([transforms.Resize(64),transforms.CenterCrop(64)])
 logger:
     log_actions: ${not:${generate}}
-suite: classify
+suite_name: classify
 task_name: CelebA
 discrete: true
 train_steps: 200000

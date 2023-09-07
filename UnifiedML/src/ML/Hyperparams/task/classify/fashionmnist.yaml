@@ -13,7 +13,7 @@ dataset:
     Transform: null
 logger:
     log_actions: ${not:${generate}}
-suite: classify
+suite_name: classify
 task_name: FashionMNIST
 discrete: true
 train_steps: 200000

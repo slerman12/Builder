@@ -3,14 +3,14 @@ env:
   dataset: ${dataset}
   test_dataset: ${test_dataset}
   low: 0
-  high: 1
+  high: 1  # TODO
   batch_size: ${batch_size}
   num_workers: ${num_workers}
 dataset:
   Transform: null
 logger:
   log_actions: ${not:${generate}}
-suite: supervised
+suite_name: supervised
 task_name: ${format:${dataset._target_}}
 train_steps: 200000
 stddev_schedule: 'linear(1.0,0.1,100000)'

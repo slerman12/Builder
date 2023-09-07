@@ -20,8 +20,8 @@ def main(args):
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
     args.agent.obs_spec, args.agent.action_spec = generalize.obs_spec, generalize.action_spec
-    args.update(discrete=args.get('discrete', generalize.action_spec.discrete),
-                suite_name=args.get('suite_name', type(generalize.env).__name__))  # TODO rename suite
+    args.discrete = args.get('discrete', generalize.action_spec.discrete)
+    args.suite_name = args.get('suite_name', type(generalize.env).__name__)
     interpolate(args)  # Update args
 
     # Experience replay

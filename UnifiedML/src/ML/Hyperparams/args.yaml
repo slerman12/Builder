@@ -183,7 +183,7 @@ replay:
 
 logger:
   _target_: Benchmarking.Logger.Logger
-  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${suite}/
+  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${suite_name}/
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}

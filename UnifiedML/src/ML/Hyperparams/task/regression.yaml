@@ -1,6 +1,5 @@
 task: supervised
-suite: regression
-discrete: false
+suite_name: regression
 
 dataset:
   classify: false

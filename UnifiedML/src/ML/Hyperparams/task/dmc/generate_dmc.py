@@ -15,7 +15,7 @@ if __name__ == '__main__':
     for task in easy + medium + hard:
         f = open(f"./{task.lower()}.yaml", "w")
         f.write(fr"""Env: World.Environments.DMC.DMC
-suite: dmc
+suite_name: dmc
 env:
     task: {task}
 task_name: {task}

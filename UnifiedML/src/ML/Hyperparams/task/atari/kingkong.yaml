@@ -1,5 +1,5 @@
 Env: World.Environments.Atari.Atari
-suite: atari
+suite_name: atari
 task_name: KingKong
 env:
     game: KingKong

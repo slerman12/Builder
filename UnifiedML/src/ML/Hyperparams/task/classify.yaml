@@ -1,5 +1,5 @@
 task: supervised
-suite: classify
+suite_name: classify
 discrete: true
 
 metric:

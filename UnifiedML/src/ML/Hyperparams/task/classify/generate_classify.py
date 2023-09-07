@@ -34,7 +34,7 @@ dataset:
     Transform: {'transforms.Compose([transforms.Resize(64),transforms.CenterCrop(64)])' if task == 'CelebA' else 'null'}
 logger:
     log_actions: ${{not:${{generate}}}}
-suite: classify
+suite_name: classify
 task_name: {'${format:${Dataset}}' if task == 'Custom' else task}
 discrete: true
 train_steps: 200000
