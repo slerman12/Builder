@@ -10,8 +10,9 @@ import torch.nn.functional as F
 
 from minihydra import Args
 
-import Utils
 from Agents.Blocks.Architectures.Vision.GroundingDINO import GroundingDINO
+
+import Utils
 
 
 class RandomShiftsAug(nn.Module):
