@@ -19,7 +19,7 @@ class Environment:
         self.generate = generate
 
         self.device = device
-        self.transform = AdaptiveSensory(instantiate(env.pop('transform', transform), device=device))
+        self.transform = Transform(instantiate(env.pop('transform', transform), device=device))
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
         self.disable, self.on_policy = (offline or generate) and train, stream
@@ -33,8 +33,8 @@ class Environment:
             self.exp = self.env.reset()
             self.exp = self.transform(self.exp, device=self.device)
 
-            self.obs_spec = Args({**{}, **getattr(self.env, 'obs_spec', {}), **(obs_spec or {})})
-            self.action_spec = Args({**{}, **getattr(self.env, 'action_spec', {}), **(action_spec or {})})
+            self.obs_spec = Args({**getattr(self.env, 'obs_spec', {}), **(obs_spec or {})})
+            self.action_spec = Args({**getattr(self.env, 'action_spec', {}), **(action_spec or {})})
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -72,7 +72,7 @@ class Environment:
 
             # Transform
             exp.obs = torch.as_tensor(obs, device=self.device)
-            exp = self.transform(exp, device=self.device)  # TODO Allow overriding specs from console e.g. when resizing
+            exp = self.transform(exp, device=self.device)
 
             # Tally reward & logs
             self.tally_metric(exp)
@@ -91,11 +91,13 @@ class Environment:
 
             step += 1
             frame += len(action)
+            
+            done = exp.get('done', True)
 
             # Done
-            self.episode_done = self.env.episode_done or self.episode_step > self.truncate_after - 2 or self.generate
+            self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
 
-            if self.env.episode_done:
+            if done:
                 self.exp = self.env.reset()
                 self.exp = self.transform(self.exp, device=self.device)
 
@@ -176,22 +178,22 @@ class act_mode:
             [setattr(self.agent, key, model) for key, model in self.models.items()]
 
 
-# Allows module to support either full batch Args or a default sensory key
-class AdaptiveSensory:
-    def __init__(self, module, key='obs'):
+# Allows module to support either full batch or obs  TODO Merge with Transform. Move to Dataset.py
+class Transform:
+    def __init__(self, module, device=None):
         self.exp = None
         self.module = module or (lambda _: _)
-        self.key = key
+        self.device = device
 
     def __call__(self, exp, device=None):
         exp = Args(exp)
 
-        if device is not None:
-            exp[self.key] = torch.as_tensor(exp[self.key], device=device)
+        if device is not None or self.device is not None:
+            exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
 
         if self.exp is None:
             try:
-                exp[self.key] = self.module(exp[self.key])
+                exp.obs = self.module(exp.obs)
                 self.exp = False
             except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
                 exp = self.module(exp)
@@ -199,6 +201,6 @@ class AdaptiveSensory:
         elif self.exp:
             exp = self.module(exp)
         else:
-            exp[self.key] = self.module(exp[self.key])
+            exp.obs = self.module(exp.obs)
 
         return exp
