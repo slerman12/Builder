@@ -18,8 +18,7 @@ class Environment:
         self.generate = generate
 
         self.device = device
-        # TODO Debug  env.transform=torchvision.transforms.RandomResizedCrop env.transform.size=4
-        self.transform = AdaptiveSensory(instantiate(env.pop('transform', transform), device=device)) or (lambda _: _)
+        self.transform = AdaptiveSensory(instantiate(env.pop('transform', transform), device=device))
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
         self.disable, self.on_policy = (offline or generate) and train, stream
@@ -49,7 +48,7 @@ class Environment:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
         experiences = [*([self.env.step()] if self.disable and self.on_policy else [])]
-        vlog = []
+        vlogs = []
 
         self.episode_done = self.disable
 
@@ -80,7 +79,7 @@ class Environment:
             if vlog or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
                     else self.env.render()
-                vlog.append(image_frame)
+                vlogs.append(image_frame)
 
             if agent.training:
                 agent.step += 1
@@ -122,7 +121,7 @@ class Environment:
             self.episode_step = self.episode_frame = 0
             self.daybreak = sundown
 
-        return experiences, log, vlog
+        return experiences, log, vlogs
 
     def tally_metric(self, exp):
         metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
@@ -177,10 +176,12 @@ class act_mode:
 class AdaptiveSensory:
     def __init__(self, module, key='obs'):
         self.exp = None
-        self.module = module
+        self.module = module or (lambda _: _)
         self.key = key
 
     def __call__(self, exp, device=None):
+        exp = Args(exp)
+
         if device is not None:
             exp[self.key] = torch.as_tensor(exp[self.key], device=device)
 

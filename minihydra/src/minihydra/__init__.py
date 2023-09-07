@@ -15,7 +15,6 @@ import itertools
 import os.path
 import re
 import sys
-import textwrap
 import types
 from collections import OrderedDict
 from collections.abc import Mapping
@@ -435,8 +434,6 @@ def _parse(value):
 
 
 def parse(args=None):
-    arg = args
-
     # Parse portal
     global portal
     all_args = OrderedDict(**portal)  # TODO Task args should be popped from portal / task should have priority
@@ -450,26 +447,41 @@ def parse(args=None):
     for keys, value in all_args.items():
         keys = keys.split('.')
         value = _parse(value)
+        # Iterate through Arg depths up to second-to-last key
+        base_value = args
         for i, key in enumerate(keys[:-1]):
-            if key not in arg:
-                if '.'.join(keys[:i + 1]) + '=' in [k.split('=', 1) for k in sys.argv[1:]]:
-                    setattr(arg, key, Args(_target_=None))  # Parse k1= and k1.k2= as k1={_target_: None, k2: k2-value}
+            # Iterate through keys whose depths don't yet exist (but should)
+            if key not in base_value:
+                join_keys = '.'.join(keys)
+                sets_this_depth = join_keys in all_args.keys()
+                sets_next_depth = join_keys + '.' + keys[i + 1] in all_args.keys()
+                # If system args immediately sets a next depth
+                if sets_this_depth and sets_next_depth:
+                    # Treat this non-existent depth as an instantiation Arg
+                    base_value[key] = Args(_target_=None)
                 else:
-                    setattr(arg, key, Args())
-            elif not isinstance(arg[key], (Args, dict)):
-                arg[key] = Args(_target_=arg[key])  # Parse k1= and k1.k2= as k1={_target_: k1-value, k2: k2-value}
-            arg = getattr(arg, key)
+                    # Otherwise, just make sure depth exists
+                    base_value[key] = Args()
+            # If the depth exists but not as Arg
+            elif not isinstance(base_value[key], (Args, dict)):
+                base_value[key] = Args(_target_=base_value[key])  # Treat as _target_
+            # Next depth
+            base_value = base_value[key]  # An Arg
         # Special handling of instantiable args depending on presence of _target_
-        if keys[-1] in arg and isinstance(arg[keys[-1]], (Args, dict)) and '_target_' in arg[keys[-1]]:
+        key = keys[-1]
+        # If instantiation Arg pre-exists in Args for this key
+        if key in base_value and isinstance(base_value[key], (Args, dict)) and '_target_' in base_value[key]:
+            # If value itself is an Arg or dict
             if isinstance(value, (Args, dict)):
                 if '_target_' in value:
-                    setattr(arg, keys[-1], value)  # Override if _target_ in value
+                    base_value[key] = value  # Override if _target_ in value
                 else:
-                    arg[keys[-1]].update(value)  # Update if _target_ not in value
+                    base_value[key].update(value)  # Update if _target_ not in value
             else:
-                arg[keys[-1]]['_target_'] = value  # Set value as _target_
+                base_value[key]['_target_'] = value  # Set value as _target_
         else:
-            setattr(arg, keys[-1], value)
+            # Otherwise, just set value to Arg normally, not worrying about instantiation Arg _target_
+            base_value[key] = value
 
     return args
 

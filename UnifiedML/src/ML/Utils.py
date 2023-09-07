@@ -154,10 +154,10 @@ def preconstruct_agent(agent, model):
                           'the designated flag \'agent=\'. '  # Note: this does minimize features of AC2Agent
         else:
             if outs:
-                agent.recipes.actor.Pi_head = _target_  # As Pi_head when output shape
+                agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
                 agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
             else:
-                agent.recipes.encoder.Eyes = _target_  # Otherwise as Eyes
+                agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
 
             # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
             for key in {'act', 'learn'}:
