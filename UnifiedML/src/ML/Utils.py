@@ -444,7 +444,8 @@ class Transform:
         self.device = device
 
     def __call__(self, exp, device=None):
-        exp = Args(exp)
+        if not isinstance(exp, Args):
+            exp = Args(exp)
 
         if device is not None or self.device is not None:
             exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
