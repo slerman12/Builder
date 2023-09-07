@@ -436,7 +436,7 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
 
 
-# Allows module to support either full batch or obs
+# Allows module to support either full batch or obs  TODO Apply on Aug
 class Transform:
     def __init__(self, module, device=None):
         self.exp = None
