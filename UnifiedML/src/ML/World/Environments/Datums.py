@@ -61,6 +61,8 @@ class Datums:
                                   collate_fn=getattr(dataset, 'collate_fn', None),  # Useful if streaming dynamic lens
                                   worker_init_fn=worker_init_fn)
 
+        self.num_sampled_batches = 0
+
         self._batches = iter(self.batches)
 
         # Check shape of x
@@ -87,26 +89,24 @@ class Datums:
 
         # TODO Alt, load_dataset can output Args of recollected stats as well; maybe specify what to save in card replay
 
+        # Experience
         self.exp = None
 
-        # TODO No need for this; just make an epoch an episode
-        self.evaluate_episodes = len(self.batches)
-
     def step(self, action=None):
-        # No action - "no-op" - for Offline streaming
-        if action is None:
-            self.reset()  # Sample new batch
-            return self.exp  # Return new batch
+        if self.num_sampled_batches > 1:  # To account for reset()
+            self.reset()  # Re-sample
 
-        # Adapt to discrete!  # Note: storing argmax
-        self.exp.action = self.adapt_to_discrete(action) if self.discrete else action
+        self.num_sampled_batches += 1
 
-        self.exp.done = True
+        if action is not None:  # No action - "no-op" - allowed for Offline streaming
+            # Adapt to discrete!    Note: storing argmax
+            self.exp.action = self.adapt_to_discrete(action) if self.discrete else action
 
         return self.exp
 
     def reset(self):  # The reset step is never stored
-        obs, label = [np.array(b, dtype='float32') for b in self.sample()]
+        obs, label = [np.array(b, dtype='float32') for b in self.sample()]  # Sample
+
         if len(label.shape) == 1:
             label = np.expand_dims(label, 1)
 
@@ -115,26 +115,22 @@ class Datums:
         obs.shape = (batch_size, *self.obs_spec['shape'])
 
         # Create experience
-        exp = {'obs': obs, 'label': label, 'done': False}
-
-        self.exp = Args(exp)  # Experience
-
-        # if self.generate:
-        #     exp.obs = exp.label = np.array([batch_size, 0])  # Can disable for generative
+        self.exp = Args(obs=obs, label=label, done=self.num_sampled_batches == len(self))
 
         return self.exp
-
-    def render(self):
-        # Assumes image dataset
-        image = self.sample()[0] if self.exp is None else self.exp.obs
-        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last
 
     def sample(self):
         try:
             return next(self._batches)
         except StopIteration:
+            self.num_sampled_batches = 1
             self._batches = iter(self.batches)
             return next(self._batches)
+
+    def render(self):
+        # Assumes image dataset
+        image = self.sample()[0] if self.exp is None else self.exp.obs
+        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last
 
     # Arg-maxes if categorical distribution passed in  TODO Is this method needed besides rounding? Move to env
     def adapt_to_discrete(self, action):
@@ -154,6 +150,9 @@ class Datums:
 
         # Round to nearest decimal/int corresponding to discrete bins, high, and low  TODO Generalize to regression
         return np.round((action - low) / (high - low) * (discrete_bins - 1)) / (discrete_bins - 1) * (high - low) + low
+
+    def __len__(self):
+        return len(self.batches)
 
 
 # Mean of empty reward should be NaN, catch acceptable usage warning  TODO delete

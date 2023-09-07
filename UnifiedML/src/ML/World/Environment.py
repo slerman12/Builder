@@ -67,6 +67,7 @@ class Environment:
 
             # Frame-stacked obs
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
+            obs = torch.as_tensor(obs, device=self.device)
 
             # Act
             store = Args()
@@ -76,13 +77,17 @@ class Environment:
             exp = Args(action=action) if self.generate else self.env.step(action.cpu().numpy())  # Experience
 
             # Transform
-            exp = self.transform(exp, device=self.device)
+            exp = self.transform(exp)
 
             # Tally reward & logs
             self.tally_metric(exp)
 
             exp.update(**store, step=agent.step)
             experiences.append(exp)
+
+            self.exp = Args(exp)
+            if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
+                self.exp.obs = exp.obs.numpy()
 
             if vlog and hasattr(self.env, 'render') or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \

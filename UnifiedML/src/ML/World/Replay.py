@@ -100,7 +100,7 @@ class Replay:
                     self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
                     card = open_yaml(dataset + 'card.yaml')  # TODO Doesn't exist for unsaved mmap'd Online
             else:
-                batches = DataLoader(dataset, batch_size=mem_size or batch_size)
+                batches = DataLoader(dataset, batch_size=mem_size or batch_size, drop_last=True)  # TODO No drop-last but then uneven episode steps
 
                 # Add Dataset into Memory in batch-size chunks
                 capacity = sum(self.memory.capacities)
@@ -109,7 +109,7 @@ class Replay:
                         if len(self.memory) + len(data[-1]) > capacity:
                             bar.total = i
                             break
-                        self.memory.add(datums_as_batch(data))  # TODO Set done if i == len(batches) - 1
+                        self.memory.add(datums_as_batch(data, done=i == len(batches) - 1))
                         bar.update()
                     bar.refresh()
 

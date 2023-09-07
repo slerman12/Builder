@@ -440,27 +440,30 @@ MT = MultiTask()
 class Transform:
     def __init__(self, module, device=None):
         self.exp = None
-        self.module = module or (lambda _: _)  # TODO Support a sequence, maybe do the instantiation here
+        self.module = module  # TODO Support a sequence, maybe do the instantiation here
         self.device = device
 
     def __call__(self, exp, device=None):
         if not isinstance(exp, Args):
             exp = Args(exp)
 
-        if device is not None or self.device is not None:
-            exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
+        if self.module is not None:
+            if device is not None or self.device is not None:
+                exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
+            else:
+                exp.obs = torch.as_tensor(exp.obs)
 
-        if self.exp is None:
-            try:
-                exp.obs = self.module(exp.obs)
-                self.exp = False
-            except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
+            if self.exp is None:
+                try:
+                    exp.obs = self.module(exp.obs)
+                    self.exp = False
+                except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
+                    exp = self.module(exp)
+                    self.exp = True
+            elif self.exp:
                 exp = self.module(exp)
-                self.exp = True
-        elif self.exp:
-            exp = self.module(exp)
-        else:
-            exp.obs = self.module(exp.obs)
+            else:
+                exp.obs = self.module(exp.obs)
 
         return exp
 

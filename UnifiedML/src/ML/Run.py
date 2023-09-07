@@ -21,7 +21,8 @@ def main(args):
 
     args.agent.obs_spec, args.agent.action_spec = generalize.obs_spec, generalize.action_spec
     args.discrete = args.get('discrete', generalize.action_spec.discrete)
-    args.suite_name = args.get('suite_name', type(generalize.env).__name__)
+    args.suite_name = args.get('suite_name', type(generalize.env).__name__)  # TODO Maybe args.recursive_update + interp
+
     interpolate(args)  # Update args
 
     # Experience replay
