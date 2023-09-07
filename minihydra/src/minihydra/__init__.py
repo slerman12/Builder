@@ -424,7 +424,9 @@ def read(source, recurse=False, save_task_path=False):
 
 def _parse(value):
     if isinstance(value, str):
-        if re.compile(r'^\[.*\]$').match(value) or re.compile(r'^\{.*\}$').match(value) or \
+        if re.compile(r'^\[.*\]$').match(value) or \
+                re.compile(r'^\(.*\)$').match(value) or \
+                re.compile(r'^\{.*\}$').match(value) or \
                 re.compile(r'^-?[0-9]*.?[0-9]+(e-?[0-9]*.?[0-9]+)?$').match(value):
             value = ast.literal_eval(value)  # TODO Custom with no quotes required for strings
         elif isinstance(value, str) and value.lower() in ['true', 'false', 'null', 'inf']:

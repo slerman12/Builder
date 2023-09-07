@@ -12,7 +12,8 @@ from minihydra import instantiate, get_module, valid_path, Args
 
 class Environment:
     def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
-                 stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu'):
+                 stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu',
+                 obs_spec=None, action_spec=None):
         self.RL = RL
         self.offline = offline
         self.generate = generate
@@ -31,6 +32,9 @@ class Environment:
             # Experience
             self.exp = self.env.reset()
             self.exp = self.transform(self.exp, device=self.device)
+
+            self.obs_spec = Args({**{}, **getattr(self.env, 'obs_spec', {}), **(obs_spec or {})})
+            self.action_spec = Args({**{}, **getattr(self.env, 'action_spec', {}), **(action_spec or {})})
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 

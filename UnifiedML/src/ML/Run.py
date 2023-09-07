@@ -19,10 +19,11 @@ def main(args):
     env = instantiate(args.environment) if args.train_steps else None
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
-    for arg in ('obs_spec', 'action_spec', 'evaluate_episodes'):
-        if hasattr(generalize.env, arg):
-            setattr(args, arg, getattr(generalize.env, arg))
-    interpolate(args)  # Update args
+    args.agent.obs_spec, args.agent.action_spec = generalize.obs_spec, generalize.action_spec
+    # args.suite_name
+
+    # Update args
+    interpolate(args)
 
     # Experience replay
     replay = instantiate(args.replay) if args.train_steps else args.replay

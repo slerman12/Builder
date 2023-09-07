@@ -2,8 +2,8 @@
 task: classify/mnist
 
 # Agent
-obs_spec: ???  # To be specified later
-action_spec: ???  # To be specified later
+obs_spec: {}
+action_spec: {}
 num_actions: 1
 standardize: true
 norm: 0.5  # Note: ignored / mutually exclusive if standardize
@@ -117,11 +117,13 @@ environment:
   seed: ${seed}
   transform: ${env.transform}
   device: ${device}
+  obs_spec: ${obs_spec}
+  action_spec: ${action_spec}
 
 agent:
   _target_: ${Agent}
-  obs_spec: ${obs_spec}
-  action_spec: ${action_spec}
+  obs_spec: ???
+  action_spec: ???
   num_actions: ${num_actions}
   trunk_dim: ${trunk_dim}
   hidden_dim: ${hidden_dim}
@@ -178,8 +180,8 @@ replay:
   agent_specs:
     norm: ${norm}
     standardize: ${standardize}
-    obs_spec: ${obs_spec}
-    action_spec: ${action_spec}
+    obs_spec: ${agent.obs_spec}
+    action_spec: ${agent.action_spec}
 
 logger:
   _target_: Benchmarking.Logger.Logger
