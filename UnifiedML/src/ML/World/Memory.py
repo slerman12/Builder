@@ -28,10 +28,11 @@ from minihydra import Args
 
 class Memory:
     def __init__(self, save_path=None, num_workers=1, gpu_capacity=0, pinned_capacity=0,
-                 tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf):
+                 tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf, index='step'):
         self.id = id(self)
         self.worker = 0
         self.main_worker = os.getpid()
+        self.index = index
 
         self.capacities = [gpu_capacity, pinned_capacity, tensor_ram_capacity, ram_capacity, hd_capacity]
 
@@ -40,7 +41,9 @@ class Memory:
         manager = mp.Manager()
 
         self.batches = manager.list()
+
         self.episode_trace = []
+        self.steps = []
         self.episodes = []
 
         # Rewrite tape
@@ -72,6 +75,10 @@ class Memory:
 
             if not self.episode_trace:
                 self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
+
+            if self.index == 'step':
+                for i in range(batch_size):
+                    self.steps.append(Experience(self.episode_trace, len(self.episode_trace), i))
 
             self.episode_trace.append(batch)
 
@@ -166,14 +173,17 @@ class Memory:
                 trace = self.trace(i)
                 yield trace
 
+    def step(self, ind):
+        return self.steps[ind]
+
     def episode(self, ind):
         return self.episodes[ind]
 
     def __getitem__(self, ind):
-        return self.episode(ind)
+        return self.episode(ind) if self.index == 'episode' else self.step(ind)
 
     def __len__(self):
-        return len(self.episodes)
+        return len(self.episodes) if self.index == 'episode' else len(self.steps)
 
     def cleanup(self):
         for batch in self.batches:
@@ -293,6 +303,9 @@ class Episode:
             return [self.experience(s) for s in range(len(self))[step]]  # Slicing
         return self.experience(step)
 
+    def __contains__(self, step):
+        return step < len(self.episode_trace) and self.episode_trace[step].size() > self.ind
+
     def __len__(self):
         return len(self.episode_trace)
 
@@ -308,6 +321,16 @@ class Experience:
         self.episode_trace = episode_trace
         self.step = step
         self.ind = ind
+
+    def __getstate__(self):
+        return self.episode_trace, self.step, self.ind
+
+    def __setstate__(self, state):
+        self.episode_trace, self.step, self.ind = state
+
+    @property
+    def episode(self):
+        return Episode(self.episode_trace, self.ind)
 
     def datum(self, key):
         return self.episode_trace[self.step][key][self.ind]

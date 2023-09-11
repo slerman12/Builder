@@ -31,7 +31,7 @@ class Replay:
                  save=False, mem_size=None,
                  partition_workers=False, with_replacement=False, done_episodes_only=None, shuffle=True,
                  fetch_per=None, prefetch_factor=3, pin_memory=False, pin_device_memory=False, rewrite_shape=None,
-                 dataset=None, transform=None, frame_stack=1, nstep=None, discount=1, agent_specs=None):
+                 dataset=None, transform=None, index='step', frame_stack=1, nstep=None, discount=1, agent_specs=None):
 
         self.device = device
         self.offline = offline
@@ -59,7 +59,8 @@ class Replay:
                              pinned_capacity=pinned_capacity,
                              tensor_ram_capacity=tensor_ram_capacity,
                              ram_capacity=ram_capacity,
-                             hd_capacity=hd_capacity)
+                             hd_capacity=hd_capacity,
+                             index=index)
 
         self.rewrite_shape = rewrite_shape  # For rewritable memory
 
@@ -100,7 +101,7 @@ class Replay:
                     self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
                     card = open_yaml(dataset + 'card.yaml')  # TODO Doesn't exist for unsaved mmap'd Online
             else:
-                batches = DataLoader(dataset, batch_size=mem_size or batch_size, drop_last=True)  # TODO No drop-last but then uneven episode steps
+                batches = DataLoader(dataset, batch_size=mem_size or batch_size)
 
                 # Add Dataset into Memory in batch-size chunks
                 capacity = sum(self.memory.capacities)
@@ -147,8 +148,9 @@ class Replay:
 
         # This is crucial for Online RL for some reason. Defaults True for Online, otherwise defaults False Offline
         # Perhaps because in-progress episode is shorter, thus sampling it disproportionately and over-fitting
-        #   TODO Per-step index
-        done_episodes_only = done_episodes_only is None and not offline or done_episodes_only or False
+
+        done_episodes_only = index == 'episode' and (done_episodes_only is None and not offline
+                                                     or done_episodes_only or False)
 
         sampler = Sampler(data_source=self.memory,
                           shuffle=shuffle,
@@ -171,6 +173,7 @@ class Replay:
                                done_episodes_only=done_episodes_only,
                                begin_flag=self.begin_flag,
                                transform=transform,
+                               index=index,
                                frame_stack=frame_stack or 1,
                                nstep=self.nstep,
                                trajectory_flag=self.trajectory_flag,
@@ -291,7 +294,7 @@ class Replay:
 
 
 class Worker:
-    def __init__(self, memory, fetch_per, sampler, partition_workers, done_episodes_only, begin_flag, transform,
+    def __init__(self, memory, fetch_per, sampler, partition_workers, done_episodes_only, begin_flag, transform, index,
                  frame_stack, nstep, trajectory_flag, discount):
         self.memory = memory
         self.fetch_per = fetch_per  # TODO Default: batch size // num workers
@@ -303,6 +306,8 @@ class Worker:
         self.samples_since_last_fetch = fetch_per
 
         self.transform = transform
+
+        self.index = index
 
         self.frame_stack = frame_stack
         self.nstep = nstep
@@ -350,17 +355,26 @@ class Worker:
                 index = (index + 1) % (cap + 1)
 
         # Retrieve from Memory
-        episode = self.memory[index]
+        if self.index == 'step':
+            experience = self.memory[index]
+            episode = experience.episode
+            step = experience.step
+        else:
+            episode = self.memory[index]
+            step = 0
 
+        # TODO Since not randomly sampling for 'step' need to check relative to step!
         if dynamic:
             nstep = bool(self.nstep)  # Allows dynamic nstep if necessary
         else:
             nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
 
-        if len(episode) < nstep + 1:  # Try to make sure at least one nstep is present if nstep
+        if len(episode) - step < nstep + 1:  # Try to make sure at least one nstep is present if nstep
             return self.sample(dynamic=True)
 
-        step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
+        if self.index == 'episode':
+            step = random.randint(0, len(episode) - 1 - nstep)  # Randomly sample experience in episode
+
         experience = Args(episode[step])
 
         # Frame stack / N-step

@@ -172,6 +172,7 @@ replay:
   pin_device_memory: false
   dataset: ${dataset}
   transform: ${transform}
+  index: step
   frame_stack: ${frame_stack}
   nstep: ${nstep}
   discount: ${discount}

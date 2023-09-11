@@ -14,9 +14,9 @@ from minihydra import instantiate, get_module, valid_path, Args
 
 
 class Environment:
-    def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True,
-                 offline=False, stream=True, generate=False, ema=False, train=True, seed=0,
-                 transform=None, device='cpu', obs_spec=None, action_spec=None):
+    def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
+                 stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu',
+                 obs_spec=None, action_spec=None):
         self.RL = RL
         self.offline = offline
         self.generate = generate
@@ -33,8 +33,8 @@ class Environment:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
             # Experience
-            self.exp = self.env.reset()
-            self.exp = self.transform(self.exp, device=self.device)
+            exp = self.env.reset()
+            self.exp = self.transform(exp, device=self.device)
 
             self.obs_spec = Args({**{'mean': None, 'stddev': None, 'low': None, 'high': None},
                                   **getattr(self.env, 'obs_spec', {}), **(obs_spec or {})})
@@ -157,9 +157,7 @@ class Environment:
                                   for key, m in metric.items()})
 
 
-# Temporarily switches on eval() mode for specified blocks; then resets them.
-# Enters and exits Pytorch inference mode
-# Enables / disables EMA
+# Toggles / resets eval, inference, and EMA modes
 class act_mode:
     def __init__(self, agent, ema=False):
         self.agent = agent
@@ -170,10 +168,10 @@ class act_mode:
         self.ema = ema
 
     def __enter__(self):
-        # Disables things like dropout, etc.
+        # Disables randomness, dropout, etc.
         self.mode_model = [(model.training, model.eval()) for model in self.models.values()]
 
-        self.inference.__enter__()
+        self.inference.__enter__()  # Disables gradients
 
         # Exponential moving average (EMA)
         if self.ema:
