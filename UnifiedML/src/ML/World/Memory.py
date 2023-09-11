@@ -74,8 +74,10 @@ class Memory:
             batch_size = batch.size()
 
             if not self.episode_trace:
+                # TODO Technically not needed if index='step'
                 self.episodes.extend([Episode(self.episode_trace, i) for i in range(batch_size)])
 
+            # TODO enforce_capacity
             if self.index == 'step':
                 for i in range(batch_size):
                     self.steps.append(Experience(self.episode_trace, len(self.episode_trace), i))

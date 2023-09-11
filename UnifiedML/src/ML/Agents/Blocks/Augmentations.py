@@ -10,10 +10,6 @@ import torch.nn.functional as F
 
 from minihydra import Args
 
-from Agents.Blocks.Architectures.Vision.GroundingDINO import GroundingDINO
-
-import Utils
-
 
 class RandomShiftsAug(nn.Module):
     def __init__(self, pad=4):
@@ -94,22 +90,3 @@ class IntensityAug(nn.Module):
             return batch
 
         return obs
-
-
-class AutoLabel(nn.Module):
-    def __init__(self, caption='little robot dog'):
-        super().__init__()
-
-        # SotA object detection foundation model
-        self.GroundingDINO = GroundingDINO(caption)
-
-    def forward(self, batch):
-        boxes, logits, phrases = self.GroundingDINO(batch.obs)
-
-        indices = logits.argmax(-1)
-        box = Utils.gather(boxes, indices)  # Highest proba bounding-box
-
-        # Extract label
-        batch.label = box
-
-        return batch

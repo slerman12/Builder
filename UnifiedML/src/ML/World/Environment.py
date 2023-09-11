@@ -4,13 +4,13 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import time
 import warnings
+from functools import cached_property
 from math import inf
 
 import torch
+from minihydra import instantiate, get_module, valid_path, Args
 
 from Utils import Transform
-
-from minihydra import instantiate, get_module, valid_path, Args
 
 
 class Environment:
@@ -36,17 +36,16 @@ class Environment:
             exp = self.env.reset()
             self.exp = self.transform(exp, device=self.device)
 
-            self.obs_spec = Args({**{'mean': None, 'stddev': None, 'low': None, 'high': None},
-                                  **getattr(self.env, 'obs_spec', {}), **(obs_spec or {})})
-            self.action_spec = Args({**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
-                                     **getattr(self.env, 'action_spec', {}), **(action_spec or {})})
+            # Update
+            self.obs_spec.update(obs_spec)
+            self.action_spec.update(action_spec)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
-        self.episode_sums = {}
-
+        self.episode_adds = {}
         self.metric = {key: get_module(metric) if valid_path(metric) else metric
                        for key, metric in env.metric.items() if metric is not None}
+
         self.ema = ema  # Can use an exponential moving average model
 
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
@@ -100,7 +99,7 @@ class Environment:
 
             step += 1
             frame += len(action)
-            
+
             done = exp.get('done', True)
 
             # Done
@@ -127,16 +126,38 @@ class Environment:
                'step': agent.step,
                'frame': agent.frame * self.action_repeat,
                'epoch' if self.offline or self.generate else 'episode':
-                   (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_sums,
+                   (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_adds,
                'fps': frames / (sundown - self.daybreak)} if not self.disable \
             else None
 
         if self.episode_done:
-            self.episode_sums = {}
+            self.episode_adds = {}
             self.episode_step = self.episode_frame = 0
             self.daybreak = sundown
 
         return experiences, log, vlogs
+
+    @cached_property
+    def obs_spec(self):
+        return Args({'shape': self.exp.obs.shape if 'obs' in self.exp else (),
+                     **{'mean': None, 'stddev': None, 'low': None, 'high': None},
+                     **getattr(self.env, 'obs_spec', {})})
+
+    @cached_property
+    def action_spec(self):
+        spec = {**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
+                **getattr(self.env, 'action_spec', {})}
+
+        if 'shape' not in spec:
+            # Infer action shape from label or action
+            if 'label' in self.exp:
+                spec.shape = (len(self.exp.label)) if isinstance(self.exp.label, (tuple, set, list)) \
+                    else (1,) if not hasattr(self.exp.label, 'shape') \
+                    else len(self.exp.label.shape[..., -1]) if spec['discrete'] else self.exp.label.shape[..., -1]
+            elif 'action' in self.exp:
+                spec.shape = self.exp.action.shape
+
+        return Args(spec)
 
     def tally_metric(self, exp):
         metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
@@ -153,7 +174,7 @@ class Environment:
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
-        self.episode_sums.update({key: self.episode_sums[key] + m if key in self.episode_sums else m
+        self.episode_adds.update({key: self.episode_adds[key] + m if key in self.episode_adds else m
                                   for key, m in metric.items()})
 
 
