@@ -123,21 +123,20 @@ class Environment:
         if self.episode_done:
             self.last_episode_len = self.episode_step
 
-        log = None
+        # Log stats
+        sundown = time.time()
+        frames = self.episode_frame * self.action_repeat
+
+        log = {'time': sundown - agent.birthday,
+               'step': agent.step,
+               'frame': agent.frame * self.action_repeat,
+               'epoch' if self.offline or self.generate else 'episode':
+                   (self.offline or self.generate) and agent.epoch or agent.episode,
+               'fps': frames / (sundown - self.daybreak)} if not self.disable \
+            else None
 
         if self.episode_done:
-            sundown = time.time()
-            frames = self.episode_frame * self.action_repeat
-
-            log = self.tabulate_metric()
-
-            log = {'time': sundown - agent.birthday,
-                   'step': agent.step,
-                   'frame': agent.frame * self.action_repeat,
-                   'epoch' if self.offline or self.generate else 'episode':
-                       (self.offline or self.generate) and agent.epoch or agent.episode, **log,
-                   'fps': frames / (sundown - self.daybreak)} if not self.disable \
-                else None
+            log.update(self.tabulate_metric())
 
             self.episode_adds = {}
             self.episode_step = self.episode_frame = 0
