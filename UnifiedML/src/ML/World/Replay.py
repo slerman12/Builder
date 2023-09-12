@@ -149,6 +149,7 @@ class Replay:
         # This is crucial for Online RL for some reason. Defaults True for Online, otherwise defaults False Offline
         # Perhaps because in-progress episode is shorter, thus sampling it disproportionately and over-fitting
 
+        # TODO support index == 'step'
         done_episodes_only = index == 'episode' and (done_episodes_only is None and not offline
                                                      or done_episodes_only or False)
 

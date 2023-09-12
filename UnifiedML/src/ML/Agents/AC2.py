@@ -24,7 +24,7 @@ from Agents.Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 class AC2Agent(torch.nn.Module):
     """Actor Critic Creator (AC2)
-    RL, classification, generative modeling; online, offline; self-supervised learning; critic/actor ensembles;
+    RL, classification, regression, generative mode; online, offline; self-supervised learning; critic/actor ensembles;
     action space conversions; optimization schedules; EMA"""
     def __init__(self,
                  obs_spec, action_spec, num_actions, trunk_dim, hidden_dim, standardize, norm, recipes,  # Architecture
@@ -37,7 +37,7 @@ class AC2Agent(torch.nn.Module):
 
         self.discrete = discrete and not generate  # Discrete & Continuous supported!
         self.supervise = supervise  # And classification...
-        self.classify = action_spec.discrete
+        self.classify = action_spec.discrete  # Regression
         self.RL = RL or generate  # RL,
         self.generate = generate  # And generative modeling, too
 
@@ -176,7 +176,7 @@ class AC2Agent(torch.nn.Module):
 
         instruct = not self.generate and 'label' in batch
 
-        # Classification
+        # Classification & regression
         if (self.supervise or replay.offline) and instruct:
             # "Via Example" / "Parental Support" / "School"
 
@@ -184,7 +184,7 @@ class AC2Agent(torch.nn.Module):
             Pi = self.actor(batch.obs)
             y_predicted = (Pi.All_Qs if self.discrete else Pi.mean).mean(1)  # Average over ensembles
 
-            # Cross entropy error
+            # Cross entropy error: classification
             if self.classify:
                 batch.label = batch.label.view(len(y_predicted), -1)
 
@@ -199,7 +199,7 @@ class AC2Agent(torch.nn.Module):
 
                     if self.log:
                         log.update({'accuracy': accuracy})
-            # Mean-squared error - regression
+            # Mean-squared error: regression
             else:
                 error = mse_loss(y_predicted, batch.label,
                                  reduction='none' if self.RL and replay.offline else 'mean')

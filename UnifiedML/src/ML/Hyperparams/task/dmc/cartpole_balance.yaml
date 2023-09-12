@@ -1,15 +1,8 @@
-Env: World.Environments.DMC.DMC
-suite_name: dmc
-env:
-    task: cartpole_balance
-task_name: cartpole_balance
-discrete: false
-action_repeat: 2
-frame_stack: 3
+imports:
+    - dmc
 nstep: 3
 train_steps: 500000
 stddev_schedule: 'linear(1.0,0.1,100000)'
-hd_capacity: 0
 
 
 

@@ -1,14 +1,6 @@
 import numpy as np
 
 
-def accuracy(exp):
-    return exp.label == exp.action
-
-
-def mse(exp):
-    return (exp.label - exp.action) ** 2
-
-
 class Accuracy:
     # An experience is a set of batch data that follows an action
     def add(self, exp):

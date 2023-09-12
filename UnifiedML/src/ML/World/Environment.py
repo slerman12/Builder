@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import time
 import warnings
+from copy import deepcopy
 from functools import cached_property
 from math import inf
 
@@ -37,6 +38,7 @@ class Environment:
 
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
+            # TODO Inherit task_name?
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -228,6 +230,14 @@ class act_mode:
         self.agent = agent
 
         self.models = {key: getattr(agent, key) for key in {'encoder', 'actor'} if hasattr(agent, key)}
+
+        # TODO Assuming blocks. Eval should be entered agent-wise ?
+        # if ema and not self.models:
+        #     # TODO ema_decay each time learn called
+        #     # TODO ema_begin_step (no point early in training in supervised setting - RL act/eval-ema matters)
+        #     self.ema = agent.__dict__.setdefault('_ema_', deepcopy(agent).requires_grad_(False).eval()).act
+        #     self.models['act'] = self
+
         self.inference = torch.inference_mode()
 
         self.ema = ema
@@ -248,3 +258,6 @@ class act_mode:
 
         if self.ema:
             [setattr(self.agent, key, model) for key, model in self.models.items()]
+
+    # def __call__(self, obs, store):
+    #     return self.agent.act(obs, store)

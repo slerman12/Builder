@@ -1,3 +1,8 @@
+Env: World.Environments.DMC.DMC
+env:
+    task: cheetah_run
+task_name: ${env.task}
+discrete: false
 action_repeat: 2
 frame_stack: 3
 nstep: 3

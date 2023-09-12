@@ -14,7 +14,8 @@ if __name__ == '__main__':
     out = ""
     for task in easy + medium + hard:
         f = open(f"./{task.lower()}.yaml", "w")
-        f.write(fr"""Env: World.Environments.DMC.DMC
+
+        write = fr"""Env: World.Environments.DMC.DMC
 suite_name: dmc
 env:
     task: {task}
@@ -30,7 +31,17 @@ hd_capacity: 0
 {'trunk_dim: 100' if 'humanoid' in task else ''}
 {'batch_size: 512' if 'walker' in task else ''}
 """
-                )
+        write = fr"""imports:
+    - dmc
+nstep: {1 if 'walker' in task else 3}
+train_steps: {500000 if task in easy else 1500000 if task in medium else 15000000}
+stddev_schedule: 'linear(1.0,0.1,{100000 if task in easy else 500000 if task in medium else 2000000})'
+{'lr: 8e-5' if 'humanoid' in task else ''}
+{'trunk_dim: 100' if 'humanoid' in task else ''}
+{'batch_size: 512' if 'walker' in task else ''}
+"""
+
+        f.write(write)
         f.close()
         out += ' "' + task.lower() + '"'
     print(out)

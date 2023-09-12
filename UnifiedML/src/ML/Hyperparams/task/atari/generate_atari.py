@@ -35,7 +35,8 @@ if __name__ == '__main__':
     out = ""
     for task in atari_tasks:
         f = open(f"./{task.lower()}.yaml", "w")
-        f.write(f"""Env: World.Environments.Atari.Atari
+
+        write = f"""Env: World.Environments.Atari.Atari
 suite_name: atari
 task_name: {task}
 env:
@@ -55,7 +56,13 @@ aug:
     _targets_: [RandomShiftsAug, IntensityAug]
     pad: 4
     noise: 0.05
-""")
+"""
+        write = f"""imports:
+    - atari
+env:
+    game: {task}"""
+
+        f.write(write)
         f.close()
         out += ' "' + task.lower() + '"'
     print(out)

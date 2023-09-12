@@ -8,18 +8,21 @@ names = [
     'Caltech101', 'Caltech256', 'CelebA', 'WIDERFace', 'SBDataset',
     'USPS', 'Kinetics400', "Kinetics", 'HMDB51', 'UCF101',
     'Places365', 'Kitti', "INaturalist", "LFWPeople", "LFWPairs",
-    'TinyImageNet', 'Custom'
+    'TinyImageNet',
+    # 'Custom'
 ]
 
-paths = ['null' if task == 'Custom'
-         else f'World.Datasets.{task}.{task}' if task not in torchvision.datasets.__all__
-         else f'torchvision.datasets.{task}' for task in names]
+paths = [
+    # 'null' if task == 'Custom' else
+    f'World.Datasets.{task}.{task}' if task not in torchvision.datasets.__all__
+    else f'torchvision.datasets.{task}' for task in names]
 
 if __name__ == '__main__':
     out = ""
     for task, dataset_path in zip(names, paths):
         f = open(f"./{task.lower()}.yaml", "w")
-        f.write(fr"""Env: World.Environments.Datums.Datums
+
+        write = fr"""Env: World.Environments.Datums.Datums
 Dataset: {dataset_path}
 metric: 
     accuracy: World.Metrics.Accuracy
@@ -51,7 +54,19 @@ rand_steps: 0
 log_per_episodes: 300
 RL: false
 online: false  # Same as offline: true
-""")
+"""
+
+        write = fr"""imports:
+    - classify
+Dataset: {dataset_path}
+env:
+    low: {'null' if task == 'Custom' else 0}
+    high: {'null' if task == 'Custom' else 1}
+dataset:
+    Transform: {'transforms.Compose([transforms.Resize(64),transforms.CenterCrop(64)])' if task == 'CelebA' else 'null'}
+"""
+
+        f.write(write)
         f.close()
         out += ' "' + task.lower() + '"'
     print(out)

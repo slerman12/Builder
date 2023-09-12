@@ -425,10 +425,14 @@ class Mem:
     @contextlib.contextmanager
     def mem(self):
         with DelayedKeyboardInterrupt():
-            if self.mode == 'shared':  # TODO Same for mmap! mmap.close(); don't store !!!
+            if self.mode == 'shared':
                 shm = SharedMemory(name=self.name)
                 yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
                 shm.close()
+            # elif self.mode == 'mmap':  # TODO Same for mmap! mmap.close(); don't store !!!
+            #     mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape)
+            #     yield mem
+            #     # mem._mmap.close().close()  # TODO Maybe no need - garbage collected anyway
             else:
                 yield self._mem
 
@@ -438,12 +442,12 @@ class Mem:
 
     def __setstate__(self, state):
         self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, mem = state
-        self._mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape) if self.mode == 'mmap' else mem
+        self._mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape) if self.mode == 'mmap' else mem  # TODO No
 
     def __getitem__(self, ind):
         with self.mem() as mem:
             mem = mem[ind] if self.shape else mem
-            if self.mode == 'shared':
+            if self.mode == 'shared':  # TODO If 'mmap' for all these clones as well
                 mem = torch.as_tensor(mem).detach().clone()  # shm gets closed if shared, so make copy
             return mem
 
@@ -569,7 +573,7 @@ class Mem:
 
             with self.mem() as mem:
                 if mem is None:
-                    self._mem = _mem
+                    self._mem = _mem  # TODO Set None. At end, close _mem - (if not garbage collected anyway)
                     self.mode = 'mmap'
                     self.shape = eval(shape)
                     self.dtype = self._mem.dtype

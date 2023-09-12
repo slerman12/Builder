@@ -2,8 +2,8 @@ Env: World.Environments.Datums.Datums
 env:
   dataset: ${dataset}
   test_dataset: ${test_dataset}
-  low: 0
-  high: 1  # TODO
+  low: null
+  high: null
   batch_size: ${batch_size}
   num_workers: ${num_workers}
 dataset:

@@ -1,4 +1,5 @@
-task: supervised
+imports:
+  - supervised
 suite_name: regression
 
 dataset:
