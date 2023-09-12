@@ -78,22 +78,26 @@ class Environment:
 
             prev = {}
             if isinstance(exp, tuple):
-                prev, exp = exp
+                prev, exp = exp  # TODO Maybe separated prev only needed for metric
 
             self.exp.update(action=action, step=agent.step)
             self.exp.update(prev)
-            self.exp.update(store)
+            self.exp.update(store)  # TODO Maybe separated prev only needed for metric
 
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            if agent.training:
-                experiences.append(self.exp)
+            # if agent.training:
+            #     experiences.append(self.exp)  # TODO Replay expects prev and exp together
 
-            exp.update({key: value for key, value in self.exp.items() if key not in exp})
+            # exp.update({'prev_' + key: value for key, value in self.exp.items() if key not in exp})  # TODO -Transform
 
             # Transform
             exp = self.transform(exp)
+
+            if agent.training:
+                # TODO Replay expects prev and exp together - trying this
+                experiences.append(Args({'action': action, 'step': agent.step, **prev, **exp, **store}))
 
             self.exp = exp
             if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
@@ -112,7 +116,7 @@ class Environment:
             step += 1
             frame += len(action)
 
-            done = exp.get('done', True)
+            done = exp.get('done', True)  # TODO Datums skips last batch (self.exp doesn't get acted on) (maybe nstep controls this)
 
             # Done
             self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
