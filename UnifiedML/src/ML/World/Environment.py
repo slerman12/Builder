@@ -123,13 +123,12 @@ class Environment:
         if self.episode_done:
             self.last_episode_len = self.episode_step
 
-        # Log stats
-        sundown = time.time()
-        frames = self.episode_frame * self.action_repeat
-
         log = None
 
         if self.episode_done:
+            sundown = time.time()
+            frames = self.episode_frame * self.action_repeat
+
             log = self.tabulate_metric()
 
             log = {'time': sundown - agent.birthday,
