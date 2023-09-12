@@ -43,7 +43,7 @@ class Environment:
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
         self.episode_adds = {}
-        self.metric = {key: get_module(metric) if valid_path(metric) else metric
+        self.metric = {key: instantiate(metric) if valid_path(metric) else metric
                        for key, metric in env.metric.items() if metric is not None}
 
         self.ema = ema  # Can use an exponential moving average model
@@ -71,22 +71,26 @@ class Environment:
             # Act
             store = Args()
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store)
+                action = agent.act(obs, store).cpu().numpy()
 
-            exp = Args(action=action) if self.generate else self.env.step(action.cpu().numpy())  # Experience
+            exp = Args(action=action) if self.generate else self.env.step(action)  # Experience
+
+            prev = {}  # TODO Do this for RL
+            if isinstance(exp, tuple):
+                prev, exp = exp
 
             # Transform
             exp = self.transform(exp)
 
-            # Tally reward & logs
-            self.tally_metric(exp)
+            self.exp.update(action=action, step=agent.step, **prev, **store)
+            experiences.append(self.exp)
 
-            exp.update(**store, step=agent.step)
-            experiences.append(exp)
+            # Tally reward & logs
+            self.tally_metric(self.exp)
 
             self.exp = Args(exp)
             if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
-                self.exp.obs = exp.obs.numpy()
+                self.exp.obs = exp.obs.numpy()  # TODO What if not Numpy?
 
             if vlog and hasattr(self.env, 'render') or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
@@ -121,6 +125,8 @@ class Environment:
         # Log stats
         sundown = time.time()
         frames = self.episode_frame * self.action_repeat
+
+        self.tabulate_metric()
 
         log = {'time': sundown - agent.birthday,
                'step': agent.step,
@@ -160,22 +166,37 @@ class Environment:
         return Args(spec)
 
     def tally_metric(self, exp):
-        metric = {key: m(exp) for key, m in self.metric.items() if callable(m)}
-        if 'reward' in exp and 'reward' not in self.metric:
-            metric['reward'] = exp.reward.mean() if hasattr(exp.reward, 'mean') else exp.reward
-        metric.update({key: eval(m, None, metric) for key, m in self.metric.items() if isinstance(m, str)})
-        exp.update({key: m for key, m in metric.items() if key in exp or key == 'reward'})
+        # Add
+        self.episode_adds.update({key: self.episode_adds.get(key, []) + [m.add(exp)]
+                                  for key, m in self.metric.items() if callable(getattr(m, 'add', None))})
 
-        # Use random popped metric as reward if RL and 'reward' not in exp
-        if 'reward' not in exp and len(metric) and self.RL:  # Note: AC2 classifier actually defines its own reward
-            key = next(iter(metric.keys()))
-            exp.reward = metric['reward'] = metric.pop(key)
+        # Always include reward
+        if 'reward' in self.metric and 'reward' in self.episode_adds:
+            # Override Env reward with metric reward
+            exp.reward = self.episode_adds['reward'][-1]
+        elif 'reward' in self.metric or 'reward' in exp:
+            # Evaluate reward from string  Note: No recursion between strings
+            if isinstance(self.metric.get('reward', None), str):
+                exp.reward = eval(self.metric['reward'], {key: episode[-1]
+                                                          for key, episode in self.episode_adds.items()})
+            # Override metric reward with Env reward
+            self.episode_adds.setdefault('reward', []).append(exp.reward.mean() if hasattr(exp.reward, 'mean')
+                                                              else exp.reward)
+        elif len(self.episode_adds) and self.RL:
+            # Use random popped metric as reward if RL
+            key = next(iter(self.episode_adds.keys()))
+            self.episode_adds.setdefault('reward', []).append(self.episode_adds.pop(key))
+            exp.reward = self.episode_adds['reward'][-1]
             warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
-        self.episode_adds.update({key: self.episode_adds[key] + m if key in self.episode_adds else m
-                                  for key, m in metric.items()})
+    def tabulate_metric(self):
+        self.episode_adds.update({key: self.metric[key].tabulate(episode)
+                                  for key, episode in self.episode_adds.items()})
+
+        self.episode_adds.update({key: eval(m, None, self.episode_adds)
+                                  for key, m in self.metric.items() if isinstance(m, str)})
 
 
 # Toggles / resets eval, inference, and EMA modes

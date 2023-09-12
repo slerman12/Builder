@@ -12,7 +12,7 @@ def mse(exp):
 class Accuracy:
     # An experience is a set of batch data that follows an action
     def add(self, exp):
-        return exp.label == exp.action  # Gets appended to an epoch list
+        return exp.label == exp.action.squeeze(-1)  # Gets appended to an epoch list  TODO Squeeze?
 
     # At the end of an epoch, a metric is tabulated
     def tabulate(self, epoch):

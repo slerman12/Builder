@@ -1,7 +1,7 @@
 Env: World.Environments.Datums.Datums
 Dataset: torchvision.datasets.SVHN
 metric: 
-    accuracy: World.Metrics.accuracy
+    accuracy: World.Metrics.Accuracy
 env:
     dataset: ${dataset}
     test_dataset: ${test_dataset}

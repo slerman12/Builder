@@ -3,4 +3,4 @@ suite_name: classify
 discrete: true
 
 metric:
-  accuracy: World.Metrics.accuracy
+  accuracy: World.Metrics.Accuracy

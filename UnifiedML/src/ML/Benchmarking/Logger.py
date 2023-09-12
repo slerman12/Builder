@@ -168,6 +168,9 @@ class Logger:
                                             else np.ma.sum)
 
         def size_agnostic_agg(stats):
+            if isinstance(stats[0], (list, tuple, set)):
+                stats = sum(stats, [])
+
             stats = [(stat,) if np.isscalar(stat) else stat.flatten() for stat in stats]
 
             masked = np.ma.empty((len(stats), max(map(len, stats))))
