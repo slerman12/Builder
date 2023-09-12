@@ -114,7 +114,7 @@ class Datums:
 
         obs.shape = (batch_size, *self.obs_spec['shape'])
 
-        # Create experience  TODO Label needs to correspond with action for Metric to work
+        # Create experience
         self.exp = Args(obs=obs, label=label, done=self.num_sampled_batches == len(self))
 
         return self.exp

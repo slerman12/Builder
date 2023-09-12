@@ -36,7 +36,7 @@ class Reward:
         episode = [reward for reward in episode if reward is not None]
 
         if episode:
-            return sum(episode)
+            return sum(episode)  # TODO Environment doesn't support Nones
 
 
 class Precision:

@@ -129,10 +129,8 @@ class Bittle:
                 self.action_start_time = time.time()
                 asyncio.run(self.bluetooth.write_gatt_char(self.writer, b'v'))
 
-        self.reward = max(self.exp.obs[0], self.reward)
-        self.exp.reward = int(self.exp.obs[0] >= self.reward)  # Positive forward velocity?
-
-        print(self.exp.reward)
+        # self.reward = max(self.exp.obs[0], self.reward)
+        # self.exp.reward = int(self.exp.obs[0] >= self.reward)  # Positive forward velocity?
 
         return self.exp  # Experience
 

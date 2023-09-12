@@ -148,7 +148,7 @@ class SuperMario:
 
         self.exp = Args(exp)  # Experience
 
-        return self.exp
+        return {'reward': exp.pop('reward')}, exp
 
     def frame_stack(self, obs):
         if self.frames.maxlen == 1:

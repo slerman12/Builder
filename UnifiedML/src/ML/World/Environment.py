@@ -71,7 +71,10 @@ class Environment:
             # Act
             store = Args()
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store).cpu().numpy()
+                action = agent.act(obs, store)
+
+            if not self.generate:
+                action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
             exp = Args(action=action) if self.generate else self.env.step(action)  # Experience
 
@@ -90,7 +93,7 @@ class Environment:
 
             self.exp = Args(exp)
             if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
-                self.exp.obs = exp.obs.numpy()  # TODO What if not Numpy?
+                self.exp.obs = exp.obs.numpy()  # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
 
             if vlog and hasattr(self.env, 'render') or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
@@ -126,13 +129,13 @@ class Environment:
         sundown = time.time()
         frames = self.episode_frame * self.action_repeat
 
-        self.tabulate_metric()
+        log = self.tabulate_metric()
 
         log = {'time': sundown - agent.birthday,
                'step': agent.step,
                'frame': agent.frame * self.action_repeat,
                'epoch' if self.offline or self.generate else 'episode':
-                   (self.offline or self.generate) and agent.epoch or agent.episode, **self.episode_adds,
+                   (self.offline or self.generate) and agent.epoch or agent.episode, **log,
                'fps': frames / (sundown - self.daybreak)} if not self.disable \
             else None
 
@@ -167,8 +170,8 @@ class Environment:
 
     def tally_metric(self, exp):
         # Add
-        self.episode_adds.update({key: self.episode_adds.get(key, []) + [m.add(exp)]
-                                  for key, m in self.metric.items() if callable(getattr(m, 'add', None))})
+        add = {key: m.add(exp) for key, m in self.metric.items() if callable(getattr(m, 'add', None))}
+        self.episode_adds.update({key: self.episode_adds.get(key, []) + [m] for key, m in add.items() if m is not None})
 
         # Always include reward
         if 'reward' in self.metric and 'reward' in self.episode_adds:
@@ -192,11 +195,21 @@ class Environment:
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
     def tabulate_metric(self):
-        self.episode_adds.update({key: self.metric[key].tabulate(episode)
-                                  for key, episode in self.episode_adds.items()})
+        log = {key: self.metric[key].tabulate(episode)
+               for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
+                                                                                 'tabulate', None)) and episode}
 
-        self.episode_adds.update({key: eval(m, None, self.episode_adds)
-                                  for key, m in self.metric.items() if isinstance(m, str)})
+        log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
+
+        if 'reward' in self.episode_adds and 'reward' not in self.metric:
+            log['reward'] = self.episode_adds['reward']
+
+            if hasattr(log['reward'][0], 'mean'):
+                log['reward'] = [r.mean() for r in self.episode_adds['reward']]
+
+            log['reward'] = sum(log['reward'])  # Reward, by default, sums
+
+        return log
 
 
 # Toggles / resets eval, inference, and EMA modes
