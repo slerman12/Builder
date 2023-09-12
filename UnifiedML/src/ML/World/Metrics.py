@@ -30,13 +30,14 @@ class MSE:
 class Reward:
     def add(self, exp):
         if 'reward' in exp:
-            return exp.reward
+            # Note: Taking mean batch-wise assumes each batch same size
+            return exp.reward.mean() if hasattr(exp.reward, 'mean') else exp.reward
 
     def tabulate(self, episode):  # At the end of an episode, a metric is tabulated
         episode = [reward for reward in episode if reward is not None]
 
         if episode:
-            return sum(episode)  # TODO Environment doesn't support Nones
+            return sum(episode)
 
 
 class Precision:

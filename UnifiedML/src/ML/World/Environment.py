@@ -53,7 +53,7 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
-        experiences = [*([self.env.step()] if self.disable and self.on_policy else [])]
+        experiences = [*([self.env.step()] if self.disable and self.on_policy and agent.training else [])]
         vlogs = []
 
         self.episode_done = self.disable
@@ -74,26 +74,31 @@ class Environment:
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            exp = Args(action=action) if self.generate else self.env.step(action)  # Experience
+            exp = {} if self.generate else self.env.step(action)  # Experience
 
             prev = {}
             if isinstance(exp, tuple):
                 prev, exp = exp
 
-            # Transform
-            exp = self.transform(exp)
-
             self.exp.update(action=action, step=agent.step)
             self.exp.update(prev)
             self.exp.update(store)
 
-            experiences.append(self.exp)
-
             # Tally reward & logs
             self.tally_metric(self.exp)
 
+            if agent.training:
+                experiences.append(self.exp)
+
+            exp.update({key: value for key, value in self.exp.items() if key not in exp})
+
+            # Transform
+            exp = self.transform(exp)
+
+            self.exp = exp
             if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
-                self.exp.obs = exp.obs.numpy()  # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
+                # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
+                self.exp.obs = exp.obs.numpy()
 
             if vlog and hasattr(self.env, 'render') or self.generate:
                 image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
