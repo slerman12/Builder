@@ -92,7 +92,6 @@ class Environment:
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            self.exp = Args(exp)
             if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
                 self.exp.obs = exp.obs.numpy()  # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
 
@@ -127,24 +126,18 @@ class Environment:
             self.last_episode_len = self.episode_step
 
         # Log stats
-        log = None
-
         sundown = time.time()
         frames = self.episode_frame * self.action_repeat
 
-        if not self.disable:
-            log = {}
+        log = self.tabulate_metric()
 
-            if self.episode_done:
-                log = self.tabulate_metric()
-
-                log = {'time': sundown - agent.birthday,
-                       'step': agent.step,
-                       'frame': agent.frame * self.action_repeat,
-                       'epoch' if self.offline or self.generate else 'episode':
-                           (self.offline or self.generate) and agent.epoch or agent.episode, **log}
-
-            log['fps'] = frames / (sundown - self.daybreak)
+        log = {'time': sundown - agent.birthday,
+               'step': agent.step,
+               'frame': agent.frame * self.action_repeat,
+               'epoch' if self.offline or self.generate else 'episode':
+                   (self.offline or self.generate) and agent.epoch or agent.episode, **log,
+               'fps': frames / (sundown - self.daybreak)} if not self.disable \
+            else None
 
         if self.episode_done:
             self.episode_adds = {}
@@ -204,17 +197,20 @@ class Environment:
 
     # Aggregate metrics
     def tabulate_metric(self):
-        log = {key: self.metric[key].tabulate(episode)
-               for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
-                                                                                 'tabulate', None)) and episode}
+        if self.episode_done:
+            log = {key: self.metric[key].tabulate(episode)
+                   for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
+                                                                                     'tabulate', None)) and episode}
 
-        log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
+            log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
-        if 'reward' in self.episode_adds and 'reward' not in self.metric:
-            # Reward, by default, sums
-            log['reward'] = sum(self.episode_adds['reward'])
+            if 'reward' in self.episode_adds and 'reward' not in self.metric:
+                # Reward, by default, sums
+                log['reward'] = sum(self.episode_adds['reward'])
 
-        return log
+            return log
+
+        return {}
 
 
 # Toggles / resets eval, inference, and EMA modes
