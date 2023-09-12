@@ -148,6 +148,8 @@ class SuperMario:
 
         self.exp = Args(exp)  # Experience
 
+        exp.pop('action')
+
         return {'reward': exp.pop('reward')}, exp
 
     def frame_stack(self, obs):

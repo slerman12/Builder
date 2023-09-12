@@ -140,7 +140,7 @@ class DMC:
 
         self.exp = Args(exp)  # Experience
 
-        return {'reward': exp.pop('reward')}, exp
+        return {'reward': exp.pop('reward'), 'action': exp.pop('action')}, exp
 
     def frame_stack(self, obs):
         if self.frames.maxlen == 1:

@@ -83,7 +83,10 @@ class Environment:
             # Transform
             exp = self.transform(exp)
 
-            self.exp.update(action=action, step=agent.step, **prev, **store)
+            self.exp.update(action=action, step=agent.step)
+            self.exp.update(prev)
+            self.exp.update(store)
+
             experiences.append(self.exp)
 
             # Tally reward & logs
@@ -124,20 +127,26 @@ class Environment:
             self.last_episode_len = self.episode_step
 
         # Log stats
+        log = None
+
         sundown = time.time()
         frames = self.episode_frame * self.action_repeat
 
-        log = {'time': sundown - agent.birthday,
-               'step': agent.step,
-               'frame': agent.frame * self.action_repeat,
-               'epoch' if self.offline or self.generate else 'episode':
-                   (self.offline or self.generate) and agent.epoch or agent.episode,
-               'fps': frames / (sundown - self.daybreak)} if not self.disable \
-            else None
+        if not self.disable:
+            log = {}
+
+            if self.episode_done:
+                log = self.tabulate_metric()
+
+                log = {'time': sundown - agent.birthday,
+                       'step': agent.step,
+                       'frame': agent.frame * self.action_repeat,
+                       'epoch' if self.offline or self.generate else 'episode':
+                           (self.offline or self.generate) and agent.epoch or agent.episode, **log}
+
+            log['fps'] = frames / (sundown - self.daybreak)
 
         if self.episode_done:
-            log.update(self.tabulate_metric())
-
             self.episode_adds = {}
             self.episode_step = self.episode_frame = 0
             self.daybreak = sundown

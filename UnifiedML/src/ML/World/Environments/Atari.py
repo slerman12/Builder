@@ -155,7 +155,7 @@ class Atari:
 
         self.exp = Args(exp)  # Experience
 
-        return {'reward': reward}, {'obs': obs, 'action': action, 'done': self.episode_done}
+        return {'reward': reward}, {'obs': obs, 'done': self.episode_done}
 
     def frame_stack(self, obs):
         if self.frames.maxlen == 1:
