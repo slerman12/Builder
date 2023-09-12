@@ -8,7 +8,7 @@ from functools import cached_property
 from math import inf
 
 import torch
-from minihydra import instantiate, get_module, valid_path, Args
+from minihydra import instantiate, valid_path, Args
 
 from Utils import Transform
 
@@ -33,10 +33,8 @@ class Environment:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
             # Experience
-            exp = self.env.reset()
-            self.exp = self.transform(exp, device=self.device)
+            self.exp = self.transform(self.env.reset(), device=self.device)
 
-            # Update
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
 
@@ -78,7 +76,7 @@ class Environment:
 
             exp = Args(action=action) if self.generate else self.env.step(action)  # Experience
 
-            prev = {}  # TODO Do this for RL
+            prev = {}
             if isinstance(exp, tuple):
                 prev, exp = exp
 
@@ -168,15 +166,16 @@ class Environment:
 
         return Args(spec)
 
+    # Compute metric on batch
     def tally_metric(self, exp):
-        # Add
         add = {key: m.add(exp) for key, m in self.metric.items() if callable(getattr(m, 'add', None))}
-        self.episode_adds.update({key: self.episode_adds.get(key, []) + [m] for key, m in add.items() if m is not None})
+
+        self.episode_adds.update({key: self.episode_adds.get(key, []) + [m]
+                                  for key, m in add.items() if m is not None})
 
         # Always include reward
         if 'reward' in self.metric and 'reward' in self.episode_adds:
-            # Override Env reward with metric reward
-            exp.reward = self.episode_adds['reward'][-1]
+            exp.reward = self.episode_adds['reward'][-1]  # Override Env reward with metric reward
         elif 'reward' in self.metric or 'reward' in exp:
             # Evaluate reward from string  Note: No recursion between strings
             if isinstance(self.metric.get('reward', None), str):
@@ -194,6 +193,7 @@ class Environment:
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
+    # Aggregate metrics
     def tabulate_metric(self):
         log = {key: self.metric[key].tabulate(episode)
                for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
@@ -202,12 +202,8 @@ class Environment:
         log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
         if 'reward' in self.episode_adds and 'reward' not in self.metric:
-            log['reward'] = self.episode_adds['reward']
-
-            if hasattr(log['reward'][0], 'mean'):
-                log['reward'] = [r.mean() for r in self.episode_adds['reward']]
-
-            log['reward'] = sum(log['reward'])  # Reward, by default, sums
+            # Reward, by default, sums
+            log['reward'] = sum(self.episode_adds['reward'])
 
         return log
 
