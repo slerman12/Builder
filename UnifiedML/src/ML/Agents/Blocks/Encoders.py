@@ -41,7 +41,7 @@ class CNNEncoder(nn.Module):
 
         adapt_cnn(self.Eyes, obs_shape)  # Adapt 2d CNN kernel sizes for 1d or small-d compatibility
 
-        self._act = getattr(self.Eyes, 'act', None)  # Pre-construct uses act method hidden in Parallel
+        self._eyes = self.Eyes  # Pre-construct uses act method hidden in Parallel
 
         if parallel:
             self.Eyes = nn.DataParallel(self.Eyes)  # Parallel on visible GPUs

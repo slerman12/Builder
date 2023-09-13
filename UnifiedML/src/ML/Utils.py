@@ -33,7 +33,7 @@ from torch.optim import *
 from torch.optim.lr_scheduler import *
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
-    get_module, portal, add_task_dirs, reset_portal
+    recursive_Args, get_module, portal, add_task_dirs
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -143,7 +143,7 @@ def preconstruct_agent(agent):
         outs = signature & {'action_spec', 'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
 
         args = Args(agent)
-        args.pop('recipes')
+        args.recipes = recursive_Args(agent.recipes)
 
         # Use Eyes when no output shape, else Pi_head
         if outs:
@@ -155,7 +155,7 @@ def preconstruct_agent(agent):
         # Override agent act method with model
         if callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
             agent.setdefault('_overrides_', Args())['act'] = \
-                lambda a, *v, **k: getattr(a.actor if outs else a.encoder, '_act')(*v, **k)
+                lambda a, *v, **k: (a.actor._pi_head if outs else a.encoder._eyes)(*v, **k)
 
         _target_ = agent._target_ = get_module('Agents.Agent')
 

@@ -31,7 +31,7 @@ class AC2Agent(torch.nn.Module):
                  lr, lr_decay_epochs, weight_decay, ema_decay, ema,  # Optimization
                  rand_steps, stddev_schedule,  # Exploration
                  discrete, RL, supervise, generate, parallel, log,  # On-boarding
-                 num_critics, num_actors, depth  # Ensembles & self-supervision
+                 num_critics, num_actors, depth  # Ensembles & self-supervision  # TODO Way too many defaults for model
                  ):
         super().__init__()
 

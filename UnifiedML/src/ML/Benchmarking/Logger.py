@@ -275,12 +275,12 @@ class Logger:
 
         targets = []
 
-        if hasattr(agent, 'encoder') and hasattr(agent.encoder, 'Eyes'):
-            setattr(agent.encoder.Eyes, '_defaults_', defaults)
-            targets.append(type(agent.encoder.Eyes))
-        if hasattr(agent, 'actor') and hasattr(agent.actor, 'Pi_head'):
-            setattr(agent.actor.Pi_head.ensemble[0], '_defaults_', defaults)
-            targets.append(type(agent.actor.Pi_head.ensemble[0]))
+        if hasattr(agent, 'encoder') and hasattr(agent.encoder, '_eyes'):
+            setattr(agent.encoder._eyes, '_defaults_', defaults)    # TODO Parallel
+            targets.append(type(agent.encoder._eyes))
+        if hasattr(agent, 'actor') and hasattr(agent.actor, '_pi_head'):
+            setattr(agent.actor._pi_head.ensemble[0], '_defaults_', defaults)  # TODO Parallel
+            targets.append(type(agent.actor._pi_head.ensemble[0]))
 
         for key, value in defaults.items():
             setattr(type(agent), key, property(lambda a, _key_=key: a._defaults_[_key_],

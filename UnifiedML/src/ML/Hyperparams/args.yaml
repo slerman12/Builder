@@ -125,6 +125,7 @@ environment:
 model:
   _target_: ${agent._target_}
 
+# TODO Some of these should be AC2 defaults - can pop defaults when model-forward-only, non-overlapping args
 agent:
   _target_: ${Agent}
   obs_spec: ${obs_spec}

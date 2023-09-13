@@ -42,7 +42,7 @@ class EnsemblePiActor(nn.Module):
         self.Pi_head = Utils.Ensemble([instantiate(Pi_head, i, **Utils.adaptive_shaping(in_shape, out_shape))
                                        or MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])
 
-        self._act = getattr(self.Pi_head, 'act', None)  # Pre-construct uses act method hidden in Parallel
+        self._pi_head = self.Pi_head  # Pre-construct uses act method hidden in Parallel
 
         if parallel:
             self.Pi_head = nn.DataParallel(self.Pi_head)  # Parallel on visible GPUs
