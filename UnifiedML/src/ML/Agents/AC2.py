@@ -295,7 +295,7 @@ class AC2Agent(torch.nn.Module):
 
             # Actor loss
             actor_loss = PolicyLearning.deepPolicyGradient(self.actor, self.critic, batch.obs.detach(), batch.action,
-                                                           self.step, log=log)
+                                                           not self.generate, self.step, log=log)
 
             # Update actor
             Utils.optimize(actor_loss, self.actor, epoch=self.epoch if replay.offline else self.episode)

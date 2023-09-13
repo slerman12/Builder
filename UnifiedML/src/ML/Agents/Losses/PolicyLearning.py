@@ -4,11 +4,11 @@
 # MIT_LICENSE file in the root directory of this source tree.
 
 
-def deepPolicyGradient(actor, critic, obs, action=None, step=1, log=None):
+def deepPolicyGradient(actor, critic, obs, action=None, sample=True, step=1, log=None):
 
     if action is None or not action.requires_grad:  # If None or not differentiable
         Pi = actor(obs, step)
-        action = Pi.rsample()  # Differentiable action ensemble  TODO if rollout=true, sample, else mean
+        action = Pi.rsample() if sample else Pi.mean  # Differentiable action ensemble
 
         if Pi.store is not None:
             action = Pi.store  # Creator might learn a different action from the one actually sent to Env
