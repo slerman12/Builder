@@ -522,10 +522,11 @@ def interpolate(arg, args=None, **kwargs):
         if match_obj.group() is not None:
             try:
                 got = get(args, match_obj.group()[2:][:-1])
-                # TODO Try this for classes and types
-                # out = got.__name__ if isinstance(got, type) else type(got).__name__ if str(got)[:10] == '<__main__.' \
-                #     else str(got)
-                out = str(got)
+                # Try this for classes and types
+                out = got.__name__ if inspect.isclass(got) \
+                    else type(got).__name__ if not isinstance(got, (str, int, float, tuple, list, set, bool)) \
+                    else str(got)
+                # out = str(got)
                 if out == '???':
                     return str(match_obj.group())
                 return out

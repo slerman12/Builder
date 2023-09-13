@@ -9,5 +9,5 @@
 # from Agents.HardDQN import HardDQNAgent
 # from Agents.DrQV2 import DrQV2Agent
 
-from Agents.AC2 import AC2Agent
-from Agents.AC2 import AC2Agent as Agent
+from Agents.AC2 import Agent
+from Agents.AC2 import Agent as AC2Agent

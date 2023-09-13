@@ -173,9 +173,11 @@ def preconstruct_agent(agent, model):
     learn = agent._overrides_.learn if getattr(agent.get('_overrides_', None), 'learn', None) is not None \
         else _target_.learn
 
+    signature = set(inspect.signature(learn).parameters) - {'self'}
+
     # Logs optional
-    if len(inspect.signature(learn).parameters) == 2:
-        learn = agent._overrides_.learn = lambda a, replay, log: learn(a, replay)
+    if len(signature) == 1:
+        learn = agent.setdefault('_overrides_', Args()).learn = lambda a, replay, log: learn(a, replay)
 
     # Loss as output in learn gets backward-ed, optimized, and logged
     def overriden(a, replay, log):
@@ -187,7 +189,7 @@ def preconstruct_agent(agent, model):
     # If learn has a return statement
     if any(isinstance(node, ast.Return) for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(learn))))):
         # Treat as loss
-        agent._overrides_.learn = overriden
+        agent.setdefault('_overrides_', Args()).learn = overriden
 
     # Checks if Pytorch module has a forward user-defined
     if not any(isinstance(node, ast.Return)
@@ -200,16 +202,18 @@ def preconstruct_agent(agent, model):
             a.act(*v, **k).squeeze(1).squeeze(-1)  # Note: act might expect more params
     elif not callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
         # Infers act from forward
-        agent.setdefault('_overrides_', Args())['act'] = lambda a, *v, **k: \
+        agent.setdefault('_overrides_', Args()).act = lambda a, *v, **k: \
             a.forward(*v, **k)
 
     # Act method
     act = agent._overrides_.act if getattr(agent.get('_overrides_', None), 'act', None) is not None \
         else _target_.act
 
+    signature = set(inspect.signature(act).parameters) - {'self'}
+
     # Act store optional
-    if len(inspect.signature(act).parameters) == 2:
-        agent._overrides_.act = lambda a, obs, store: act(a, obs)
+    if len(signature) == 1:
+        agent.setdefault('_overrides_', Args()).act = lambda a, obs, store: act(a, obs)
 
 
 # Saves model + args + selected attributes
@@ -260,7 +264,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
 
     # Load saved attributes as well
     for key, value in to_load['attr'].items():
-        if (hasattr(model, key) or key in getattr(model, '_defaults', {})) and key not in ['state_dict', *preserve]:
+        if (hasattr(model, key) or key in getattr(model, '_defaults_', {})) and key not in ['state_dict', *preserve]:
             setattr(model, key, value)
 
     # Can also load part of a model. Useful for recipes,

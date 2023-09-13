@@ -22,7 +22,7 @@ from Agents.Blocks.Critics import EnsembleQCritic
 from Agents.Losses import QLearning, PolicyLearning, SelfSupervisedLearning
 
 
-class AC2Agent(torch.nn.Module):
+class Agent(torch.nn.Module):
     """Actor Critic Creator (AC2)
     RL, classification, regression, generative mode; online, offline; self-supervised learning; critic/actor ensembles;
     action space conversions; optimization schedules; EMA"""
