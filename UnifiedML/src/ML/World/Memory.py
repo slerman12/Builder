@@ -107,7 +107,7 @@ class Memory:
         mmap = self.num_experiences + batch_size <= sum(self.capacities[:5])
 
         def error():
-            raise RuntimeError('Memory containing 0 episodes allocated 0 capacity. Try hd_capacity=1e6.')
+            raise RuntimeError('Memory containing 0 episodes allocated 0 capacity. Try hd_capacity=.')
 
         mode = 'gpu' if gpu else 'pinned' if pinned else 'shared_tensor' if shared_tensor \
             else 'shared' if shared else 'mmap' if mmap \
@@ -119,8 +119,15 @@ class Memory:
 
             os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
 
-        batch = Batch({key: Mem(batch[key], f'{self.save_path}{self.num_batches}_{key}_{self.id}').to(mode)
-                       for key in batch})  # TODO A meta key for special save_path
+        if isinstance(next(iter(batch.values())), Mem):
+            if not isinstance(batch, Batch):
+                batch = Batch(batch)
+            for key, mem in batch.items():
+                mem.save_path = f'{self.save_path}{self.num_batches}_{key}_{self.id}'
+                mem.to(mode)
+        else:
+            batch = Batch({key: Mem(batch[key], f'{self.save_path}{self.num_batches}_{key}_{self.id}').to(mode)
+                           for key in batch})  # TODO A meta key for special save_path
 
         self.batches.append(batch)
         self.update()  # TODO Pop updated from self.batches
@@ -231,7 +238,7 @@ class Memory:
                     # TODO Also, make sure Mem is marked saved
                     batch = {}
 
-            batch[key] = Mem(None, path=mmap_path).load()._mem
+            batch[key] = Mem(None, path=mmap_path).load()
 
             previous_num_batches = int(num_batches)
 
@@ -429,10 +436,10 @@ class Mem:
                 shm = SharedMemory(name=self.name)
                 yield np.ndarray(self.shape, dtype=self.dtype, buffer=shm.buf)
                 shm.close()
-            # elif self.mode == 'mmap':  # TODO Same for mmap! mmap.close(); don't store !!!
-            #     mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape)
-            #     yield mem
-            #     # mem._mmap.close().close()  # TODO Maybe no need - garbage collected anyway
+            elif self.mode == 'mmap':
+                mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape)
+                yield mem
+            #     # mem._mmap.close().close()  # Maybe no need - garbage collected anyway
             else:
                 yield self._mem
 
@@ -442,12 +449,11 @@ class Mem:
 
     def __setstate__(self, state):
         self.path, self.saved, self.mode, self.main_worker, self.shape, self.dtype, self.name, mem = state
-        self._mem = np.memmap(self.path, self.dtype, 'r+', shape=self.shape) if self.mode == 'mmap' else mem  # TODO No
 
     def __getitem__(self, ind):
         with self.mem() as mem:
             mem = mem[ind] if self.shape else mem
-            if self.mode == 'shared':  # TODO If 'mmap' for all these clones as well
+            if self.mode == 'shared' or self.mode == 'mmap':
                 mem = torch.as_tensor(mem).detach().clone()  # shm gets closed if shared, so make copy
             return mem
 
@@ -464,7 +470,7 @@ class Mem:
     def datums(self):
         with self.mem() as mem:
             # shm gets closed, so make copy if shared
-            return torch.as_tensor(mem).detach().clone() if self.mode == 'shared' else mem
+            return torch.as_tensor(mem).detach().clone() if self.mode == 'shared' or self.mode == 'mmap' else mem
 
     def tensor(self):
         with self.mem() as mem:
@@ -573,10 +579,10 @@ class Mem:
 
             with self.mem() as mem:
                 if mem is None:
-                    self._mem = _mem  # TODO Set None. At end, close _mem - (if not garbage collected anyway)
                     self.mode = 'mmap'
                     self.shape = eval(shape)
-                    self.dtype = self._mem.dtype
+                    self.dtype = _mem.dtype
+                    self._mem = None
                 else:
                     if isinstance(mem, torch.Tensor):
                         _mem = torch.as_tensor(_mem)

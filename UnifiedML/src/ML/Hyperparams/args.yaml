@@ -51,7 +51,7 @@ test_dataset:
   transform:
     _target_: ${test_dataset.Transform}
 task_name: ${format:${task}}
-suite_name: ${format:${env._target_}}  # TODO Does this work?
+suite_name: ${format:${env._target_}}
 frame_stack: 3
 truncate_episode_steps: 1000
 action_repeat: 1
