@@ -123,8 +123,8 @@ environment:
 
 agent:
   _target_: ${Agent}
-  obs_spec: ${obs_spec}
-  action_spec: ${action_spec}
+  obs_spec: ???
+  action_spec: ???
   num_actions: ${num_actions}
   trunk_dim: ${trunk_dim}
   hidden_dim: ${hidden_dim}

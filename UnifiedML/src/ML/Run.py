@@ -20,7 +20,7 @@ def main(args):
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
     # Update args
-    args.obs_spec, args.action_spec = generalize.obs_spec, generalize.action_spec
+    args.agent.obs_spec, args.agent.action_spec = generalize.obs_spec, generalize.action_spec
     interpolate(args)
 
     # Experience replay
