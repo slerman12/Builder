@@ -39,6 +39,8 @@ class Environment:
             self.discrete = action_spec.pop('discrete', '???')
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
+            obs_spec.update(self.obs_spec)
+            action_spec.update(self.action_spec)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
