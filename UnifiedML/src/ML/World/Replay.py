@@ -28,7 +28,7 @@ from minihydra import instantiate, open_yaml, Args
 class Replay:
     def __init__(self, path='Replay/', batch_size=1, device='cpu', num_workers=0, offline=True, stream=False,
                  gpu_capacity=0, pinned_capacity=0, tensor_ram_capacity=0, ram_capacity=1e6, hd_capacity=inf,
-                 save=False, mem_size=None,
+                 save=False, load=False, mem_size=None,
                  partition_workers=False, with_replacement=False, done_episodes_only=None, shuffle=True,
                  fetch_per=None, prefetch_factor=3, pin_memory=False, pin_device_memory=False, rewrite_shape=None,
                  dataset=None, transform=None, index='step', frame_stack=1, nstep=None, discount=1, agent_specs=None):
@@ -97,9 +97,9 @@ class Replay:
             # Fill Memory
             if isinstance(dataset, str):
                 # Load Memory from path
-                if os.path.exists(dataset):
+                if os.path.exists(dataset + 'card.yaml'):
                     self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
-                    card = open_yaml(dataset + 'card.yaml')  # TODO Doesn't exist for unsaved mmap'd Online
+                    card = open_yaml(dataset + 'card.yaml')  # TODO Doesn't exist for unsaved mmap'd Online?
             else:
                 batches = DataLoader(dataset, batch_size=mem_size or batch_size)
 
@@ -128,13 +128,17 @@ class Replay:
 
             # Load Memory from path
             dataset = 'World/ReplayBuffer/Online/' + path
-            if os.path.exists(dataset):
-                self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
-                card = open_yaml(dataset + 'card.yaml')
+            if os.path.exists(dataset + 'card.yaml'):
+                if load:
+                    self.memory.load(dataset, desc=f'Loading Replay from {dataset}')
+                    card = open_yaml(dataset + 'card.yaml')
+                else:
+                    for f in tqdm(os.listdir(dataset), desc=f'Deleting pre-existing Replay from {dataset}'):
+                        os.remove(os.path.join(dataset, f))
 
         card['capacities'] = sum(self.memory.capacities)
 
-        # Save Online replay on terminate  TODO Delete if not save! Since no card, will try to load, crash on next run
+        # Save Online replay on terminate
         if not offline and save:
             self.memory.set_save_path('World/ReplayBuffer/Online/' + path)
             atexit.register(lambda: (self.memory.save(desc='Saving Replay Memory...', card=card),

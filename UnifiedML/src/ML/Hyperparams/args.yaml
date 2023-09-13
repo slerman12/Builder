@@ -162,7 +162,7 @@ replay:
   ram_capacity: ${ram_capacity}
   hd_capacity: ${hd_capacity}
   save: ${offline}
-#  load: ${load}  # TODO For Online, might want to overwrite
+  load: ${load}
   mem_size: null
   partition_workers: false
   with_replacement: false
