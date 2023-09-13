@@ -35,9 +35,7 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
-            self.discrete = action_spec.pop('discrete', '???')
-            self.obs_spec.update(obs_spec)
-            self.action_spec.update(action_spec)
+            self.spec_tape = (obs_spec, action_spec)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -160,15 +158,17 @@ class Environment:
     def obs_spec(self):
         return Args({'shape': self.exp.obs.shape if 'obs' in self.exp else (),
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
-                     **getattr(self.env, 'obs_spec', {})})
+                     **getattr(self.env, 'obs_spec', {}), **self.spec_tape[0]})
 
     @cached_property
     def action_spec(self):
-        spec = {**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
-                **getattr(self.env, 'action_spec', {})}
+        discrete = self.spec_tape[1].pop('discrete')
 
-        if self.discrete != '???':
-            spec.discrete = self.discrete
+        spec = Args({**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
+                     **getattr(self.env, 'action_spec', {}), **self.spec_tape[1]})
+
+        if discrete != '???':
+            spec.discrete = discrete
 
         if 'shape' not in spec:
             # Infer action shape from label or action
@@ -179,7 +179,7 @@ class Environment:
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape
 
-        return Args(spec)
+        return spec
 
     # Compute metric on batch
     def tally_metric(self, exp):
