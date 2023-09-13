@@ -130,7 +130,9 @@ grammars()
 # Agent initialized with model and bootstrapped together
 def preconstruct_agent(agent, model):
     if agent._target_ == 'Agents.Agent':
-        agent.update(model)
+        agent._target_ = model.pop('_target_')
+
+    agent.update(model)
 
     # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
     try:
