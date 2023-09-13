@@ -511,7 +511,9 @@ def setdefault(args, keys, default):
 grammar = []  # List of funcs
 
 
-def interpolate(arg, args=None):
+def interpolate(arg, args=None, **kwargs):
+    arg.update(kwargs)
+
     if args is None:
         args = arg
 

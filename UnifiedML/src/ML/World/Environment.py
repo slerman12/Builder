@@ -4,7 +4,6 @@
 # MIT_LICENSE file in the root directory of this source tree.
 import time
 import warnings
-from copy import deepcopy
 from functools import cached_property
 from math import inf
 
