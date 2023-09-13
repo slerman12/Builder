@@ -42,8 +42,12 @@ class EnsemblePiActor(nn.Module):
         self.Pi_head = Utils.Ensemble([instantiate(Pi_head, i, **Utils.adaptive_shaping(in_shape, out_shape))
                                        or MLP(in_shape, out_shape, hidden_dim, 2) for i in range(ensemble_size)])
 
+        act = getattr(self.Pi_head, 'act', None)
+
         if parallel:
             self.Pi_head = nn.DataParallel(self.Pi_head)  # Parallel on visible GPUs
+
+        setattr(self.Pi_head, 'act', act)  # Pre-construct uses act method hidden in Parallel
 
         # Initialize model optimizer + EMA
         self.optim, self.scheduler = Utils.optimizer_init(self.parameters(), optim, scheduler,

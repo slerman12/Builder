@@ -512,7 +512,8 @@ grammar = []  # List of funcs
 
 
 def interpolate(arg, args=None, **kwargs):
-    arg.update(kwargs)
+    if isinstance(arg, Args):
+        recursive_update(arg, kwargs)  # Note: Doesn't create new dicts if pre-existing
 
     if args is None:
         args = arg
@@ -520,7 +521,11 @@ def interpolate(arg, args=None, **kwargs):
     def _interpolate(match_obj):
         if match_obj.group() is not None:
             try:
-                out = str(get(args, match_obj.group()[2:][:-1]))
+                got = get(args, match_obj.group()[2:][:-1])
+                # TODO Try this for classes and types
+                # out = got.__name__ if isinstance(got, type) else type(got).__name__ if str(got)[:10] == '<__main__.' \
+                #     else str(got)
+                out = str(got)
                 if out == '???':
                     return str(match_obj.group())
                 return out

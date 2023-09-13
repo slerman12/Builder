@@ -127,97 +127,172 @@ def grammars():
 grammars()
 
 
-# Agent initialized with model and bootstrapped together  # TODO Optional rewritable memory - in preconstruct?
-def preconstruct_agent(agent, model):
-    if not hasattr(agent, '_target_') or not isinstance(agent._target_, str):
-        return
-
-    if not hasattr(model, '_target_'):
-        model = Args(_target_=model)
-
+# Agent initialized with model and bootstrapped together
+def preconstruct_agent(agent):
     # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
-    if model._target_ is not None:
-        try:
-            _target_ = get_module(model._target_)
-        except Exception:
-            _target_ = instantiate(model)
+    try:
+        _target_ = get_module(agent._target_)
+    except Exception:
+        _target_ = instantiate(agent)
 
+    # If no learn method, use AC2 Agent backbone
+    if not hasattr(_target_, 'learn'):
         signature = set(inspect.signature(_target_).parameters)
 
-        ins = signature & {'in_shape', 'in_shape', 'in_dim', 'in_channels', 'in_features'}
-        outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-        if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs and not \
-                any(isinstance(node, ast.Return)
-                    for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
-            assert False, f'This "model" [{model._target_}] contains an act method, fully-implemented learn method, ' \
-                          'and no adaptive shaping signature arguments. It is an agent! Please pass in the model to ' \
-                          'the designated flag \'agent=\'. '  # Note: this does minimize features of AC2Agent
+        outs = signature & {'action_spec', 'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+
+        # Use Eyes when no output shape, else Pi_head
+        if outs:
+            agent.recipes.actor.Pi_head = Args(agent)  # As Pi_head when output shape
+            agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
         else:
-            if outs:
-                agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
-                agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
-            else:
-                agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
+            agent.recipes.encoder.Eyes = Args(agent)  # Otherwise as Eyes
 
-            # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
-            for key in {'act', 'learn'}:
-                if callable(getattr(_target_, key, ())) and \
-                        ('_overrides_' not in agent or key not in agent._overrides_):
-                    agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
-                        a.encoder.Eyes if not outs
-                        else a.actor.Pi_head if agent.num_actors >= 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+        agent._target_ = 'Agent'
+        _target_ = get_module('Agent')
 
-        # Loss as output in learn gets backward-ed, optimized, and logged
-        def preconstruct_optimize(loss_fn):
-            def overriden(a, replay, log):
-                loss = loss_fn(a, replay, log)
-                optimize(loss, a.encoder, a.actor)
-                if log is not None and 'loss' not in log:
-                    log.loss = loss
+        # Override agent act method with model
+        if callable(getattr(_target_, 'act', ())) and \
+                ('_overrides_' not in agent or 'act' not in agent._overrides_):
+            agent.setdefault('_overrides_', Args())['act'] = lambda a, *v, **k: getattr(
+                a.encoder.Eyes if not outs
+                else a.actor.Pi_head if agent.num_actors >= 1 else a.actor.Pi_head.ensemble[0], 'act')(*v, **k)
 
-            return overriden
+    # Learn method
+    learn = agent._overrides_.learn if getattr(agent.get('_overrides_', None), 'learn', None) is not None \
+        else _target_.learn
 
-        # Dynamic forward/act-method semantics  TODO Maybe delete
-        # for method in {'forward', 'act'}:
-        #     if method in agent._overrides_ and agent._overrides_[method] is not None:
-        #         args = [i for i, key in enumerate({'store', 'log', 'rewrite'}) if key
-        #                 in inspect.signature(getattr(_target_, method)).parameters]
-        #         agent._overrides_[method] = \
-        #             lambda a, obs, *v, call=agent._overrides_.get(method): call(a, obs, *[v[i] for i in args])
+    # Logs optional
+    if len(inspect.signature(learn).parameters) == 2:
+        learn = agent._overrides_.learn = lambda a, replay, log: learn(a, replay)
 
-        # Dynamic learn-method semantics
-        if '_overrides_' in agent and 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
+    # Loss as output in learn gets backward-ed, optimized, and logged
+    def overriden(a, replay, log):
+        loss = learn(a, replay, log)
+        optimize(loss, a.encoder, a.actor)
+        if log is not None and 'loss' not in log:
+            log.loss = loss
 
-            # Logs optional
-            if len(inspect.signature(_target_.learn).parameters) == 2:
-                agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
-            # args = [i for i, key in enumerate({'log', 'rewrite'}) if key  TODO Maybe use top version
-            #         in inspect.signature(_target_.learn).parameters]
-            # agent._overrides_.learn = \
-            #     lambda a, replay, *v, learn=agent._overrides_.learn: learn(a, replay, *[v[i] for i in args])
-
-            # If learn has a return statement
-            if any(isinstance(node, ast.Return)
-                   for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
-                # Treat as loss
-                agent._overrides_.learn = preconstruct_optimize(agent._overrides_.learn)
-
-    _target_ = get_module(agent._target_)  # Agent
-
-    assert hasattr(_target_, 'act') and hasattr(_target_, 'learn'), 'Agent requires act & learn methods.'
+    # If learn has a return statement
+    if any(isinstance(node, ast.Return)
+           for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(learn))))):
+        # Treat as loss
+        agent._overrides_.learn = overriden
 
     # Checks if Pytorch module has a forward user-defined
     if not any(isinstance(node, ast.Return)
-               for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.forward))))):
-        if '_overrides_' not in agent or 'forward' not in agent._overrides_:
+               for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.forward))))) \
+            and ('_overrides_' not in agent or 'forward' not in agent._overrides_):
+        # Infers forward from act
+        assert callable(getattr(_target_, 'act', ())), 'Agent/model must define a forward or act method.'
 
-            # Agent infers a forward from act
-            agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
-                a.act(*v, **k)[0].squeeze(1).squeeze(-1)
+        agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
+            a.act(*v, **k).squeeze(1).squeeze(-1)
+    elif not callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
+        # Infers act from forward
+        agent.setdefault('_overrides_', Args())['act'] = lambda a, *v, **k: \
+            a.forward(*v, **k)
 
-    # Logs optional  TODO Can maybe generalize as commented-out above
-    if len(inspect.signature(_target_.learn).parameters) == 2:
-        agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, log: _target_.learn(a, replay)
+    # Act method
+    act = agent._overrides_.act if getattr(agent.get('_overrides_', None), 'act', None) is not None \
+        else _target_.act
+
+    # Act store optional  TODO Dump
+    if len(inspect.signature(act).parameters) == 2:
+        agent._overrides_.act = lambda a, obs, store: learn(a, obs)
+
+
+# # Agent initialized with model and bootstrapped together  # TODO Optional rewritable memory - in preconstruct?
+# def preconstruct_agent(agent, model):
+#     if not hasattr(agent, '_target_') or not isinstance(agent._target_, str):
+#         return
+#
+#     if not hasattr(model, '_target_'):
+#         model = Args(_target_=model)
+#
+#     # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
+#     if model._target_ is not None:
+#         try:
+#             _target_ = get_module(model._target_)
+#         except Exception:
+#             _target_ = instantiate(model)
+#
+#         signature = set(inspect.signature(_target_).parameters)
+#
+#         ins = signature & {'in_shape', 'in_shape', 'in_dim', 'in_channels', 'in_features'}
+#         outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
+#         if hasattr(_target_, 'act') and hasattr(_target_, 'learn') and not ins and not outs and not \
+#                 any(isinstance(node, ast.Return)
+#                     for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
+#             assert False, f'This "model" [{model._target_}] contains an act method, fully-implemented learn method, ' \
+#                           'and no adaptive shaping signature arguments. It is an agent! Please pass in the model to ' \
+#                           'the designated flag \'agent=\'. '  # Note: this does minimize features of AC2Agent
+#         else:
+#             if outs:
+#                 agent.recipes.actor.Pi_head = model  # As Pi_head when output shape
+#                 agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
+#             else:
+#                 agent.recipes.encoder.Eyes = model  # Otherwise as Eyes
+#
+#             # Override agent act/learn methods with model  Note: For-loop lambda breaks without the _key_= default
+#             for key in {'act', 'learn'}:
+#                 if callable(getattr(_target_, key, ())) and \
+#                         ('_overrides_' not in agent or key not in agent._overrides_):
+#                     agent.setdefault('_overrides_', Args())[key] = lambda a, *v, _key_=key, **k: getattr(
+#                         a.encoder.Eyes if not outs
+#                         else a.actor.Pi_head if agent.num_actors >= 1 else a.actor.Pi_head.ensemble[0], _key_)(*v, **k)
+#
+#         # Loss as output in learn gets backward-ed, optimized, and logged
+#         def preconstruct_optimize(loss_fn):
+#             def overriden(a, replay, log):
+#                 loss = loss_fn(a, replay, log)
+#                 optimize(loss, a.encoder, a.actor)
+#                 if log is not None and 'loss' not in log:
+#                     log.loss = loss
+#
+#             return overriden
+#
+#         # Dynamic forward/act-method semantics  TODO Maybe delete
+#         # for method in {'forward', 'act'}:
+#         #     if method in agent._overrides_ and agent._overrides_[method] is not None:
+#         #         args = [i for i, key in enumerate({'store', 'log', 'rewrite'}) if key
+#         #                 in inspect.signature(getattr(_target_, method)).parameters]
+#         #         agent._overrides_[method] = \
+#         #             lambda a, obs, *v, call=agent._overrides_.get(method): call(a, obs, *[v[i] for i in args])
+#
+#         # Dynamic learn-method semantics
+#         if '_overrides_' in agent and 'learn' in agent._overrides_ and agent._overrides_.learn is not None:
+#
+#             # Logs optional
+#             if len(inspect.signature(_target_.learn).parameters) == 2:
+#                 agent._overrides_.learn = lambda a, replay, log, learn=agent._overrides_.learn: learn(a, replay)
+#             # args = [i for i, key in enumerate({'log', 'rewrite'}) if key  TODO Maybe use top version
+#             #         in inspect.signature(_target_.learn).parameters]
+#             # agent._overrides_.learn = \
+#             #     lambda a, replay, *v, learn=agent._overrides_.learn: learn(a, replay, *[v[i] for i in args])
+#
+#             # If learn has a return statement
+#             if any(isinstance(node, ast.Return)
+#                    for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.learn))))):
+#                 # Treat as loss
+#                 agent._overrides_.learn = preconstruct_optimize(agent._overrides_.learn)
+#
+#     _target_ = get_module(agent._target_)  # Agent
+#
+#     assert hasattr(_target_, 'act') and hasattr(_target_, 'learn'), 'Agent requires act & learn methods.'
+#
+#     # Checks if Pytorch module has a forward user-defined
+#     if not any(isinstance(node, ast.Return)
+#                for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(_target_.forward))))):
+#         if '_overrides_' not in agent or 'forward' not in agent._overrides_:
+#
+#             # Agent infers a forward from act
+#             agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
+#                 a.act(*v, **k)[0].squeeze(1).squeeze(-1)
+#
+#     # Logs optional  TODO Can maybe generalize as commented-out above
+#     if len(inspect.signature(_target_.learn).parameters) == 2:
+#         agent.setdefault('_overrides_', Args())['learn'] = lambda a, replay, log: _target_.learn(a, replay)
 # TODO:
 #     What if parallel?
 

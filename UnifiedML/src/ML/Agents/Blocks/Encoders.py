@@ -41,8 +41,12 @@ class CNNEncoder(nn.Module):
 
         adapt_cnn(self.Eyes, obs_shape)  # Adapt 2d CNN kernel sizes for 1d or small-d compatibility
 
+        act = getattr(self.eyes, 'act', None)
+
         if parallel:
             self.Eyes = nn.DataParallel(self.Eyes)  # Parallel on visible GPUs
+
+        setattr(self.Eyes, 'act', act)  # Pre-construct uses act method hidden in Parallel
 
         self.feature_shape = Utils.repr_shape(obs_shape, self.Eyes)  # Feature map shape
 

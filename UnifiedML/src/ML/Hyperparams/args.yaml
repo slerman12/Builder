@@ -2,6 +2,7 @@
 task: classify/mnist
 
 # Agent
+Agent: Agents.Agent
 obs_spec: {}
 action_spec:
   discrete: ???
@@ -51,8 +52,6 @@ test_dataset:
   Transform: null
   transform:
     _target_: ${test_dataset.Transform}
-task_name: ${format:${task}}
-suite_name: ${format:${env._target_}}
 frame_stack: 3
 truncate_episode_steps: 1000
 action_repeat: 1
@@ -100,7 +99,9 @@ num_workers: 8
 autocast: false  # Shorthand for mixed_precision
 mixed_precision: ${autocast}
 # Experiment
-Agent: Agents.Agent
+#agent_name: ${format:${agent._target_}}  TODO
+suite_name: ${format:${env._target_}}
+task_name: ${format:${task}}
 seed: 1
 experiment: Exp
 
