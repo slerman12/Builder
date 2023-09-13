@@ -3,7 +3,8 @@ task: classify/mnist
 
 # Agent
 obs_spec: {}
-action_spec: {}
+action_spec:
+  discrete: ???
 num_actions: 1
 standardize: true
 norm: 0.5  # Note: ignored / mutually exclusive if standardize
@@ -21,7 +22,7 @@ num_actors: 1
 online: true  # Shorthand for not offline
 offline: ${not:${online}}  # Defaults to true for classify tasks
 stream: false
-#discrete: ${agent.action_spec.discrete}  TODO
+discrete: ${action_spec.discrete}
 RL: true  # Defaults to false for classify tasks
 supervise: true
 generate: false
@@ -122,8 +123,8 @@ environment:
 
 agent:
   _target_: ${Agent}
-  obs_spec: ???
-  action_spec: ???
+  obs_spec: ${obs_spec}
+  action_spec: ${action_spec}
   num_actions: ${num_actions}
   trunk_dim: ${trunk_dim}
   hidden_dim: ${hidden_dim}

@@ -36,9 +36,9 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
+            discrete = action_spec.discrete and action_spec.pop('discrete') != '???' or self.action_spec.get('discrete')
             self.obs_spec.update(obs_spec)
-            self.action_spec.update(action_spec)
-            # TODO Inherit task_name?
+            self.action_spec.update(action_spec, discrete=discrete)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 

@@ -1,9 +1,10 @@
 import numpy as np
 
 
-class Accuracy:
+class Accuracy:  # TODO Debug discrete = false
     # An experience is a set of batch data that follows an action
     def add(self, exp):
+        # print(exp.label.shape, exp.action.shape)  # Need to argmax
         return exp.label == exp.action.squeeze(-1)  # Gets appended to an epoch list  TODO Squeeze?
 
     # At the end of an epoch, a metric is tabulated

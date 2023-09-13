@@ -19,10 +19,9 @@ def main(args):
     env = instantiate(args.environment) if args.train_steps else None
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
-    args.agent.obs_spec, args.agent.action_spec = generalize.obs_spec, generalize.action_spec
-    args.discrete = args.get('discrete', generalize.action_spec.discrete)
-
     # Update args
+    args.obs_spec.update(generalize.obs_spec)
+    args.action_spec.update(generalize.action_spec)
     interpolate(args)
 
     # Experience replay
