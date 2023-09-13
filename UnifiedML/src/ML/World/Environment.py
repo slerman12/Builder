@@ -36,9 +36,9 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
-            discrete = action_spec.discrete and action_spec.pop('discrete') != '???' or self.action_spec.get('discrete')
+            self.discrete = action_spec.pop('discrete', '???')
             self.obs_spec.update(obs_spec)
-            self.action_spec.update(action_spec, discrete=discrete)
+            self.action_spec.update(action_spec)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -167,6 +167,9 @@ class Environment:
     def action_spec(self):
         spec = {**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
                 **getattr(self.env, 'action_spec', {})}
+
+        if self.discrete != '???':
+            spec.discrete = self.discrete
 
         if 'shape' not in spec:
             # Infer action shape from label or action
