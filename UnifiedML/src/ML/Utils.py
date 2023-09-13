@@ -76,8 +76,7 @@ def init(args):
     interpolate(args)
 
     # Bootstrap the agent and passed-in model
-    args.agent.update(args.model)
-    preconstruct_agent(args.agent)
+    preconstruct_agent(args.agent, args.model)
 
 
 # Executes from console-script
@@ -129,7 +128,10 @@ grammars()
 
 
 # Agent initialized with model and bootstrapped together
-def preconstruct_agent(agent):
+def preconstruct_agent(agent, model):
+    if agent._target_ == 'Agents.Agent':
+        agent.update(model)
+
     # Preconstruct avoids deleting & replacing agent parts (e.g. expensive-to-initialize architectures)
     try:
         _target_ = get_module(agent._target_)
@@ -142,8 +144,12 @@ def preconstruct_agent(agent):
 
         outs = signature & {'action_spec', 'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
 
+        # Don't include the _default_ args in backbone if both the model and backbone use them
         args = Args(agent)
         args.recipes = recursive_Args(agent.recipes)
+        for key in agent._default_:
+            if key in args:
+                agent.pop(key)
 
         # Use Eyes when no output shape, else Pi_head
         if outs:
@@ -197,7 +203,7 @@ def preconstruct_agent(agent):
     act = agent._overrides_.act if getattr(agent.get('_overrides_', None), 'act', None) is not None \
         else _target_.act
 
-    # Act store optional  TODO Dump
+    # Act store optional
     if len(inspect.signature(act).parameters) == 2:
         agent._overrides_.act = lambda a, obs, store: act(a, obs)
 

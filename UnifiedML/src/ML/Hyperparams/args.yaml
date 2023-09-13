@@ -3,6 +3,7 @@ task: classify/mnist
 
 # Agent
 Agent: Agents.Agent
+Model: ${Agent}
 obs_spec: {}
 action_spec:
   discrete: ???
@@ -17,6 +18,7 @@ lr: 1e-4
 lr_decay_epochs: null
 weight_decay: 0
 ema_decay: 0.99
+stddev_schedule: ${stddev_schedule}
 num_critics: 2
 num_actors: 1
 # Domains
@@ -123,11 +125,10 @@ environment:
   action_spec: ${action_spec}
 
 model:
-  _target_: ${agent._target_}
+  _target_: ${Model}
 
-# TODO Some of these should be AC2 defaults - can pop defaults when model-forward-only, non-overlapping args
 agent:
-  _target_: ${Agent}
+  _target_: ${model._target_}
   obs_spec: ${obs_spec}
   action_spec: ${action_spec}
   num_actions: ${num_actions}
@@ -142,7 +143,7 @@ agent:
   ema_decay: ${ema_decay}
   ema: ${ema}
   rand_steps: ${rand_steps}
-  stddev_schedule: ${stddev_schedule} # Specified per task
+  stddev_schedule: ${stddev_schedule}
   discrete: ${discrete}
   RL: ${RL}
   supervise: ${supervise}
@@ -152,7 +153,9 @@ agent:
   log: ${offline}
   num_critics: ${num_critics}
   num_actors: ${num_actors}
-  depth: 0
+  # These won't be passed to backbone-agent
+  _default_:
+    depth: 0
 
 replay:
   _target_: World.Replay.Replay
