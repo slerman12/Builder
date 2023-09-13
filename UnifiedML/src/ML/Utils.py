@@ -76,7 +76,7 @@ def init(args):
     interpolate(args)
 
     # Bootstrap the agent and passed-in model
-    preconstruct_agent(args.agent, args.model)
+    preconstruct_agent(args.agent)
 
 
 # Executes from console-script
@@ -152,11 +152,9 @@ def preconstruct_agent(agent):
         _target_ = get_module('Agent')
 
         # Override agent act method with model
-        if callable(getattr(_target_, 'act', ())) and \
-                ('_overrides_' not in agent or 'act' not in agent._overrides_):
-            agent.setdefault('_overrides_', Args())['act'] = lambda a, *v, **k: getattr(
-                a.encoder.Eyes if not outs
-                else a.actor.Pi_head if agent.num_actors >= 1 else a.actor.Pi_head.ensemble[0], 'act')(*v, **k)
+        if callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
+            agent.setdefault('_overrides_', Args())['act'] = \
+                lambda a, *v, **k: getattr(a.encoder if not outs else a.actor, '_act')(*v, **k)
 
     # Learn method
     learn = agent._overrides_.learn if getattr(agent.get('_overrides_', None), 'learn', None) is not None \
@@ -174,8 +172,7 @@ def preconstruct_agent(agent):
             log.loss = loss
 
     # If learn has a return statement
-    if any(isinstance(node, ast.Return)
-           for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(learn))))):
+    if any(isinstance(node, ast.Return) for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(learn))))):
         # Treat as loss
         agent._overrides_.learn = overriden
 
@@ -187,7 +184,7 @@ def preconstruct_agent(agent):
         assert callable(getattr(_target_, 'act', ())), 'Agent/model must define a forward or act method.'
 
         agent.setdefault('_overrides_', Args())['forward'] = lambda a, *v, **k: \
-            a.act(*v, **k).squeeze(1).squeeze(-1)
+            a.act(*v, **k).squeeze(1).squeeze(-1)  # Note: act might expect more params
     elif not callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
         # Infers act from forward
         agent.setdefault('_overrides_', Args())['act'] = lambda a, *v, **k: \
@@ -199,7 +196,7 @@ def preconstruct_agent(agent):
 
     # Act store optional  TODO Dump
     if len(inspect.signature(act).parameters) == 2:
-        agent._overrides_.act = lambda a, obs, store: learn(a, obs)
+        agent._overrides_.act = lambda a, obs, store: act(a, obs)
 
 
 # # Agent initialized with model and bootstrapped together  # TODO Optional rewritable memory - in preconstruct?
@@ -720,11 +717,13 @@ class Ensemble(nn.Module):
 
         # TODO Not the most elegant. But works. Note: Using module[0] elsewhere might unexpectedly ensemble
 
-        # This makes it possible to use model= syntax w ensembles
+        # This makes it possible to use model= syntax w ensembles [makes the single into an ensemble version]
         if hasattr(modules[0], 'forward') and len(self) > 1:
             self.first = modules[0].forward
 
             modules[0].forward = self.forward
+
+        self.act = getattr(modules[0], 'act', None)
 
     def forward(self, *x, **kwargs):
         return torch.stack([(getattr(self, 'first', m) if i == 0 else m)(*x, **kwargs)

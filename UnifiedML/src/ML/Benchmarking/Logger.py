@@ -157,8 +157,6 @@ class Logger:
             data = np.array(data).flat
             return data[len(data) - 1]
 
-        # TODO just use default aggregations, but update with logger.aggregate instantiated
-        #   Allow eval() interpolation and adding custom logs by calling again in dump
         agg = self.default_aggregations.get(log_name,
                                             np.ma.mean if self.aggregation == 'mean'
                                             else np.ma.median if self.aggregation == 'median'
@@ -273,28 +271,23 @@ class Logger:
                     'episode': getattr(agent, 'episode', 1),
                     'epoch': getattr(agent, 'epoch', 1)}
 
-        setattr(agent, '_defaults', defaults)
+        setattr(agent, '_defaults_', defaults)
 
-        if self.model is not None and self.model._target_ is not None:
-            try:
-                _target_ = get_module(self.model._target_)
-            except Exception:
-                _target_ = instantiate(self.model)
+        targets = []
 
-            signature = set(inspect.signature(_target_).parameters)
-            outs = signature & {'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
-
-            if not outs:
-                setattr(agent.encoder.Eyes, '_defaults', defaults)
-            else:
-                setattr(agent.actor.Pi_head.ensemble[0], '_defaults', defaults)
+        if hasattr(agent, 'encoder') and hasattr(agent.encoder, 'Eyes'):
+            setattr(agent.encoder.Eyes, '_defaults_', defaults)
+            targets.append(type(agent.encoder.Eyes))
+        if hasattr(agent, 'actor') and hasattr(agent.actor, 'Pi_head'):
+            setattr(agent.actor.Pi_head.ensemble[0], '_defaults_', defaults)
+            targets.append(type(agent.actor.Pi_head.ensemble[0]))
 
         for key, value in defaults.items():
-            setattr(type(agent), key, property(lambda a, _key_=key: a._defaults[_key_],
-                                               lambda a, new_value, _key_=key: a._defaults.update({_key_: new_value})))
-            if self.model is not None and self.model._target_ is not None:
-                setattr(_target_, key, property(lambda m, _key_=key: m._defaults[_key_],
-                                                lambda m, new_value, _key_=key: m._defaults.update({_key_: new_value})))
+            setattr(type(agent), key, property(lambda a, _key_=key: a._defaults_[_key_],
+                                               lambda a, new_value, _key_=key: a._defaults_.update({_key_: new_value})))
+            for target in targets:
+                setattr(target, key, property(lambda m, _key_=key: m._defaults_[_key_],
+                                              lambda m, new_value, _key_=key: m._defaults_.update({_key_: new_value})))
 
     def re_witness(self, logs, agent, replay):
         if logs is not None:
