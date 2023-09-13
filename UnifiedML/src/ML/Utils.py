@@ -76,6 +76,7 @@ def init(args):
     interpolate(args)
 
     # Bootstrap the agent and passed-in model
+    args.agent.update(args.model)
     preconstruct_agent(args.agent)
 
 

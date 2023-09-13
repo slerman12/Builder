@@ -3,6 +3,7 @@ task: classify/mnist
 
 # Agent
 Agent: Agents.Agent
+Model: ${Agent}
 obs_spec: {}
 action_spec:
   discrete: ???
@@ -122,8 +123,10 @@ environment:
   obs_spec: ${obs_spec}
   action_spec: ${action_spec}
 
+model:
+
 agent:
-  _target_: ${Agent}
+  _target_: ${Model}
   obs_spec: ${obs_spec}
   action_spec: ${action_spec}
   num_actions: ${num_actions}
@@ -192,7 +195,6 @@ logger:
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
-  model: ${model}
   aggregation: mean
   log_actions: false
   wandb: false
@@ -219,8 +221,6 @@ plotting:
 
 # -- Language --
 
-Model: null
-
 Aug: null  # Shorthand for recipes.aug._target_
 
 Eyes: null  # Shorthand for recipes.encoder.eyes._target_
@@ -241,8 +241,6 @@ Optim: null  # Shorthand for recipes.<block>.optim._target_ ,  e.g. python Run.p
 Scheduler: null  # Shorthand for recipes.<block>.scheduler._target_
 
 # Shorthands for recipes
-model:
-  _target_: ${Model}
 aug:
   _target_: ${Aug}
 eyes:
