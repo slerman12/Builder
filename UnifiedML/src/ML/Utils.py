@@ -142,20 +142,22 @@ def preconstruct_agent(agent):
 
         outs = signature & {'action_spec', 'output_shape', 'out_shape', 'out_dim', 'out_channels', 'out_features'}
 
+        args = Args(agent)
+        args.pop('recipes')
+
         # Use Eyes when no output shape, else Pi_head
         if outs:
-            agent.recipes.actor.Pi_head = Args(agent)  # As Pi_head when output shape
+            agent.recipes.actor.Pi_head = args  # As Pi_head when output shape
             agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
         else:
-            agent.recipes.encoder.Eyes = Args(agent)  # Otherwise as Eyes
-
-        agent._target_ = 'Agent'
-        _target_ = get_module('Agent')
+            agent.recipes.encoder.Eyes = args  # Otherwise as Eyes
 
         # Override agent act method with model
         if callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
             agent.setdefault('_overrides_', Args())['act'] = \
-                lambda a, *v, **k: getattr(a.encoder if not outs else a.actor, '_act')(*v, **k)
+                lambda a, *v, **k: getattr(a.actor if outs else a.encoder, '_act')(*v, **k)
+
+        _target_ = agent._target_ = get_module('Agents.Agent')
 
     # Learn method
     learn = agent._overrides_.learn if getattr(agent.get('_overrides_', None), 'learn', None) is not None \

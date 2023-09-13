@@ -3,7 +3,6 @@ task: classify/mnist
 
 # Agent
 Agent: Agents.Agent
-Model: ${Agent}
 obs_spec: {}
 action_spec:
   discrete: ???
@@ -80,7 +79,7 @@ ema: false
 # Saving
 save: true
 save_per_steps: 0
-save_path: ./Checkpoints/${experiment}/${format:${Agent}}/${suite_name}/${task_name}_${seed}.pt
+save_path: ./Checkpoints/${experiment}/${format:${agent._target_}}/${suite_name}/${task_name}_${seed}.pt
 load_path: ${save_path}
 load: false
 load_per_steps: 0
@@ -124,9 +123,10 @@ environment:
   action_spec: ${action_spec}
 
 model:
+  _target_: ${agent._target_}
 
 agent:
-  _target_: ${Model}
+  _target_: ${Agent}
   obs_spec: ${obs_spec}
   action_spec: ${action_spec}
   num_actions: ${num_actions}
@@ -155,7 +155,7 @@ agent:
 
 replay:
   _target_: World.Replay.Replay
-  path: ${experiment}/${format:${Agent}}/${suite_name}/${task_name}_${seed}_Memories/
+  path: ${experiment}/${format:${agent._target_}}/${suite_name}/${task_name}_${seed}_Memories/
   batch_size: ${batch_size}
   device: ${device}
   num_workers: ${num_workers}
@@ -191,7 +191,7 @@ replay:
 
 logger:
   _target_: Benchmarking.Logger.Logger
-  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${Agent}}/${suite_name}/
+  path: ${log_path}Benchmarking/Logs/${experiment}/${format:${agent._target_}}/${suite_name}/
   task: ${task_name}
   seed: ${seed}
   generate: ${generate}
@@ -201,7 +201,7 @@ logger:
 
 vlogger:
   _target_: Benchmarking.Vlogger.Vlogger
-  path: ${log_path}Benchmarking/Vlogs/${experiment}/${format:${Agent}}/${suite_name}/${task_name}_${seed}
+  path: ${log_path}Benchmarking/Vlogs/${experiment}/${format:${agent._target_}}/${suite_name}/${task_name}_${seed}
   fps: 20
   reel: ${generate}
 

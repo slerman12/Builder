@@ -4,6 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from minihydra import instantiate, get_args, interpolate, Args  # minihydra conveniently and cleanly manages sys args
 
+import Utils
 from Utils import init, MT, MP, save, load
 
 
@@ -20,16 +21,15 @@ def main(args):
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
     # Update args
-    interpolate(args,
-                obs_spec=generalize.obs_spec,
-                action_spec=generalize.action_spec)
+    interpolate(args, obs_spec=generalize.obs_spec, action_spec=generalize.action_spec)
 
     # Experience replay
     replay = instantiate(args.replay) if args.train_steps else args.replay
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent).to(args.device)
+        else instantiate(args.agent, **Utils.adaptive_shaping(args.obs_spec.shape,
+                                                              args.action_spec.shape)).to(args.device)
 
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
