@@ -17,11 +17,9 @@ from multiprocessing.pool import ThreadPool
 
 import dill
 
-from torch.nn import Identity, Flatten  # For direct accessibility via command line
-import torchvision  # For direct accessibility via command line
-from torchvision import transforms  # For direct accessibility via command line
-from Agents.Blocks.Augmentations import *  # For direct accessibility via command line
-from Agents.Blocks.Architectures import *  # For direct accessibility via command line
+from torch.nn import Identity, Flatten
+import torchvision
+from torchvision import transforms
 
 import warnings
 
@@ -34,6 +32,11 @@ from torch.optim.lr_scheduler import *
 
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
     recursive_Args, get_module, portal, add_task_dirs
+
+
+# For direct accessibility via command line  TODO Just use this. No need to add eval for all of Utils
+module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations'])
+added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'Flatten': Flatten})
 
 
 # Sets all Pytorch and Numpy random seeds

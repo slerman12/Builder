@@ -174,9 +174,9 @@ class Environment:
             if 'label' in self.exp:
                 spec.shape = (len(self.exp.label)) if isinstance(self.exp.label, (tuple, set, list)) \
                     else (1,) if not hasattr(self.exp.label, 'shape') \
-                    else len(self.exp.label.shape[..., -1]) if spec['discrete'] else self.exp.label.shape[..., -1]
+                    else len(self.exp.label.shape[-1]) if spec['discrete'] else self.exp.label.shape
             elif 'action' in self.exp:
-                spec.shape = self.exp.action.shape
+                spec.shape = self.exp.action.shape[1:]
 
         return spec
 

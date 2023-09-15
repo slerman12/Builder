@@ -36,11 +36,11 @@ task_dirs = ['', 'task']  # Extra directories where tasks can be searched
 log_dir = None
 
 
-def get_module(_target_, paths=None, modules=None):
+def get_module(_target_, paths=None, modules=None, recurse=False):
     if callable(_target_):
         return _target_
 
-    paths = list(paths or []) + module_paths
+    paths = set(list(paths or []) + module_paths)
 
     if modules is None:
         modules = Args()
@@ -76,7 +76,7 @@ def get_module(_target_, paths=None, modules=None):
                 module = getattr(module, key.replace('.py', ''))
         else:
             # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
-            for i, base in enumerate(paths + ['']):
+            for i, base in enumerate(paths.union({''})):
                 base = os.path.abspath(base)
                 if prefix:
                     base += '/' + prefix[0] + '..'  # Move relative backwards to base
@@ -125,6 +125,15 @@ def get_module(_target_, paths=None, modules=None):
         for module in modules.values():
             if hasattr(module, module_name):
                 return getattr(module, module_name)
+        if not recurse:
+            e = None
+            for path in paths:
+                try:
+                    return get_module(path + '.' + _target_, paths, modules, recurse=True)
+                except Exception as e:
+                    continue
+            if e is not None:
+                raise e
     raise FileNotFoundError(f'Could not find module {module_name}. Search modules include: {list(modules.keys())}')
 
 

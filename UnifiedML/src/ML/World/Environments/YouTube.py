@@ -13,6 +13,7 @@ class YouTube:
     """
     Live-streaming environment
     """
+
     def __init__(self, url, train=True, steps=1000):
         self.video = CamGear(source=url, stream_mode=True, logging=True).start()
 
@@ -32,6 +33,7 @@ class AutoLabel(nn.Module):
     """
     A transform for auto-labelling object locations based on image and caption
     """
+
     def __init__(self, caption='little robot dog', device=None):
         super().__init__()
 
@@ -65,18 +67,35 @@ class GroundingDINO(nn.Module):
     GroundingDINO - one of the coolest vision-language models, combining DINO with language.
     Repo: ShilongLiu/GroundingDINO.
     """
+
     def __init__(self, caption='little robot dog'):
         super().__init__()
 
-        from huggingface_hub import hf_hub_download
+        try:
+            from groundingdino.util.inference import predict
 
-        # pip install groundingdino-py perhaps
-        # or
-        # git clone https://github.com/IDEA-Research/GroundingDINO.git
-        # python -m pip install -e GroundingDINO
-        # pip install transformers
-        from GroundingDINO.groundingdino.util.inference import predict
-        from GroundingDINO.demo.gradio_app import load_model_hf
+            from groundingdino.models import build_model
+            from groundingdino.util.slconfig import SLConfig
+            from groundingdino.util.utils import clean_state_dict
+
+            from huggingface_hub import hf_hub_download
+        except Exception as e:
+            print(e)
+            raise RuntimeError('Make sure you have installed GroundingDINO: \n'
+                               '$ pip install groundingdino-py\n'
+                               'and huggingface_hub. See ShilongLiu/GroundingDINO.')
+
+        def load_model_hf(model_config_path, repo_id, filename, device='cpu'):
+            args = SLConfig.fromfile(model_config_path)
+            model = build_model(args)
+            args.device = device
+
+            cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
+            checkpoint = torch.load(cache_file, map_location='cpu')
+            log = model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
+            print("Model loaded from {} \n => {}".format(cache_file, log))
+            _ = model.eval()
+            return model
 
         self.caption = caption
 
@@ -103,28 +122,51 @@ class GroundingDINO(nn.Module):
         return boxes, logits, phrases
 
 
+# TODO Delete
 if __name__ == '__main__':
     import os
 
+    import numpy as np
+    from PIL import Image
+
     import torch
 
-    import HEIC2PNG
+    from heic2png import HEIC2PNG  # pip install HEIC2PNG
 
-    from GroundingDINO.groundingdino.util.inference import load_image
+    import groundingdino.datasets.transforms as T
 
-    for local_image_path in os.listdir('../Playground/Magic/images/'):
+
+    def load_image(image_path):
+        transform = T.Compose(
+            [
+                T.RandomResize([800], max_size=1333),
+                T.ToTensor(),
+                T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+        src = Image.open(image_path).convert("RGB")
+        img = np.asarray(src)
+        image_transformed, _ = transform(src, None)
+        return img, image_transformed
+
+
+    path = '/Users/sam/Code/Playground/Magic/images/'
+
+    for local_image_path in os.listdir(path):
         if local_image_path[-5:] == '.heic':
-            HEIC2PNG('../Playground/Magic/images/' + local_image_path).save()
-            os.system(f'rm ../Playground/Magic/images/{local_image_path}')
+            HEIC2PNG(path + local_image_path).save()
+            os.system(f'rm {path}{local_image_path}')
             local_image_path = local_image_path.replace('.heic', '.png')
 
-        image_source, image = load_image('../Playground/Magic/images/' + local_image_path)
+        image_source, image = load_image(path + local_image_path)
 
         GD = GroundingDINO()
         boxes, logits, _ = GD(image)
 
         indices = logits.argmax(-1)
         box = gather(boxes, indices)  # Highest proba bounding-box
+
+        print(box)
 
         # annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
         #
