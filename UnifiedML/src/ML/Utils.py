@@ -454,9 +454,9 @@ class Transform:
                     exp = self.to(exp, device=device)
                     self.exp = False
             elif self.exp:
-                exp.obs = self.module(exp.obs)
-            else:
                 exp = self.module(exp)
+            else:
+                exp.obs = self.module(exp.obs)
 
         return exp
 
