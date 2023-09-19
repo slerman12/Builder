@@ -28,8 +28,8 @@ def main(args):
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent, **Utils.adaptive_shaping(args.obs_spec.shape,
-                                                              args.action_spec.shape)).to(args.device)
+        else instantiate(args.agent, **Utils.adaptive_shaping(obs_spec=args.obs_spec,
+                                                              action_spec=args.action_spec)).to(args.device)
 
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)

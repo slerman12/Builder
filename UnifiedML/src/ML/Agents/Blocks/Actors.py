@@ -18,7 +18,7 @@ from Agents.Blocks.Creator import Creator
 
 class EnsemblePiActor(nn.Module):
     """Ensemble of Gaussian or Categorical policies Pi, generalized for discrete or continuous action spaces."""
-    def __init__(self, repr_shape, trunk_dim, hidden_dim, action_spec, trunk=None, Pi_head=None, ensemble_size=2,
+    def __init__(self, repr_shape, trunk_dim, hidden_dim, action_spec, trunk=None, Pi_head=None, ensemble_size=1,
                  discrete=False, stddev_schedule=1, creator=None, rand_steps=0, parallel=False,
                  optim=None, scheduler=None, lr=None, lr_decay_epochs=None, weight_decay=None, ema_decay=None):
         super().__init__()

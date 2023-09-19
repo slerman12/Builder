@@ -466,7 +466,7 @@ class Transform:
 
 
 # Adaptively fills shaping arguments in instantiated Pytorch modules
-def adaptive_shaping(in_shape=None, out_shape=None):
+def adaptive_shaping(in_shape=None, out_shape=None, obs_spec=None, action_spec=None):
     shaping = {}
 
     if in_shape is not None:
@@ -477,12 +477,23 @@ def adaptive_shaping(in_shape=None, out_shape=None):
                             in_channels=in_shape[0]))
         shaping['in_features'] = shaping['in_dim']
 
+    if obs_spec is not None:
+        shaping.update(dict(input_shape=obs_spec.shape, in_shape=obs_spec.shape, in_dim=math.prod(obs_spec.shape),
+                            in_channels=obs_spec.shape[0], obs_spec=obs_spec))
+        shaping['in_features'] = shaping['in_dim']
+
     if out_shape is not None:
         if not isinstance(out_shape, (list, tuple)):
             out_shape = [out_shape]
 
         shaping.update(dict(output_shape=out_shape, out_shape=out_shape, out_dim=math.prod(out_shape),
-                            out_channels=out_shape[0]))
+                            out_channels=out_shape[0], action_spec=Args(shape=out_shape)))
+        shaping['out_features'] = shaping['out_dim']
+
+    if action_spec is not None:
+        shaping.update(dict(output_shape=action_spec.shape, out_shape=action_spec.shape,
+                            out_dim=math.prod(action_spec.shape), out_channels=action_spec.shape[0],
+                            action_spec=action_spec))
         shaping['out_features'] = shaping['out_dim']
 
     return shaping

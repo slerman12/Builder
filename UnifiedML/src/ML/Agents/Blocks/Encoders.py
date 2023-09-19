@@ -71,7 +71,7 @@ class CNNEncoder(nn.Module):
         if self.standardize:
             obs = (obs - self.mean.to(obs.device).view(-1, *axes)) / self.stddev.to(obs.device).view(-1, *axes)
         elif self.normalize:
-            obs = (self.norm * 2) * (obs - self.low) / (self.high - self.low) - self.norm
+            obs = (self.norm * 2) * (obs - self.low) / (self.high - self.low) - float(self.norm)
 
         try:
             channel_dim = (1,) * (not axes)  # At least 1 channel dim and spatial dim

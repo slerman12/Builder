@@ -3,7 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import warnings
-from copy import copy
 
 import torch
 from torch.nn.functional import cross_entropy, mse_loss
@@ -45,8 +44,6 @@ class Agent(torch.nn.Module):
 
         self.num_actors = max(num_critics, num_actors) if self.discrete and self.RL else num_actors
         self.depth = depth  # Dynamics prediction depth
-
-        action_spec = copy(action_spec)  # Non-destructive copy
 
         # Image augmentation
         self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)
