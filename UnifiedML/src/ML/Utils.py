@@ -444,25 +444,25 @@ class Transform:
         if not isinstance(exp, Args):
             exp = Args(exp)
 
+        # Adapt to experience (exp.obs) or obs (just obs)
         if self.module is not None:
-            if device is not None or self.device is not None:
-                exp.obs = torch.as_tensor(exp.obs, device=device or self.device)
-            else:
-                exp.obs = torch.as_tensor(exp.obs)
-
             if self.exp is None:
                 try:
-                    exp.obs = self.module(exp.obs)
-                    self.exp = False
-                except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
-                    exp = self.module(exp)
+                    exp.obs = self.to(exp.obs, device=device)
                     self.exp = True
+                except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
+                    exp = self.to(exp, device=device)
+                    self.exp = False
             elif self.exp:
-                exp = self.module(exp)
-            else:
                 exp.obs = self.module(exp.obs)
+            else:
+                exp = self.module(exp)
 
         return exp
+
+    def to(self, exp, device=None):
+        return torch.as_tensor(exp, device=device or self.device) if device is not None or \
+                                                                     self.device is not None else torch.as_tensor(exp)
 
 
 # Adaptively fills shaping arguments in instantiated Pytorch modules
@@ -591,7 +591,7 @@ def cnn_layer_feature_shape(*spatial_shape, kernel_size=1, stride=1, padding=0, 
 
 
 # Compute the output shape of a whole CNN (or other architecture)
-def cnn_feature_shape(chw, *blocks, verbose=False):
+def cnn_feature_shape(chw, *blocks, uncertain=None, verbose=False):
     channels, height, width = chw[0], chw[1] if len(chw) > 1 else None, chw[2] if len(chw) > 2 else None
     for block in blocks:
         if isinstance(block, (nn.Conv2d, nn.AvgPool2d, nn.MaxPool2d, nn.Conv1d, nn.AvgPool1d, nn.MaxPool1d)):
@@ -613,8 +613,10 @@ def cnn_feature_shape(chw, *blocks, verbose=False):
             channels, height, width = chw[0], chw[1] if len(chw) > 1 else None, chw[2] if len(chw) > 2 else None
         elif hasattr(block, 'modules'):
             for layer in block.children():
-                chw = cnn_feature_shape(chw, layer, verbose=verbose)
+                chw = cnn_feature_shape(chw, layer, uncertain=uncertain, verbose=verbose)
                 channels, height, width = chw[0], chw[1] if len(chw) > 1 else None, chw[2] if len(chw) > 2 else None
+        elif uncertain is not None:
+            uncertain['truth'] = True
         if verbose:
             print(type(block), (channels, height, width))
 
@@ -625,9 +627,14 @@ def cnn_feature_shape(chw, *blocks, verbose=False):
 
 # General-purpose shape pre-computation. Unlike above, uses manual forward pass through model(s).
 def repr_shape(input_shape, *blocks):
-    for block in blocks:
-        input_shape = block.shape(input_shape) if hasattr(block, 'shape') and callable(block.shape) \
-            else block(torch.ones(1, *input_shape)).shape[1:]
+    uncertain = {}
+    shape = cnn_feature_shape(input_shape, *blocks, uncertain=uncertain)
+    if uncertain:
+        for block in blocks:
+            input_shape = block.shape(input_shape) if hasattr(block, 'shape') and callable(block.shape) \
+                else block(torch.ones(1, *input_shape)).shape[1:]
+    else:
+        input_shape = shape
     return input_shape
 
 

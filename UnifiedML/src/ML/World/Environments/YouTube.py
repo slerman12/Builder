@@ -4,7 +4,8 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from vidgear.gears import CamGear
 
-from torch import nn
+import torch
+from torch import nn, as_tensor
 
 from Utils import gather
 
@@ -26,8 +27,14 @@ class YouTube:
 
     def reset(self):
         self.step += 1
-        return {'obs': self.video.read(), 'done': not self.train and not self.step % self.steps}
+        return {'obs': as_tensor(self.video.read()).permute(2, 0, 1),
+                'done': not self.train and not self.step % self.steps}
 
+
+# Example Usage:
+# python Run.py Env=YouTube env.url='https://youtube.com/live/...=share'
+#                           env.transform=Sequential
+#                           env.transform._targets_='["transforms.Resize(32)","World.Environments.YouTube.AutoLabel"]'
 
 class AutoLabel(nn.Module):
     """
@@ -53,10 +60,12 @@ class AutoLabel(nn.Module):
 
         boxes, logits, phrases = self.GroundingDINO(exp.obs)
 
+        print(logits.shape)
         indices = logits.argmax(-1)
         box = gather(boxes, indices)  # Highest proba bounding-box
 
-        # Extract label
+        # Extract label  TODO RandomResizeCrop Just the area around the Bittle.
+        # Use absolute for position
         exp.label = box
 
         return exp
@@ -110,9 +119,12 @@ class GroundingDINO(nn.Module):
         self.predict = predict
 
     def forward(self, obs, caption=None):
+        import torch
+
+        # TODO Somehow override one op to cpu
         boxes, logits, phrases = self.predict(
             model=self.GroundingDINO,
-            image=obs,
+            image=obs.to(torch.float32),
             caption=caption or self.caption,
             box_threshold=0.3,
             text_threshold=0.25,

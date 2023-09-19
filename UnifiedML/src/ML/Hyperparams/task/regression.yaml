@@ -7,3 +7,5 @@ dataset:
 
 metric:
   accuracy: World.Metrics.MSE
+
+discrete: false
