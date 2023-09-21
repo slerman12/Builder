@@ -82,7 +82,7 @@ def cnn_broadcast(input_shape, x):
         2. Otherwise, try to reshape spatial dims into expected spatial shape
         3. Or, if not possible, create spatial dims via repetition of input over space
         4. Altogether ignore if input empty
-        5. Concatenate inputs along channel axis
+        5. Concatenate/fuse inputs along channel axis
 
     Allows images to be paired with lower-dim contexts or other images, broadcasting if lower-dim or even flattened.
     """

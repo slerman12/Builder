@@ -19,18 +19,11 @@ class Ensemble(nn.Module):
                                        else deepcopy(m) for i, m in enumerate(modules)])
         self.dim = dim
 
-        # This makes it possible to use model= syntax w ensembles
-        if hasattr(modules[0], 'forward'):
-            self.first = modules[0].forward
-
-            if len(modules) > 1:
-                # Not the most elegant. But works. Note: Using module[0] elsewhere might unexpectedly ensemble
-                modules[0].forward = self.forward
-
     def forward(self, *x, **kwargs):
-        return torch.stack([(getattr(self, 'first', m) if i == 0 else m)(*x, **kwargs)
-                            for i, m in enumerate(self.ensemble)],
-                           self.dim) if len(self) > 1 else self.ensemble[0](*x, **kwargs).unsqueeze(self.dim)
+        out = [m(*x, **kwargs) for m in self.ensemble]
+
+        return torch.stack(out, self.dim) if len(self) > 1 \
+            else out[0].unsqueeze(self.dim)
 
     def __len__(self):
         return len(self.ensemble)
