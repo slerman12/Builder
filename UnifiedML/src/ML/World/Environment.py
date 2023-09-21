@@ -70,7 +70,7 @@ class Environment:
             obs = torch.as_tensor(obs, device=self.device)
 
             # Act
-            store = Args()
+            store = Args()  # TODO Pass in log as well - problem, has to read var name order
             with act_mode(agent, self.ema):
                 action = agent.act(obs, store)
 
