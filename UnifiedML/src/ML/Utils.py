@@ -10,7 +10,6 @@ import time
 import os
 import sys
 import random
-from copy import deepcopy
 from functools import cached_property
 import re
 from multiprocessing.pool import ThreadPool
@@ -34,7 +33,7 @@ from minihydra import Args, yaml_search_paths, module_paths, added_modules, gram
     recursive_Args, get_module, portal, add_task_dirs
 
 
-# For direct accessibility via command line  TODO Just use this. No need to add eval for all of Utils
+# For direct accessibility via command line  TODO No need to add eval for all of Utils
 module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations'])
 added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'Flatten': Flatten})
 
