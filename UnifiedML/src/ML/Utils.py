@@ -433,30 +433,35 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
 
 
-# Allows module to support either full batch or obs  TODO Apply on Aug
-class Transform:
-    def __init__(self, module, device=None):
+# Allows module to support either full batch args with modalities or single-modal (e.g. "obs")  TODO Apply on Aug
+class Modals(nn.Module):
+    def __init__(self, module, modal='obs', device=None):
+        super().__init__()
+
         self.exp = None
-        self.module = module  # TODO Support a sequence, maybe do the instantiation here
+        self.module = module
+        self.modal = modal
         self.device = device
 
-    def __call__(self, exp, device=None):
-        if not isinstance(exp, Args):
+    def forward(self, exp, device=None):
+        if isinstance(exp, dict):
             exp = Args(exp)
 
-        # Adapt to experience (exp.obs) or obs (just obs)
+        # Is it an exp?
+        if isinstance(exp, Args) and self.modal in exp:
+            exp[self.modal] = self.to(exp[self.modal], device=device)
+        else:
+            exp = self.to(exp, device=device)
+
+        # Adapt to experience (exp.obs) or full exp
         if self.module is not None:
-            if self.exp is None:
-                try:
-                    exp.obs = self.to(exp.obs, device=device)
-                    self.exp = True
-                except (AttributeError, IndexError, KeyError, ValueError, RuntimeError):
-                    exp = self.to(exp, device=device)
-                    self.exp = False
-            elif self.exp:
-                exp = self.module(exp)
+            if isinstance(exp, Args) and self.modal in exp:
+                if getattr(self.module, '_exp_', getattr(self.module, '_batch_', None)) is None:
+                    exp[self.modal] = self.module(exp[self.modal])
+                else:
+                    exp = self.module(exp)
             else:
-                exp.obs = self.module(exp.obs)
+                exp = self.module(exp)
 
         return exp
 
@@ -477,7 +482,7 @@ def adaptive_shaping(in_shape=None, out_shape=None, obs_spec=None, action_spec=N
                             in_channels=in_shape[0]))
         shaping['in_features'] = shaping['in_dim']
 
-    if obs_spec is not None:
+    if obs_spec is not None and 'shape' in obs_spec:
         shaping.update(dict(input_shape=obs_spec.shape, in_shape=obs_spec.shape, in_dim=math.prod(obs_spec.shape),
                             in_channels=obs_spec.shape[0], obs_spec=obs_spec))
         shaping['in_features'] = shaping['in_dim']
@@ -490,7 +495,7 @@ def adaptive_shaping(in_shape=None, out_shape=None, obs_spec=None, action_spec=N
                             out_channels=out_shape[0], action_spec=Args(shape=out_shape)))
         shaping['out_features'] = shaping['out_dim']
 
-    if action_spec is not None:
+    if action_spec is not None and 'shape' in action_spec:
         shaping.update(dict(output_shape=action_spec.shape, out_shape=action_spec.shape,
                             out_dim=math.prod(action_spec.shape), out_channels=action_spec.shape[0],
                             action_spec=action_spec))
@@ -732,7 +737,7 @@ def batched_cartesian_prod(items: (list, tuple), dim=-1, collapse_dims=True):
         for i, item in enumerate(items)], -1).view(*lead_dims, *[-1] if collapse_dims else dims, *tail_dims, len(items))
 
 
-# Sequential of instantiations e.g. python Run.py Eyes=Sequential +eyes._targets_="[CNN, Transformer]"
+# Sequential of instantiations e.g. python Run.py eyes=Utils.Sequential eyes._targets_="[CNN, Transformer]"
 class Sequential(nn.Module):
     def __init__(self, _targets_, i=0, **kwargs):
         super().__init__()
@@ -740,20 +745,23 @@ class Sequential(nn.Module):
         self.Sequence = nn.ModuleList()
 
         for _target_ in _targets_:
-            self.Sequence.append(instantiate(Args({'_target_': _target_}) if isinstance(_target_, str)
-                                             else _target_, i, **kwargs))
+            self.Sequence.append(Modals(instantiate(Args({'_target_': _target_}) if isinstance(_target_, str)
+                                                    else _target_, i, **kwargs)))
 
             if 'input_shape' in kwargs:
                 kwargs['input_shape'] = repr_shape(kwargs['input_shape'], self.Sequence[-1])
 
-    def shape(self, shape):
-        return cnn_feature_shape(shape, self.Sequence)
+        self._exp_ = True  # Flag that toggles passing in full exp/batch-dict instead of just obs
 
-    def forward(self, obs, *context):
+    def shape(self, shape):
+        return repr_shape(shape, *self.Sequence)
+
+    def forward(self, obs, *context, **kwargs):
         out = (obs, *context)
+
         # Multi-input/output Sequential
         for i, module in enumerate(self.Sequence):
-            out = module(*out)
+            out = module(*out, **kwargs)
             if not isinstance(out, tuple) and i < len(self.Sequence) - 1:
                 out = (out,)
         return out

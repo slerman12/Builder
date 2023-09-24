@@ -10,7 +10,7 @@ from math import inf
 import torch
 from minihydra import instantiate, valid_path, Args
 
-from Utils import Transform
+from Utils import Modals
 
 
 class Environment:
@@ -22,7 +22,7 @@ class Environment:
         self.generate = generate
 
         self.device = device
-        self.transform = Transform(instantiate(env.pop('transform', transform), device=device))
+        self.transform = Modals(instantiate(env.pop('transform', transform), device=device))
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
         self.disable, self.on_policy = (offline or generate) and train, stream
@@ -160,7 +160,7 @@ class Environment:
 
     @cached_property
     def obs_spec(self):
-        return Args({'shape': self.exp.obs.shape if 'obs' in self.exp else (),
+        return Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
                      **getattr(self.env, 'obs_spec', {})})
 
@@ -177,6 +177,9 @@ class Environment:
                     else len(self.exp.label.shape[-1]) if spec['discrete'] else self.exp.label.shape
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape[1:]
+            else:
+                assert False, "Action shape required. Set shape in Env " \
+                              "e.g. self.action_spec = {..., 'shape': (3, 64, 64), ...}"
 
         return spec
 

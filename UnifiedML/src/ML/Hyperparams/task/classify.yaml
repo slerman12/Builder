@@ -1,7 +1,6 @@
 imports:
   - supervised
 suite_name: classify
-discrete: true
 
 metric:
   accuracy: World.Metrics.Accuracy

@@ -20,7 +20,7 @@ from torch import multiprocessing as mp
 from World.Memory import Memory, Batch
 from World.Dataset import load_dataset, datums_as_batch, get_dataset_path, worker_init_fn, compute_stats
 
-from Utils import Transform
+from Utils import Modals
 
 from minihydra import instantiate, open_yaml, Args
 
@@ -146,7 +146,7 @@ class Replay:
 
         # TODO Add meta datum if meta_shape, and make sure add() also does - or make dynamic
 
-        transform = Transform(instantiate(transform, memory=self.memory))
+        transform = Modals(instantiate(transform, memory=self.memory))
 
         # Sampler
 

@@ -12,7 +12,7 @@ stddev_schedule: 'linear(1.0,0.1,20000)'
 hd_capacity: 1e6
 
 # Atari has two augmentations
-Aug: Sequential
+Aug: Utils.Sequential
 aug:
     _targets_: [RandomShiftsAug, IntensityAug]
     pad: 4

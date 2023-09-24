@@ -16,25 +16,28 @@ class YouTube:
     """
 
     def __init__(self, url, train=True, steps=1000):
+        url = url.split('?feature')[0]
+
         self.video = CamGear(source=url, stream_mode=True, logging=True).start()
 
         self.train = train
         self.steps = steps  # Controls evaluation episode length
-        self.step = 0
+        self.episode_step = 0
 
     def step(self, action=None):
         return self.reset()
 
     def reset(self):
-        self.step += 1
-        return {'obs': as_tensor(self.video.read()).permute(2, 0, 1),
-                'done': not self.train and not self.step % self.steps}
+        self.episode_step += 1
+        return {'obs': as_tensor(self.video.read()).permute(2, 0, 1).unsqueeze(0),
+                'done': not self.train and not self.episode_step % self.steps}
 
 
 # Example Usage:
-# python Run.py Env=YouTube env.url='https://youtube.com/live/...=share'
+# python Run.py env=YouTube env.url='https://youtube.com/live/...=share'
 #                           env.transform=Sequential
 #                           env.transform._targets_='["transforms.Resize(32)","World.Environments.YouTube.AutoLabel"]'
+#               stream=true
 
 class AutoLabel(nn.Module):
     """
@@ -54,19 +57,23 @@ class AutoLabel(nn.Module):
             else 'mps' if mps and mps.is_available() \
             else 'cpu'
 
+        self._exp_ = True  # Flag that toggles passing in full exp/batch-dict instead of just obs
+
     def __call__(self, exp):
         if self.device is not None:
             exp.obs = exp.obs.to(self.device)
 
         boxes, logits, phrases = self.GroundingDINO(exp.obs)
 
-        print(logits.shape)
-        indices = logits.argmax(-1)
-        box = gather(boxes, indices)  # Highest proba bounding-box
+        if boxes.nelement():
+            indices = logits.argmax(-1)
+            box = gather(boxes, indices)  # Highest proba bounding-box
 
-        # Extract label  TODO RandomResizeCrop Just the area around the Bittle.
-        # Use absolute for position
-        exp.label = box
+            # Extract label  TODO RandomResizeCrop Just the area around the Bittle.
+            # Use absolute for position
+            exp.label = box
+        else:
+            exp.label = torch.zeros(1, 6)
 
         return exp
 
@@ -119,7 +126,8 @@ class GroundingDINO(nn.Module):
         self.predict = predict
 
     def forward(self, obs, caption=None):
-        import torch
+        if len(obs.shape) == 4:
+            obs = obs.squeeze(0)  # TODO batch iterate instead of assume-squeeze
 
         # TODO Somehow override one op to cpu
         boxes, logits, phrases = self.predict(
@@ -140,8 +148,6 @@ if __name__ == '__main__':
 
     import numpy as np
     from PIL import Image
-
-    import torch
 
     from heic2png import HEIC2PNG  # pip install HEIC2PNG
 

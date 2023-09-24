@@ -50,7 +50,7 @@ def main(args):
                 exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                     vlog=args.log_media)
 
-                logger.eval().log(log, exp=exp if converged else None)
+                logger.eval().log(log, exp=exp if converged else None)  # TODO This won't run if converged and logged
 
             logger.eval().dump_logs()
 
