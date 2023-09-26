@@ -16,26 +16,21 @@ from multiprocessing.pool import ThreadPool
 
 import dill
 
-from torch.nn import Identity, Flatten
-import torchvision
-from torchvision import transforms
-
 import warnings
 
 import numpy as np
 
 import torch
 import torch.nn as nn
+from torch.nn import Identity, Flatten
 from torch.optim import *
 from torch.optim.lr_scheduler import *
 
+import torchvision
+from torchvision import transforms
+
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
     recursive_Args, get_module, portal, add_task_dirs
-
-
-# For direct accessibility via command line  TODO No need to add eval for all of Utils
-module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations'])
-added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'Flatten': Flatten})
 
 
 # Sets all Pytorch and Numpy random seeds
@@ -79,33 +74,6 @@ def init(args):
 
     # Bootstrap the agent and passed-in model
     preconstruct_agent(args.agent, args.model)
-
-
-# Executes from console-script
-def run(args=None, **kwargs):
-    from Run import main
-    main(args, **kwargs)
-
-
-UnifiedML = os.path.dirname(__file__)
-app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
-
-
-# Imports UnifiedML paths and the paths of any launching app
-def import_paths():
-    if UnifiedML not in yaml_search_paths:
-        yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to yaml search path
-
-    if UnifiedML not in module_paths:
-        module_paths.append(UnifiedML)  # Adds UnifiedML to module instantiation search path
-
-    added_modules.update(globals())  # Adds everything in Utils to module instantiation path TODO Manually specify
-
-    # Adds Hyperparams dir to search path
-    add_task_dirs('Hyperparams')
-
-
-import_paths()
 
 
 # Grammar rules for minihydra
@@ -922,3 +890,35 @@ def schedule(schedule, step):
             start, stop, duration = [float(g) for g in match.groups()]
             mix = float(np.clip(step / duration, 0.0, 1.0))
             return (1.0 - mix) * start + mix * stop
+
+
+UnifiedML = os.path.dirname(__file__)
+app = '/'.join(str(inspect.stack()[-1][1]).split('/')[:-1])
+
+
+# Imports UnifiedML paths and the paths of any launching app
+def import_paths():
+    if UnifiedML not in yaml_search_paths:
+        yaml_search_paths.append(UnifiedML)  # Adds UnifiedML to yaml search path
+
+    if UnifiedML not in module_paths:
+        module_paths.append(UnifiedML)  # Adds UnifiedML to module instantiation search path
+
+    # added_modules.update(globals())  # Adds everything in Utils to module instantiation path
+
+    # For direct accessibility via command line
+    module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents'])
+    added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'Flatten': Flatten,
+                          'Sequential': Sequential, 'load': load, 'save': save})
+
+    # Adds Hyperparams dir to search path
+    add_task_dirs('Hyperparams')
+
+
+import_paths()
+
+
+# Executes from console-script
+def run(args=None, **kwargs):
+    from Run import main
+    main(args, **kwargs)
