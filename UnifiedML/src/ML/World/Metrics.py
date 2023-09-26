@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Accuracy:  # TODO Debug discrete = false  (Need to argmax)
+class Accuracy:
     # An experience is a set of batch data that follows an action
     def add(self, exp):
         return exp.label == exp.action  # Gets appended to an epoch list
@@ -36,30 +36,32 @@ class Precision:
     def add(self, exp):
         classes = np.unique(exp.action)
 
-        true_positives = {c: exp.action == exp.label == c for c in classes}
+        # TODO use WHERE for the given class. Can't remember if on action or label
+        true_positives = {c: (exp.action == exp.label) & (exp.action == c) for c in classes}
         total = {c: sum(exp.action == c) for c in classes}
 
         return true_positives, total
 
     def tabulate(self, epoch):
         # Micro-average precision
-        return sum([value[key][0] for value in epoch for key in value]) \
-            / sum([value[key][1] for value in epoch for key in value])
+        return sum([true_positives[key] for true_positives, total in epoch for key in true_positives]) \
+            / sum([total[key] for true_positives, total in epoch for key in true_positives])
 
 
 class Recall:
     def add(self, exp):
         classes = np.unique(exp.label)
 
-        true_positives = {c: exp.action == exp.label == c for c in classes}
+        # TODO use WHERE for the given class. Can't remember if on action or label
+        true_positives = {c: (exp.action == exp.label) & (exp.action == c) for c in classes}
         total = {c: sum(exp.label == c) for c in classes}
 
         return true_positives, total
 
     def tabulate(self, epoch):
         # Micro-average precision
-        return sum([value[key][0] for value in epoch for key in value]) \
-            / sum([value[key][1] for value in epoch for key in value])
+        return sum([true_positives[key] for true_positives, total in epoch for key in true_positives]) \
+            / sum([total[key] for true_positives, total in epoch for key in true_positives])
 
 
 # metric.F1=2*precision*recall/(precision+recall)
