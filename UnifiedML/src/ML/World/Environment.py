@@ -83,9 +83,9 @@ class Environment:
             if isinstance(exp, tuple):
                 prev, exp = exp  # TODO Maybe separated prev only needed for metric
 
-            self.exp.update(action=action, step=agent.step)
-            self.exp.update(prev)
             self.exp.update(store)  # TODO Maybe separated prev only needed for metric
+            self.exp.update(action=exp.get('action', action), step=agent.step)
+            self.exp.update(prev)
 
             # Tally reward & logs
             self.tally_metric(self.exp)
@@ -177,9 +177,6 @@ class Environment:
                     else len(self.exp.label.shape[-1]) if spec['discrete'] else self.exp.label.shape
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape[1:]
-            else:
-                assert False, "Action shape required. Set shape in Env " \
-                              "e.g. self.action_spec = {..., 'shape': (3, 64, 64), ...}"
 
         return spec
 

@@ -18,7 +18,7 @@ class YouTube:
     def __init__(self, url, train=True, steps=1000):
         url = url.split('?feature')[0]
 
-        self.video = CamGear(source=url, stream_mode=True, logging=True).start()
+        # self.video = CamGear(source=url, stream_mode=True, logging=True).start()
 
         self.train = train
         self.steps = steps  # Controls evaluation episode length
@@ -29,7 +29,9 @@ class YouTube:
 
     def reset(self):
         self.episode_step += 1
-        return {'obs': as_tensor(self.video.read()).permute(2, 0, 1).unsqueeze(0),
+        return {
+            # 'obs': as_tensor(self.video.read()).permute(2, 0, 1).unsqueeze(0),
+            'obs': torch.randn(1, 3, 800, 1200),
                 'done': not self.train and not self.episode_step % self.steps}
 
 
@@ -76,6 +78,47 @@ class AutoLabel(nn.Module):
             exp.label = torch.zeros(1, 6)
 
         return exp
+
+
+def predict_batch(
+        model,
+        images: torch.Tensor,
+        caption: str,
+        box_threshold: float,
+        text_threshold: float,
+        device: str = "cuda"
+):
+    from groundingdino.util.inference import preprocess_caption
+    from groundingdino.util.utils import get_phrases_from_posmap
+
+    caption = preprocess_caption(caption=caption)
+
+    model = model.to(device)
+    image = images.to(device)
+
+    print(f"Image shape: {image.shape}") # Image shape: torch.Size([num_batch, 3, 800, 1200])
+    with torch.no_grad():
+        outputs = model(image, captions=[caption for _ in range(len(images))]) # <------- I use the same caption for all the images for my use-case
+
+    print(f'{outputs["pred_logits"].shape}') # torch.Size([num_batch, 900, 256])
+    print(f'{outputs["pred_boxes"].shape}') # torch.Size([num_batch, 900, 4])
+    prediction_logits = outputs["pred_logits"].cpu().sigmoid()[0]  # prediction_logits.shape = (nq, 256)
+    prediction_boxes = outputs["pred_boxes"].cpu()[0]  # prediction_boxes.shape = (nq, 4)
+
+    mask = prediction_logits.max(dim=1)[0] > box_threshold
+    logits = prediction_logits[mask]  # logits.shape = (n, 256)
+    boxes = prediction_boxes[mask]  # boxes.shape = (n, 4)
+
+    tokenizer = model.tokenizer
+    tokenized = tokenizer(caption)
+
+    phrases = [
+        get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer).replace('.', '')
+        for logit
+        in logits
+    ]
+
+    return boxes, logits.max(dim=1)[0], phrases
 
 
 class GroundingDINO(nn.Module):
@@ -126,8 +169,11 @@ class GroundingDINO(nn.Module):
         self.predict = predict
 
     def forward(self, obs, caption=None):
+        # TODO batch iterate instead of assume-squeeze OR
+        # TODO https://github.com/IDEA-Research/GroundingDINO/issues/102#issuecomment-1558728065
+        #     https://github.com/yuwenmichael/Grounding-DINO-Batch-Inference
         if len(obs.shape) == 4:
-            obs = obs.squeeze(0)  # TODO batch iterate instead of assume-squeeze
+            obs = obs.squeeze(0)
 
         # TODO Somehow override one op to cpu
         boxes, logits, phrases = self.predict(

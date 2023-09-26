@@ -100,7 +100,8 @@ class Datums:
 
         if action is not None:  # No action - "no-op" - allowed for Offline streaming
             # Adapt to discrete!    Note: storing argmax
-            self.exp.action = self.adapt_to_discrete(action) if self.discrete else action
+            self.exp.action = self.adapt_to_discrete(action) if self.discrete \
+                else np.reshape(action, self.exp.label.shape)
 
         return self.exp
 

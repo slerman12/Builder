@@ -4,7 +4,7 @@ import numpy as np
 class Accuracy:  # TODO Debug discrete = false  (Need to argmax)
     # An experience is a set of batch data that follows an action
     def add(self, exp):
-        return exp.label == exp.action.squeeze(-1)  # Gets appended to an epoch list
+        return exp.label == exp.action  # Gets appended to an epoch list
 
     # At the end of an epoch, a metric is tabulated
     def tabulate(self, epoch):
@@ -13,7 +13,7 @@ class Accuracy:  # TODO Debug discrete = false  (Need to argmax)
 
 class MSE:
     def add(self, exp):
-        return (exp.label - exp.action.squeeze(1)) ** 2  # Gets appended to an epoch list
+        return (exp.label - exp.action) ** 2  # Gets appended to an epoch list
 
     def tabulate(self, epoch):
         return epoch  # Lists/arrays get concatenated and mean-averaged by default
