@@ -449,7 +449,7 @@ def adaptive_shaping(in_shape=None, out_shape=None, obs_spec=None, action_spec=N
                             in_channels=in_shape[0]))
         shaping['in_features'] = shaping['in_dim']
 
-    if obs_spec is not None and 'shape' in obs_spec:
+    if obs_spec is not None and 'shape' in obs_spec and obs_spec.shape is not None:
         shaping.update(dict(input_shape=obs_spec.shape, in_shape=obs_spec.shape, in_dim=math.prod(obs_spec.shape),
                             in_channels=obs_spec.shape[0], obs_spec=obs_spec))
         shaping['in_features'] = shaping['in_dim']
@@ -462,7 +462,7 @@ def adaptive_shaping(in_shape=None, out_shape=None, obs_spec=None, action_spec=N
                             out_channels=out_shape[0], action_spec=Args(shape=out_shape)))
         shaping['out_features'] = shaping['out_dim']
 
-    if action_spec is not None and 'shape' in action_spec:
+    if action_spec is not None and 'shape' in action_spec and action_spec.shape is not None:
         shaping.update(dict(output_shape=action_spec.shape, out_shape=action_spec.shape,
                             out_dim=math.prod(action_spec.shape), out_channels=action_spec.shape[0],
                             action_spec=action_spec))
@@ -908,8 +908,8 @@ def import_paths():
 
     # For direct accessibility via command line
     module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents'])
-    added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'Flatten': Flatten,
-                          'Sequential': Sequential, 'load': load, 'save': save})
+    added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'nn': nn, 'Identity': Identity,
+                          'Flatten': Flatten, 'Sequential': Sequential, 'load': load, 'save': save})
 
     # Adds Hyperparams dir to search path
     add_task_dirs('Hyperparams')

@@ -66,12 +66,24 @@ class Datums:
         self._batches = iter(self.batches)
 
         # Check shape of x
-        obs_shape = tuple(dataset[0][0].shape)
-        obs_shape = (1,) * (2 - len(obs_shape)) + obs_shape  # At least 1 channel dim and spatial dim - can comment out
+        obs_shape = None
+        if isinstance(dataset[0], (tuple, list, torch.Tensor, np.ndarray)):
+            obs_shape = tuple(dataset[0].shape if isinstance(dataset[0], (torch.Tensor, np.ndarray))
+                              else dataset[0][0].shape)
+        elif isinstance(dataset[0], (dict, Args)) and 'obs' in dataset[0]:
+            obs_shape = tuple(dataset[0]['obs'].shape)
+        if obs_shape is not None:
+            obs_shape = (1,) * (2 - len(obs_shape)) + obs_shape  # At least 1 channel dim and spatial dim - not needed?
 
         self.discrete = hasattr(dataset, 'classes')
 
-        action_shape = (1,) if self.discrete or not hasattr(dataset[0][1], 'shape') else tuple(dataset[0][1].shape)
+        # Check shape of y
+        action_shape = None
+        if isinstance(dataset[0], (tuple, list)) and len(dataset[0]) == 2:
+            action_shape = (1,) if self.discrete or not hasattr(dataset[0][1], 'shape') else tuple(dataset[0][1].shape)
+        elif isinstance(dataset[0], (dict, Args)) and 'label' in dataset[0]:
+            action_shape = (1,) if self.discrete or not hasattr(dataset[0]['label'], 'shape') \
+                else tuple(dataset[0]['label'].shape)
 
         self.action_spec = Args({'shape': action_shape,
                                  'discrete_bins': len(dataset.classes) if self.discrete else None,
@@ -110,6 +122,9 @@ class Datums:
         batch = self.sample()
 
         if isinstance(batch, (tuple, list, torch.Tensor, np.ndarray)):
+            if isinstance(batch, (torch.Tensor, np.ndarray)):
+                batch = [batch]
+
             assert len(batch) <= 2, 'Use named dictionary pairs if Dataset outputs more than two Datums. ' \
                                     'Otherwise, will assume "obs", "label".'
 
@@ -129,6 +144,7 @@ class Datums:
                 if len(self.exp.label.shape) == 1:
                     self.exp.label = np.expand_dims(self.exp.label, 1)
         else:
+            # TODO Should provide per-Datum specs and maybe standardize some key Datums as above
             self.exp = Args(**batch, done=self.num_sampled_batches == len(self))
 
         return self.exp

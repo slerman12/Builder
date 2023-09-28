@@ -125,6 +125,10 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
 
     assert dataset, f'Could not instantiate Dataset.{f" Last error: {str(e)}" if e else ""}'
 
+    if isinstance(dataset[0], (torch.Tensor, np.ndarray)) \
+            or isinstance(dataset[0], (dict, Args)) and 'label' not in dataset[0]:
+        classify = False
+
     if classify:
         if hasattr(dataset, 'num_classes'):
             error = f'The .num_classes= attribute of Dataset got value {dataset.num_classes} with type ' \
@@ -143,7 +147,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             else dataset.class_to_idx.keys() if hasattr(dataset, 'class_to_idx') \
             else [print(f'Identifying unique classes... '
                         f'This can take some time for large datasets.'),
-                  sorted(list(set(str(exp[1]) for exp in dataset)))][1]
+                  sorted(list(set(str(exp['label'] if isinstance(exp, (dict, Args))
+                                      else exp[1]) for exp in dataset)))][1]
 
         setattr(dataset, 'classes', tuple(classes))
 
@@ -221,7 +226,7 @@ def compute_stats(batches):
     low, high = np.inf, -np.inf
 
     for batch in tqdm(batches, 'Computing mean, stddev, low, high for standardization/normalization.'):
-        obs = batch['obs'] if 'obs' in batch else batch[0]
+        obs = batch if isinstance(batch, torch.Tensor) else batch['obs'] if 'obs' in batch else batch[0]
         b, c, *hw = obs.shape
         if not hw:
             *hw, c = c, 1  # At least 1 channel dim and spatial dim - can comment out
@@ -287,8 +292,21 @@ class ClassToIdx(Dataset):
         self.__dataset, self.__map = dataset, {str(classes[i]): torch.tensor(i) for i in range(len(classes))}
 
     def __getitem__(self, idx):
-        x, y = self.__dataset.__getitem__(idx)
-        return x, self.__map[str(y)]  # Map
+        datums = self.__dataset.__getitem__(idx)
+        y = ()
+
+        if isinstance(datums, (list, tuple)):
+            if len(datums) == 2:
+                x, y = datums
+            else:
+                x = datums[0]
+        else:
+            x = datums
+        out = x
+        if y != ():
+            y = self.__map[str(y)]
+            out = (x, y)
+        return out   # Map
 
     def __len__(self):
         return self.__dataset.__len__()
@@ -323,10 +341,27 @@ class Transform(Dataset):
         self.__dataset, self.__transform = dataset, transform
 
     def __getitem__(self, idx):
-        x_, y = self.__dataset.__getitem__(idx)
-        x, y = F.to_tensor(x_) if isinstance(x_, Image) else x_, y
+        datums = self.__dataset.__getitem__(idx)
+
+        y = ()
+
+        if isinstance(datums, (list, tuple)):
+            if len(datums) == 2:
+                x, y = datums
+            else:
+                x = datums[0]
+        else:
+            x = datums
+
+        if isinstance(x, Image):
+            x = F.to_tensor(x)
         x = (self.__transform or (lambda _: _))(x)  # Transform
-        return x, y
+
+        out = x
+        if y != ():
+            out = (x, y)
+
+        return out
 
     def __len__(self):
         return self.__dataset.__len__()
