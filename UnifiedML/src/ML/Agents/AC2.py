@@ -46,7 +46,7 @@ class Agent(torch.nn.Module):
         self.depth = depth  # Dynamics prediction depth
 
         # Image augmentation
-        self.aug = instantiate(recipes.aug) or RandomShiftsAug(pad=4)
+        self.aug = Utils.Modals(instantiate(recipes.aug) or RandomShiftsAug(pad=4))\
 
         # RL -> generate conversion
         if self.generate:

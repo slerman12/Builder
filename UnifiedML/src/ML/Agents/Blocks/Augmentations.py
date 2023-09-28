@@ -8,8 +8,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from minihydra import Args
-
 
 class RandomShiftsAug(nn.Module):
     def __init__(self, pad=4):
@@ -17,11 +15,6 @@ class RandomShiftsAug(nn.Module):
         self.pad = pad
 
     def forward(self, obs):
-        batch = obs
-        is_batch = isinstance(obs, (Args, dict))
-
-        obs = obs['obs'] if is_batch else obs
-
         # Operates on last 3 dims of x, preserves leading dims
         shape = obs.shape
         assert len(shape) > 3, f'Obs shape {tuple(shape)} not supported by this augmentation, try \'Aug=Identity\''
@@ -62,10 +55,6 @@ class RandomShiftsAug(nn.Module):
 
         obs = output.view(*shape[:-3], *output.shape[-3:])
 
-        if is_batch:
-            batch.obs = obs
-            return batch
-
         return obs
 
 
@@ -75,18 +64,9 @@ class IntensityAug(nn.Module):
         self.scale, self.noise = scale, noise
 
     def forward(self, obs):
-        batch = obs
-        is_batch = isinstance(obs, (Args, dict))
-
-        obs = obs['obs'] if is_batch else obs
-
         axes = (1,) * len(obs.shape[2:])  # Spatial axes, useful for dynamic input shapes
         noise = 1.0 + (self.scale * torch.randn(
             (obs.shape[0], 1, *axes), device=obs.device).clamp_(-self.noise, self.noise))  # Random noise
         obs = obs * noise
-
-        if is_batch:
-            batch.obs = obs
-            return batch
 
         return obs

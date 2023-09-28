@@ -38,60 +38,28 @@ class AutoLabel(nn.Module):
         if self.device is not None:
             exp.obs = exp.obs.to(self.device)
 
-        boxes, logits, phrases = self.GroundingDINO(exp.obs)
+        boxes, logits = self.GroundingDINO(exp.obs)
 
-        if boxes.nelement():
-            indices = logits.argmax(-1)
-            box = gather(boxes, indices)  # Highest proba bounding-box
-
-            # Extract label  TODO RandomResizeCrop Just the area around the Bittle.
-            # Use absolute for position
-            exp.label = box
-        else:
-            exp.label = torch.zeros(1, 6)
+        exp.label = boxes
 
         return exp
 
 
-def predict_batch(
-        model,
-        images: torch.Tensor,
-        caption: str,
-        box_threshold: float,
-        text_threshold: float,
-        device: str = "cuda"
-):
+"""
+Huge thank you to https://github.com/IDEA-Research/GroundingDINO/issues/102
+"""
+def predict_batch(model, image, caption, device):
     from groundingdino.util.inference import preprocess_caption
-    from groundingdino.util.utils import get_phrases_from_posmap
 
     caption = preprocess_caption(caption=caption)
 
     model = model.to(device)
-    image = images.to(device)
+    image = image.to(device)
 
-    print(f"Image shape: {image.shape}") # Image shape: torch.Size([num_batch, 3, 800, 1200])
     with torch.no_grad():
-        outputs = model(image, captions=[caption for _ in range(len(images))]) # <------- I use the same caption for all the images for my use-case
+        outputs = model(image, captions=[caption for _ in range(len(image))])  # [batch_size, 900, 4]
 
-    print(f'{outputs["pred_logits"].shape}') # torch.Size([num_batch, 900, 256])
-    print(f'{outputs["pred_boxes"].shape}') # torch.Size([num_batch, 900, 4])
-    prediction_logits = outputs["pred_logits"].cpu().sigmoid()[0]  # prediction_logits.shape = (nq, 256)
-    prediction_boxes = outputs["pred_boxes"].cpu()[0]  # prediction_boxes.shape = (nq, 4)
-
-    mask = prediction_logits.max(dim=1)[0] > box_threshold
-    logits = prediction_logits[mask]  # logits.shape = (n, 256)
-    boxes = prediction_boxes[mask]  # boxes.shape = (n, 4)
-
-    tokenizer = model.tokenizer
-    tokenized = tokenizer(caption)
-
-    phrases = [
-        get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer).replace('.', '')
-        for logit
-        in logits
-    ]
-
-    return boxes, logits.max(dim=1)[0], phrases
+    return outputs["pred_boxes"], outputs["pred_logits"]
 
 
 class GroundingDINO(nn.Module):
@@ -104,8 +72,6 @@ class GroundingDINO(nn.Module):
         super().__init__()
 
         try:
-            from groundingdino.util.inference import predict
-
             from groundingdino.models import build_model
             from groundingdino.util.slconfig import SLConfig
             from groundingdino.util.utils import clean_state_dict
@@ -124,8 +90,7 @@ class GroundingDINO(nn.Module):
 
             cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
             checkpoint = torch.load(cache_file, map_location='cpu')
-            log = model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
-            print("Model loaded from {} \n => {}".format(cache_file, log))
+            model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
             _ = model.eval()
             return model
 
@@ -139,26 +104,30 @@ class GroundingDINO(nn.Module):
                                            repo_id=repo_id,
                                            filename='groundingdino_swinb_cogcoor.pth')
 
-        self.predict = predict
-
     def forward(self, obs, caption=None):
-        # TODO batch iterate instead of assume-squeeze OR
-        # TODO https://github.com/IDEA-Research/GroundingDINO/issues/102#issuecomment-1558728065
-        #     https://github.com/yuwenmichael/Grounding-DINO-Batch-Inference
-        if len(obs.shape) == 4:
-            obs = obs.squeeze(0)
-
-        # TODO Somehow override one op to cpu
-        boxes, logits, phrases = self.predict(
-            model=self.GroundingDINO,
+        boxes, logits = self.predict_batch(
             image=obs.to(torch.float32),
             caption=caption or self.caption,
-            box_threshold=0.3,
-            text_threshold=0.25,
             device=obs.device
         )
 
-        return boxes, logits, phrases
+        return boxes, logits
+
+    def predict_batch(self, image, caption, device):
+        from groundingdino.util.inference import preprocess_caption
+
+        caption = preprocess_caption(caption=caption)
+
+        image = image.to(device)
+
+        with torch.no_grad():
+            outputs = self.GroundingDINO(image, captions=[caption for _ in range(len(image))])  # [batch_size, 900, 4]
+
+        logits, _ = outputs["pred_logits"].max(2)
+        logits, ind = logits.unsqueeze(-1).max(1)
+        boxes = gather(outputs["pred_boxes"], ind, 1).squeeze(1)
+
+        return boxes, logits
 
 
 # TODO Delete
@@ -167,10 +136,13 @@ if __name__ == '__main__':
 
     import numpy as np
     from PIL import Image
+    import cv2
 
     from heic2png import HEIC2PNG  # pip install HEIC2PNG
 
     import groundingdino.datasets.transforms as T
+    # import torchvision.transforms as T
+    from groundingdino.util.inference import annotate
 
 
     def load_image(image_path):
@@ -189,26 +161,40 @@ if __name__ == '__main__':
 
     path = '/Users/sam/Code/Playground/Magic/images/'
 
-    for local_image_path in os.listdir(path):
+    images = []
+    sources = []
+
+    for i, local_image_path in enumerate(os.listdir(path)):
         if local_image_path[-5:] == '.heic':
             HEIC2PNG(path + local_image_path).save()
             os.system(f'rm {path}{local_image_path}')
             local_image_path = local_image_path.replace('.heic', '.png')
 
         image_source, image = load_image(path + local_image_path)
+        sources.append(image_source)
+        image = torch.as_tensor(image)
+        if images and image.shape != images[0].shape:
+            image = image.permute(0, 2, 1)
+        images.append(image)
+        if i > 1:
+            break
 
-        GD = GroundingDINO()
-        boxes, logits, _ = GD(image)
+    images = torch.stack(images)
+    print(images.shape)
+    GD = GroundingDINO()
+    boxes, logits = GD(images)
 
-        indices = logits.argmax(-1)
-        box = gather(boxes, indices)  # Highest proba bounding-box
+    print(boxes.shape, logits.shape)
 
-        print(box)
+    # indices = logits.argmax(1)
+    # boxes = gather(boxes, indices, 1)  # Highest proba bounding-box
+    #
+    # print(boxes.shape)
 
-        # annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
-        #
-        # os.makedirs('./generated2/', exist_ok=True)
-        #
-        # cv2.imwrite('./generated2/' + local_image_path, annotated_frame)
+    for i, image in enumerate(sources):
+        annotated_frame = annotate(image_source=image, boxes=boxes[i].unsqueeze(0),
+                                   logits=logits[i], phrases=['little robot dog'])
 
-        break
+        os.makedirs('./Image', exist_ok=True)
+
+        cv2.imwrite('./Image/' + str(i) + '.png', annotated_frame)
