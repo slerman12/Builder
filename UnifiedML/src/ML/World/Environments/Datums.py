@@ -101,22 +101,35 @@ class Datums:
         if action is not None:  # No action - "no-op" - allowed for Offline streaming
             # Adapt to discrete!    Note: storing argmax
             self.exp.action = self.adapt_to_discrete(action) if self.discrete \
-                else np.reshape(action, self.exp.label.shape)
+                else np.reshape(action, self.exp.label.shape) if 'label' in self.exp \
+                else action
 
         return self.exp
 
     def reset(self):  # The reset step is never stored
-        obs, label = [np.array(b, dtype='float32') for b in self.sample()]  # Sample
+        batch = self.sample()
 
-        if len(label.shape) == 1:
-            label = np.expand_dims(label, 1)
+        if isinstance(batch, (tuple, list, torch.Tensor, np.ndarray)):
+            assert len(batch) <= 2, 'Use named dictionary pairs if Dataset outputs more than two Datums. ' \
+                                    'Otherwise, will assume "obs", "label".'
 
-        batch_size = obs.shape[0]
+            # TODO Is it fine I don't convert to float32?
+            obs, *label = [b.numpy() if isinstance(b, torch.Tensor) else np.array(b) for b in batch]  # Sample
 
-        obs.shape = (batch_size, *self.obs_spec['shape'])
+            batch_size = obs.shape[0]
 
-        # Create experience
-        self.exp = Args(obs=obs, label=label, done=self.num_sampled_batches == len(self))
+            obs.shape = (batch_size, *self.obs_spec['shape'])
+
+            # Create experience
+            self.exp = Args(obs=obs, done=self.num_sampled_batches == len(self))
+
+            if label:
+                self.exp.label = label[0]
+
+                if len(self.exp.label.shape) == 1:
+                    self.exp.label = np.expand_dims(self.exp.label, 1)
+        else:
+            self.exp = Args(**batch, done=self.num_sampled_batches == len(self))
 
         return self.exp
 
@@ -133,7 +146,7 @@ class Datums:
         image = self.sample()[0] if self.exp is None else self.exp.obs
         return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last
 
-    # Arg-maxes if categorical distribution passed in  TODO Is this method needed besides rounding? Move to env
+    # Arg-maxes if categorical distribution passed in  TODO Is this method needed besides rounding? Maybe move to env
     def adapt_to_discrete(self, action):
         shape = self.action_spec['shape']
 
