@@ -45,7 +45,6 @@ class YouTube(Dataset):
                             "CAP_PROP_FRAME_HEIGHT": resolution[1]})  # Resolution
 
             self.obs_spec = {'shape': (3, *resolution)}
-            print(self.obs_spec)
 
         if fps:
             options.update({"CAP_PROP_FPS": fps})  # Framerate

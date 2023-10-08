@@ -155,6 +155,7 @@ class Agent(torch.nn.Module):
             replay.include_trajectories()
 
         batch = next(replay)
+        print(batch.obs.shape)
 
         # "Perceive"
 
