@@ -357,6 +357,9 @@ class Transform(Dataset):
             x = F.to_tensor(x)
         x = (self.__transform or (lambda _: _))(x)  # Transform
 
+        if x.dtype == torch.uint8:
+            x = x.to(torch.int8)
+
         out = x
         if y != ():
             out = (x, y)
