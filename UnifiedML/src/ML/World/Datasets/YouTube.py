@@ -61,7 +61,7 @@ class YouTube(Dataset):
                 if frame is None:
                     break
 
-                self.frames.append(torch.as_tensor(frame).permute(2, 0, 1))
+                self.frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
 
     def __getitem__(self, ind):
         return self.frames[ind]  # TODO Single-output currently only supported by stream=true
