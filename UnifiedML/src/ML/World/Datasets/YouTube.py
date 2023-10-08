@@ -80,8 +80,10 @@ class YouTube(Dataset):
 
         video = self.videos[video].start()
 
-        for _ in range(frame):
+        for _ in range(frame + 1):
             frame = video.read()
+
+        video.stop()
 
         frame = torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1)
 
