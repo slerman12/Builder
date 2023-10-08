@@ -31,7 +31,7 @@ my_sweep.hyperparams = [
     aug=Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel
     aug.caption='little robot dog'
     action_spec.shape='(4,)' 
-    batch_size=16
+    batch_size=1
     evaluate_per_steps=0
     stream=true
     """,
