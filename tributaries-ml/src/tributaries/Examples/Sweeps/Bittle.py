@@ -26,13 +26,14 @@ my_sweep.hyperparams = [
     experiment=Bittle
     dataset=World.Datasets.YouTube.YouTube
     dataset.url='https://youtu.be/M6Vu_FHUvAs'
-    dataset.resolution='(302,170)'
+    dataset.transform='transforms.Resize(302,170)'
     dataset.fps=10
     aug=Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel
     aug.caption='little robot dog'
     action_spec.shape='(4,)' 
     batch_size=16
     evaluate_per_steps=0
+    stream=true
     """,
 ]
 

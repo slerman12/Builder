@@ -40,11 +40,11 @@ class YouTube(Dataset):
 
         options = {}
 
-        if resolution:
-            options.update({"CAP_PROP_FRAME_WIDTH": resolution[0],
-                            "CAP_PROP_FRAME_HEIGHT": resolution[1]})  # Resolution
-
-            self.obs_spec = {'shape': (3, *resolution)}
+        # if resolution:
+        #     options.update({"CAP_PROP_FRAME_WIDTH": resolution[0],
+        #                     "CAP_PROP_FRAME_HEIGHT": resolution[1]})  # Resolution
+        #
+        #     self.obs_spec = {'shape': (3, *resolution)}  # TODO This doesn't seem to work
 
         if fps:
             options.update({"CAP_PROP_FPS": fps})  # Framerate
@@ -62,9 +62,6 @@ class YouTube(Dataset):
                     break
 
                 self.frames.append(torch.as_tensor(frame).permute(2, 0, 1))
-
-                if len(self.frames) > 10:
-                    break
 
     def __getitem__(self, ind):
         return self.frames[ind]  # TODO Single-output currently only supported by stream=true
