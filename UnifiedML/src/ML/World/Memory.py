@@ -258,7 +258,7 @@ class Memory:
                 if isinstance(card, Args):
                     card = card.to_dict()
                 with open(self.save_path + 'card.yaml', 'w') as file:
-                    yaml.dump(card, file)
+                    yaml.dump(card, file)  # TODO Support tuples, not just lists
 
             for trace in tqdm(self.traces, desc=desc, total=self.num_traces, position=0):
                 for batch in (tqdm(trace, desc='Saving Batches in Episode Trace.',

@@ -173,7 +173,7 @@ def launch_remote(server, username, password, sweep):
                                'Make sure you have installed tributaries ' \
                                '(pip install tributaries) on your remote server and/or ' \
                                'included a commands flag for activating a tributaries-installed ' \
-                               f'Python environment in your remote config.')
+                               f'Python/Conda environment in your remote config.')
     print(prompt)
 
 
