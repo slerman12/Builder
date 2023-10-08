@@ -284,7 +284,7 @@ if __name__ == '__main__':
     bittle = Bittle()
     while True:
         # Random action
-        # bittle.step()
+        bittle.step()
 
         # try:
         #     command = np.array(list(map(int, input('enter 16-digit command: ').strip('[]').split(', '))), 'float32')
@@ -295,9 +295,9 @@ if __name__ == '__main__':
 
         # Can launch custom commands
 
-        commands = [np.array(command, dtype='float32') for command in [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                                                       ]]
+        # commands = [np.array(command, dtype='float32') for command in [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+        #                                                                ]]
 
-        for command in commands:
-            bittle.step(command)
+        # for command in commands:
+        #     bittle.step(command)
     # bittle.disconnect()  # Daemon threads https://stackoverflow.com/a/2564282/22002059

@@ -100,7 +100,7 @@ class GroundingDINO(nn.Module):
 
 class AutoLabel(nn.Module):
     """
-    A transform for auto-labelling object locations based on image and caption
+    A augmentation for auto-labelling object locations based on image and caption
     """
 
     def __init__(self, caption='little robot dog', device=None):
@@ -127,6 +127,9 @@ class AutoLabel(nn.Module):
         exp.label = boxes
 
         return exp
+
+
+# TODO Custom metric or transform that just saves image and action pair. If metric, can do MP4. Maybe vlogger.
 
 
 # TODO Delete
