@@ -20,5 +20,7 @@ if __name__ == '__main__':
 
 # Command-line examples:
 
+#   Run a sweep like this:
+#       $ python XuLabAdvanced.py
 #   Plot it:
-#       $ python XuLab.py
+#       $ python XuLabAdvanced.py plot=true

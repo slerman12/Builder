@@ -82,7 +82,7 @@ def sbatch_deploy(hyperparams, deploy_config):
 
 
 # Works as just sbatch launcher as well, e.g. tributaries hyperparams='...' app=run.py
-def mass_deploy():
+def mass_deploy():  # TODO if server= arg included, run as if deploying from local
     sweep = just_args()
 
     if 'hyperparams' not in sweep:

@@ -9,6 +9,20 @@ import torch
 from torch.utils.data import Dataset
 
 
+"""
+How to train a Bittle-robot-dog object detector
+
+(1) Get videos of Bittle
+(2) Make two files on Macula called bittle_yt_videos_train.txt & bittle_yt_videos_test.txt with each line a link
+(3) Run tributaries with this script:
+    python XuLabAdvanced.py sweep=../Sweeps/Bittle 
+(4) python XuLabAdvanced.py sweep=../Sweeps/Bittle plot=true
+
+Example uses 'cd tributaries/Sweeps/Examples', but any custom server may be defined, 
+or just run the same hyperparams locally with 'ml' (tributaries is a different library; see Readme)
+"""
+
+
 class YouTube(Dataset):
     """
     YouTube videos
