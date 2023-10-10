@@ -83,6 +83,9 @@ class GroundingDINO(nn.Module):
 
         image = image.to(device)
 
+        if len(image.shape) == 3:
+            image = image.unsqueez(0)
+
         with torch.no_grad():
             outputs = self.GroundingDINO(image, captions=[caption for _ in range(len(image))])  # [batch_size, 900, 4]
 
