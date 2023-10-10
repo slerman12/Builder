@@ -46,8 +46,8 @@ class YouTube(Dataset):
         #
         #     self.obs_spec = {'shape': (3, *resolution)}  # TODO This doesn't seem to work
 
-        if fps:
-            options.update({"CAP_PROP_FPS": fps})  # Framerate
+        # if fps:
+        #     options.update({"CAP_PROP_FPS": fps})  # Framerate  # TODO Doesn't work either
 
         for url in urls:  # Get frames  Note: videos get stored on RAM  TODO Pre-compute video length(s), iterate below
             print('Downloading YouTube video from URL:', url)
@@ -63,9 +63,6 @@ class YouTube(Dataset):
 
                 # TODO Can just torch.save
                 self.frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
-
-                if len(self.frames) > 30:
-                    break
 
     def __getitem__(self, ind):
         return self.frames[ind]
