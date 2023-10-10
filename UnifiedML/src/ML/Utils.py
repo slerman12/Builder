@@ -400,7 +400,7 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
 
 
-# Allows module to support either full batch args with modalities or single-modal (e.g. "obs")  TODO Apply on Aug
+# Allows module to support either full batch args with modalities or single-modal (e.g. "obs")
 class Modals(nn.Module):
     def __init__(self, module, modal='obs', device=None):
         super().__init__()
@@ -413,6 +413,8 @@ class Modals(nn.Module):
     def forward(self, exp, device=None):
         if isinstance(exp, dict):
             exp = Args(exp)
+
+        print(type(exp))
 
         # Is it an exp?
         if isinstance(exp, Args) and self.modal in exp:
