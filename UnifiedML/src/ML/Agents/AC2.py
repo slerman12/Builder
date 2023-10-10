@@ -198,7 +198,7 @@ class Agent(torch.nn.Module):
                         log.update({'accuracy': accuracy})
             # Mean-squared error: regression
             else:
-                error = mse_loss(y_predicted, batch.label,
+                error = mse_loss(y_predicted, batch.label.view_as(y_predicted),
                                  reduction='none' if self.RL and replay.offline else 'mean')
 
             # Supervised learning
