@@ -49,45 +49,26 @@ class YouTube(Dataset):
         if fps:
             options.update({"CAP_PROP_FPS": fps})  # Framerate
 
-        self.videos = []
-
-        self.lengths = [0]
-
-        for url in urls:  # Get frames  Note: videos get stored on RAM
+        for url in urls:  # Get frames  Note: videos get stored on RAM  TODO Pre-compute video length(s), iterate below
             print('Downloading YouTube video from URL:', url)
 
-            self.videos.append(CamGear(source=url, stream_mode=True, **options))
+            video = CamGear(source=url, stream_mode=True, **options).start()
 
-            video = self.videos[-1].start()
-
+            self.frames = []
             while True:
                 frame = video.read()
 
                 if frame is None:
-                    self.videos[-1].stop()
-                    self.lengths.append(0)
                     break
 
-                self.lengths[-1] += 1
+                self.frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
 
-        self.index = []
-
-        for i, length in enumerate(self.lengths):
-            self.index += list(zip([i] * length, range(length)))
+                if len(self.frames) > 30:
+                    break
 
     def __getitem__(self, ind):
-        video, frame = self.index[ind]
-
-        video = self.videos[video].start()
-
-        for _ in range(frame + 1):
-            frame = video.read()
-
-        video.stop()
-
-        frame = torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1)
-
-        return frame  # TODO Single-output currently only supported by stream=true
+        return self.frames[ind]  # TODO Single-output currently only supported by stream=true
 
     def __len__(self):
-        return len(self.index)
+        return len(self.frames)
+
