@@ -2,6 +2,9 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
+import os
+import warnings
+
 import torch
 from torch import nn
 
@@ -46,7 +49,7 @@ class GroundingDINO(nn.Module):
                                '$ pip install groundingdino-py\n'
                                'and huggingface_hub. See ShilongLiu/GroundingDINO.')
 
-        def load_model_hf(model_config_path, repo_id, filename, device='cpu'):
+        def load_model_hf(model_config_path, repo_id, filename, device='cpu'):  # TODO device?
             args = SLConfig.fromfile(model_config_path)
             model = build_model(args)
             args.device = device
@@ -67,6 +70,8 @@ class GroundingDINO(nn.Module):
                                            repo_id=repo_id,
                                            filename='groundingdino_swinb_cogcoor.pth')
 
+        os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
     def forward(self, obs, caption=None):
         boxes, logits = self.predict_batch(
             image=obs.to(torch.float32),
@@ -84,7 +89,7 @@ class GroundingDINO(nn.Module):
         image = image.to(device)
 
         if len(image.shape) == 3:
-            image = image.unsqueez(0)
+            image = image.unsqueeze(0)
 
         with torch.no_grad():
             outputs = self.GroundingDINO(image, captions=[caption for _ in range(len(image))])  # [batch_size, 900, 4]

@@ -107,7 +107,8 @@ class Replay:
                 capacity = sum(self.memory.capacities)
                 with tqdm(total=len(batches), desc='Loading Dataset into accelerated Memory...') as bar:
                     for i, data in enumerate(batches):
-                        if len(self.memory) + len(data[-1]) > capacity:
+                        if len(self.memory) + len(next(iter(data.values())) if isinstance(data, (Args, dict))
+                                                  else data[-1]) > capacity:
                             bar.total = i
                             break
                         self.memory.add(datums_as_batch(data, done=i == len(batches) - 1))

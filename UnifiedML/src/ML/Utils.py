@@ -414,8 +414,6 @@ class Modals(nn.Module):
         if isinstance(exp, dict):
             exp = Args(exp)
 
-        print(type(exp))
-
         # Is it an exp?
         if isinstance(exp, Args) and self.modal in exp:
             exp[self.modal] = self.to(exp[self.modal], device=device)
@@ -780,7 +778,6 @@ class Norm(nn.Module):
 
 # Pytorch incorrect (in this case) warning suppression
 warnings.filterwarnings("ignore", message='.* skipping the first value of the learning rate schedule')
-
 
 # Scales gradients for automatic mixed precision training speedup, or updates gradients normally
 class MixedPrecision:

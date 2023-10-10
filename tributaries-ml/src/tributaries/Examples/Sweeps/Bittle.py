@@ -27,9 +27,10 @@ my_sweep.hyperparams = [
     dataset=World.Datasets.YouTube.YouTube
     dataset.url='https://youtu.be/M6Vu_FHUvAs'
     dataset.transform=Sequential
-    dataset.transform._targets_='["transforms.Resize([302,170])","Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel"]'
+    dataset.transform._targets_='["transforms.Resize([302,170],antialias=None)","Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel"]'
     dataset.transform.caption='little robot dog'
     dataset.fps=10
+    aug=Identity
     action_spec.shape='(4,)' 
     batch_size=1
     evaluate_per_steps=0

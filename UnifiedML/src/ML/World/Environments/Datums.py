@@ -65,6 +65,8 @@ class Datums:
 
         self._batches = iter(self.batches)
 
+        # TODO Perhaps dataset auto-standardized to Args already
+
         # Check shape of x
         obs_shape = None
         if isinstance(dataset[0], (tuple, list, torch.Tensor, np.ndarray)):

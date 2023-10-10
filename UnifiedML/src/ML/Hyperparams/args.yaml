@@ -47,6 +47,7 @@ dataset:
   Transform: null
   transform:
     _target_: ${dataset.Transform}
+    device: ${device}
 test_dataset:
   _target_: ${TestDataset}  # Note: When no TestDataset provided, THEN test_dataset should _default_ to ${dataset}  TODO
   classify: ${dataset.classify}
@@ -54,6 +55,7 @@ test_dataset:
   Transform: null
   transform:
     _target_: ${test_dataset.Transform}
+    device: ${device}
 frame_stack: 3
 truncate_episode_steps: 1000
 action_repeat: 1

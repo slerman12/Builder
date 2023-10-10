@@ -17,10 +17,10 @@ class RandomShiftsAug(nn.Module):
     def forward(self, obs):
         # Operates on last 3 dims of x, preserves leading dims
         shape = obs.shape
-        assert len(shape) > 3, f'Obs shape {tuple(shape)} not supported by this augmentation, try \'Aug=Identity\''
+        assert len(shape) > 3, f'Obs shape {tuple(shape)} not supported by this augmentation, try \'aug=Identity\''
         obs = obs.view(-1, *shape[-3:])
         n, c, h, w = obs.size()
-        assert h == w, f'Height≠width ({h}≠{w}), obs shape not supported by this augmentation, try \'Aug=Identity\''
+        assert h == w, f'Height≠width ({h}≠{w}), obs shape not supported by this augmentation, try \'aug=Identity\''
         padding = tuple([self.pad] * 4)
         if not torch.is_floating_point(obs):
             obs = obs.to(torch.float32)  # Cuda replication_pad2d_cuda requires float

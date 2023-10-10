@@ -61,13 +61,14 @@ class YouTube(Dataset):
                 if frame is None:
                     break
 
+                # TODO Can just torch.save
                 self.frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
 
                 if len(self.frames) > 30:
                     break
 
     def __getitem__(self, ind):
-        return self.frames[ind]  # TODO Single-output currently only supported by stream=true
+        return self.frames[ind]
 
     def __len__(self):
         return len(self.frames)

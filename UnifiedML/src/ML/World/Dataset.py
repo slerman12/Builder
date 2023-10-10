@@ -22,6 +22,7 @@ import torchvision
 from torchvision.transforms import functional as F
 from tqdm import tqdm
 
+from Utils import Modals
 from World.Memory import Batch
 from minihydra import instantiate, Args, module_paths, valid_path, open_yaml, get_module
 
@@ -88,6 +89,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         dataset_config.pop('Transform')
     classify = dataset_config.pop('classify') if 'classify' in dataset_config else None
     transform = dataset_config.pop('transform') if 'transform' in dataset_config else None
+    device = transform.get('device', None) if transform is not None else None
     subset = dataset_config.pop('subset') if 'subset' in dataset_config else None
 
     e = ''
@@ -147,10 +149,11 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
             else dataset.class_to_idx.keys() if hasattr(dataset, 'class_to_idx') \
             else [print(f'Identifying unique classes... '
                         f'This can take some time for large datasets.'),
-                  sorted(list(set(str(exp['label'] if isinstance(exp, (dict, Args))
+                  sorted(list(set(str(exp.get('label', '_no-label-None_') if isinstance(exp, (dict, Args))
                                       else exp[1]) for exp in dataset)))][1]
 
-        setattr(dataset, 'classes', tuple(classes))
+        if '_no-label-None_' not in classes:
+            setattr(dataset, 'classes', tuple(classes))
 
         # TODO Allow Dataset= to be a list s.t. dataset.arg= is list and
         #  include dataset.train_eval_split as a default arg.
@@ -158,13 +161,14 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         # TODO Ideally dataset could append classes to ones already saved and update the existing card
         #  Analogously regarding datums saved dataset.datums=, and MultiModal APi allowing Label=datum_name for example
         # Can select a subset of classes
-        if subset is not None:
+        if subset is not None and '_no-label-None_' not in classes:
             dataset = ClassSubset(dataset, classes, train)
 
         # TODO It would then have to do this as a runtime transform
         #  And memory loader would have to selectively load files and save their class label in file name
         # Map unique classes to integers
-        dataset = ClassToIdx(dataset, classes)
+        if '_no-label-None_' not in classes:
+            dataset = ClassToIdx(dataset, classes)
 
     # TODO Ideally dataset would be cached (saved / card ID'd) before dataset.transform and dataset.transform would be
     #  applied on the batches during pre-loading/saving before training (or as transform if not save) but not cached
@@ -172,7 +176,7 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     #  Perhaps dataset.cache=true would allow loading this way and then caching as new Memory w/ that specific transform
     #  Perhaps even transform lists instead of Compose, and allowing them to build on each other like data pipes
     # Add transforms to dataset
-    dataset = Transform(dataset, instantiate(transform))
+    dataset = Transform(dataset, instantiate(transform), device)  # TODO Support exps and wrap in modals
 
     return dataset
 
@@ -252,15 +256,11 @@ def compute_stats(batches):
 
 
 def datums_as_batch(datums, done=True):
-    if isinstance(datums, (Batch, dict)):
+    if isinstance(datums, (Batch, dict, Args)):
         if 'done' not in datums:
             datums['done'] = True
         return Batch(datums)
     else:
-        # Potentially extract by variable name
-        # For now assuming obs, label
-        obs, label, *_ = datums
-
         # May assume image uint8
         # if len(obs.shape) == 4 and int(obs.shape[1]) in [1, 3]:
         #     obs *= 255  # Note: Assumes [0, 1] low, high
@@ -270,16 +270,21 @@ def datums_as_batch(datums, done=True):
 
         # TODO Automatically parse if not already dict/Args
         #   e.g. inspect.getsource(dataset.__getitem__) and then parse the return variable names, or assume the first 2
-        obs = torch.as_tensor(obs)
-        label = torch.as_tensor(label)
-
-        # if len(label.shape) == 1:
-        #     label = label.view(-1, 1)
 
         # TODO Allow manually selecting among datums
         #   Stats can be provided for each but will default to the ones provided in the training dataset
         #   Auto-discrete for non-numbers and low/high otherwise. Can be specified by dataset.low/high or self.stats
-        return Batch({'obs': obs, 'label': label, 'done': done})
+
+        if isinstance(datums, (list, tuple)):
+            if len(datums) >= 2:
+                obs, label, *_ = datums
+                return Batch({'obs': torch.as_tensor(obs), 'label': torch.as_tensor(label), 'done': done})
+            else:
+                obs = datums[0]
+                return Batch({'obs': torch.as_tensor(obs), 'done': done})
+        else:
+            obs = datums
+            return Batch({'obs': torch.as_tensor(obs), 'done': done})
 
 
 # # Map class labels to Tensor integers
@@ -306,6 +311,8 @@ class ClassToIdx(Dataset):
         if y != ():
             y = self.__map[str(y)]
             out = (x, y)
+        elif isinstance(out, (dict, Args)) and 'label' in out:
+            out.label = self.__map[str(y)]
         return out   # Map
 
     def __len__(self):
@@ -322,20 +329,20 @@ class ClassSubset(torch.utils.data.Subset):
 
         # Find subset indices which only contain the specified classes, multi-label or single-label
         indices = [i for i in tqdm(range(len(dataset)), desc=f'Selecting subset of classes from {train} dataset...')
-                   if str(dataset[i][1]) in map(str, classes)]
+                   if str(dataset[i]['label' if isinstance(dataset[i], (Args, dict)) else 1]) in map(str, classes)]
 
         # Initialize
         super().__init__(dataset=dataset, indices=indices)
 
 
 class Transform(Dataset):
-    def __init__(self, dataset, transform=None):
+    def __init__(self, dataset, transform=None, device=None):
         # Inherit attributes of given dataset
         self.__dict__.update(dataset.__dict__)
 
         # Get transform from config
         if isinstance(transform, (Args, dict)):
-            transform = instantiate(transform)
+            transform = Modals(instantiate(transform), device=device)
 
         # Map inputs
         self.__dataset, self.__transform = dataset, transform
@@ -355,11 +362,18 @@ class Transform(Dataset):
 
         if isinstance(x, Image):
             x = F.to_tensor(x)
-        x = (self.__transform or (lambda _: _))(x)  # Transform
+        elif isinstance(x, (Args, dict)):
+            for key, value in x.items():
+                if isinstance(value, Image):
+                    x[key] = F.to_tensor(value)
 
         out = x
         if y != ():
-            out = (x, y)
+            out = Args(obs=x, label=y)
+        elif not isinstance(out, (Args, dict)):
+            out = Args(obs=x)
+
+        out = (self.__transform or (lambda _: Args(_)))(out)  # Transform
 
         return out
 
