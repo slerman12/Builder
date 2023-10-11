@@ -44,7 +44,7 @@ class YouTube(Dataset):
                 print(f'Located pre-existing download: {path}')
 
                 for mmap in os.listdir(path):
-                    if 'done' not in mmap:
+                    if 'done' not in mmap.rsplit('/')[-1]:
                         mem = Mem(None, path=mmap).load()
                         self.frames += list(enumerate([mem] * len(mem)))
                 break
@@ -62,7 +62,7 @@ class YouTube(Dataset):
                     i += 1
 
                 if frame is None:
-                    open(f'{path}/done', 'a').close()
+                    open(f'{path}/done', 'w').close()
                     break
 
                 frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
