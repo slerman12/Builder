@@ -38,12 +38,7 @@ class Datums:
                  num_workers=1, low=None, high=None, standardize=False, norm=False, device='cpu', **kwargs):
         if not train:
             # Inherit from test_dataset
-            if test_dataset._target_ is not None:
-                dataset = test_dataset
-            elif test_dataset.subset is not None:
-                dataset.subset = test_dataset.subset
-            elif test_dataset.transform._target_ is not None:
-                dataset.transform = test_dataset.transform
+            dataset = test_dataset
 
         _, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)  # Shared memory can create a lot of file descriptors
         resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))  # Increase soft limit to hard limit
