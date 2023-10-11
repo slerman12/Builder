@@ -122,7 +122,8 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         args['_target_'] = dataset_config._target_
         with Lock(path + 'lock'):  # System-wide mutex-lock
             try:
-                dataset = instantiate(args, **specs, _modules_=pytorch_datasets if is_torchvision else None)
+                dataset = instantiate(args, **specs, _root_=path,
+                                      _modules_=pytorch_datasets if is_torchvision else None)
                 break
             except ValueError as error:
                 if not e:

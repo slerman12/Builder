@@ -20,7 +20,7 @@ class TIMM(nn.Module):
         try:
             import timm
         except ModuleNotFoundError as e:
-            print(e, 'Try \'pip install timm\'.')
+            assert False, str(e) + ' Try \'pip install timm\'.'
 
         super().__init__()
 

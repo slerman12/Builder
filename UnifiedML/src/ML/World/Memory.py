@@ -529,6 +529,8 @@ class Mem:
                         _mem = mem.copy() if isinstance(mem, np.memmap) \
                             else mem  # If already memory mapped, copy to prevent overwrite
 
+                        os.makedirs(os.path.dirname(self.path), exist_ok=True)
+
                         self._mem = np.memmap(self.path, self.dtype, 'w+', shape=self.shape)
                         self._mem[...] = _mem
                         self._mem.flush()  # Write to hard disk
@@ -591,6 +593,7 @@ class Mem:
 
     def save(self):
         if not self.saved:
+            os.makedirs(os.path.dirname(self.path), exist_ok=True)
             mmap = np.memmap(self.path, self.dtype, 'w+', shape=self.shape)
             with self.mem() as mem:
                 mmap[...] = mem

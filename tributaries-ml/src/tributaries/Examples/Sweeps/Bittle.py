@@ -6,22 +6,6 @@ from tributaries import my_sweep, my_plots, my_checkpoints
 # List of hyperparams to launch
 my_sweep.hyperparams = [
     # Object detector
-    # f"""task=regression
-    # experiment=Bittle
-    # dataset=World.Datasets.YouTube.YouTube
-    # dataset.file=bittle_yt_detector_train.txt
-    # dataset.resolution=(302,170)
-    # dataset.fps=10
-    # test_dataset=World.Datasets.YouTube.YouTube
-    # test_dataset.file=bittle_yt_detector_test.txt
-    # test_dataset.resolution=(302,170)
-    # test_dataset.fps=10
-    # aug=Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel
-    # aug.caption='little robot dog'
-    # batch_size=16
-    # """,
-
-    # Object detector
     f"""task=regression
     experiment=Bittle
     dataset=World.Datasets.YouTube.YouTube
@@ -32,7 +16,7 @@ my_sweep.hyperparams = [
     test_dataset.url='https://youtu.be/_XpAAd0lr9E'
     aug=Identity
     action_spec.shape='(4,)' 
-    batch_size=32
+    batch_size=8
     """,
 ]
 
