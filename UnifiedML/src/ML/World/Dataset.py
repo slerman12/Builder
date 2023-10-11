@@ -350,7 +350,7 @@ class Transform(Dataset):
         self.__dict__.update(dataset.__dict__)
 
         # Get transform from config
-        transform = Modals(instantiate(transform), device=device)
+        transform = Modals(instantiate(transform, device=device))
 
         # Map inputs
         self.__dataset, self.__transform = dataset, transform

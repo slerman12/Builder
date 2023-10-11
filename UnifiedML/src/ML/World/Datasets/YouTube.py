@@ -56,7 +56,6 @@ class YouTube(Dataset):
 
                 # Save in chunks of 256 on hard disk
                 if len(frames) and len(frames) % 256 == 0 or frame is None:
-                    print(f'{path}/{i}')
                     mem = Mem(torch.stack(frames), f'{path}/{i}').mmap()
                     self.frames += list(enumerate([mem] * len(frames)))
                     frames = []
