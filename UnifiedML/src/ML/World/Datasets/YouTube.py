@@ -45,7 +45,7 @@ class YouTube(Dataset):
 
                 for mmap in os.listdir(path):
                     if 'done' not in mmap.rsplit('/')[-1]:
-                        mem = Mem(None, path=mmap).load()
+                        mem = Mem(None, path=path + '/' + mmap).load()
                         self.frames += list(enumerate([mem] * len(mem)))
                 break
 
