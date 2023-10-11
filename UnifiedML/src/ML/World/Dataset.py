@@ -350,8 +350,7 @@ class Transform(Dataset):
         self.__dict__.update(dataset.__dict__)
 
         # Get transform from config
-        if isinstance(transform, (Args, dict)):
-            transform = Modals(instantiate(transform), device=device)
+        transform = Modals(instantiate(transform), device=device)
 
         # Map inputs
         self.__dataset, self.__transform = dataset, transform
@@ -382,7 +381,7 @@ class Transform(Dataset):
         elif not isinstance(out, (Args, dict)):
             out = Args(obs=x)
 
-        out = (self.__transform or (lambda _: Args(_)))(out)  # Transform
+        out = self.__transform(out)  # Transform
 
         return out
 

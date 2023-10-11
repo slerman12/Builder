@@ -44,9 +44,13 @@ dataset:
   _target_: ${Dataset}
   classify: true
   subset: null
+  Aug: null
   Transform: null
   transform:
     _target_: ${dataset.Transform}
+    device: ${device}
+  aug:
+    _target_: ${dataset.Aug}
     device: ${device}
 test_dataset:
   _default_: ${dataset}
@@ -180,7 +184,8 @@ replay:
   pin_memory: false
   pin_device_memory: false
   dataset: ${dataset}
-  transform: ${transform}
+  aug: null
+  transform: ${transform} # TODO replay.aug: batch-level augmentations after DataLoader sampling but before Memory.save
   index: step
   frame_stack: ${frame_stack}
   nstep: ${nstep}

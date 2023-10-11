@@ -91,6 +91,9 @@ class Replay:
             # Memory save-path
             self.memory.set_save_path(save_path)
 
+            aug = Modals(instantiate(dataset_config.pop('aug')))
+            dataset_config.pop('Aug')
+
             # Pytorch Dataset or Memory path
             dataset = load_dataset('World/ReplayBuffer/Offline/', dataset_config) if offline else save_path
 
@@ -111,6 +114,11 @@ class Replay:
                                                   else data[-1]) > capacity:
                             bar.total = i
                             break
+
+                        # TODO This should probably work on Memory loading as well or be called dataset.aug
+                        if aug is not None:
+                            data = aug(data)
+
                         self.memory.add(datums_as_batch(data, done=i == len(batches) - 1))
                         bar.update()
                     bar.refresh()

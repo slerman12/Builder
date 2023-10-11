@@ -10,13 +10,13 @@ my_sweep.hyperparams = [
     experiment=Bittle
     dataset=World.Datasets.YouTube.YouTube
     dataset.url='https://youtu.be/M6Vu_FHUvAs'
-    dataset.transform=Sequential
-    dataset.transform._targets_='["transforms.Resize([302,170],antialias=None)","Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel"]'
-    dataset.transform.caption='little robot dog'
+    dataset.transform='transforms.Resize([302,170],antialias=None)'
+    dataset.aug=Agents.Blocks.Architectures.Vision.FoundationModels.GroundingDINO.AutoLabel
+    dataset.aug.caption='little robot dog'
     test_dataset.url='https://youtu.be/_XpAAd0lr9E'
     aug=Identity
     action_spec.shape='(4,)' 
-    batch_size=8
+    batch_size=256
     """,
 ]
 
