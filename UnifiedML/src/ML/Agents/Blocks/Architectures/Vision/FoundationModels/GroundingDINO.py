@@ -34,7 +34,7 @@ class GroundingDINO(nn.Module):
     Repo: ShilongLiu/GroundingDINO.
     """
 
-    def __init__(self, caption='little robot dog'):
+    def __init__(self, caption='little robot dog', device=None):
         super().__init__()
 
         try:
@@ -49,13 +49,13 @@ class GroundingDINO(nn.Module):
                                '$ pip install groundingdino-py\n'
                                'and huggingface_hub. See ShilongLiu/GroundingDINO.')
 
-        def load_model_hf(model_config_path, repo_id, filename, device='cpu'):  # TODO device?
+        def load_model_hf(model_config_path, repo_id, filename, device='cpu' if device is None else device):
             args = SLConfig.fromfile(model_config_path)
             model = build_model(args)
             args.device = device
 
             cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
-            checkpoint = torch.load(cache_file, map_location='cpu')
+            checkpoint = torch.load(cache_file, map_location='cpu' if device is None else device)
             model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
             _ = model.eval()
             return model
@@ -70,11 +70,15 @@ class GroundingDINO(nn.Module):
                                            repo_id=repo_id,
                                            filename='groundingdino_swinb_cogcoor.pth')
 
+        self.device = device
+
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
     def forward(self, obs, caption=None):
+        obs = obs.to(torch.float32) if self.device is None else obs.to(self.device, torch.float32)
+
         boxes, logits = self.predict_batch(
-            image=obs.to(torch.float32),
+            image=obs,
             caption=caption or self.caption,
             device=obs.device
         )

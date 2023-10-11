@@ -91,7 +91,7 @@ class Replay:
             # Memory save-path
             self.memory.set_save_path(save_path)
 
-            aug = Modals(instantiate(dataset_config.pop('aug')))
+            aug = Modals(instantiate(dataset_config.pop('aug'), device=device))
             dataset_config.pop('Aug')
 
             # Pytorch Dataset or Memory path
