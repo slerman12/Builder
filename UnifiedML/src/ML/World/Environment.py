@@ -185,6 +185,10 @@ class Environment:
 
     # Compute metric on batch
     def tally_metric(self, exp):
+        for key, value in exp.items():
+            if isinstance(value, torch.Tensor):
+                exp[key] = value.cpu().numpy()
+
         add = {key: m.add(exp) for key, m in self.metric.items() if callable(getattr(m, 'add', None))}
 
         self.episode_adds.update({key: self.episode_adds.get(key, []) + [m]
