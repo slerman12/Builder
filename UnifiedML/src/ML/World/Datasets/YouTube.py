@@ -61,7 +61,9 @@ class YouTube(Dataset):
                 if frame is None:
                     break
 
-                # TODO Can just torch.save
+                # TODO Note: This breaks if dataset = test_dataset since runs out of frames (and doesn't reset)!
+
+                # TODO Can just torch.save since not transforming/resizing here
                 self.frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
 
     def __getitem__(self, ind):

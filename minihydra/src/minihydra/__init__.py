@@ -149,6 +149,9 @@ def instantiate(args, _i_=None, _paths_=None, _modules_=None, _signature_matchin
             args = Args(_target_=args['_default_']) if isinstance(args['_default_'], str) \
                 else {**args.pop('_default_'), **args}
 
+        if '_if_not_null_' in args:  # Allows conditional overriding if values aren't None
+            args.update({key: value for key, value in args.pop('_if_not_null_').items() if value is not None})
+
         _target_ = args.pop('_target_')
 
         _overrides_ = args.pop('_overrides_') if '_overrides_' in args else {}

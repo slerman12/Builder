@@ -90,6 +90,9 @@ class Environment:
             # Tally reward & logs
             self.tally_metric(self.exp)
 
+            if 'reward' not in exp:
+                exp.reward = self.exp.reward
+
             # if agent.training:
             #     experiences.append(self.exp)  # TODO Replay expects prev and exp together
 
@@ -214,6 +217,9 @@ class Environment:
                    for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
                                                                                      'tabulate', None)) and episode}
 
+            # Allow no return statement e.g. hacking metric for vlogging media
+            log = {key: value for key, value in log.items() if value is not None}
+
             log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
             if 'reward' in self.episode_adds and 'reward' not in self.metric:
@@ -232,7 +238,7 @@ class act_mode:
 
         self.models = {key: getattr(agent, key) for key in {'encoder', 'actor'} if hasattr(agent, key)}
 
-        # TODO Assuming blocks. Eval should be entered agent-wise ?
+        # TODO Assuming blocks. Eval should be entered agent-wise ? iterated .children() ?
         # if ema and not self.models:
         #     # TODO ema_decay each time learn called
         #     # TODO ema_begin_step (no point early in training in supervised setting - RL act/eval-ema matters)
