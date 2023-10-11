@@ -36,7 +36,7 @@ class Datums:
     """
     def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False, batch_size=8,
                  num_workers=1, low=None, high=None, standardize=False, norm=False, device='cpu', **kwargs):
-        if not train:
+        if not train and test_dataset is not None:
             # Inherit from test_dataset
             dataset = test_dataset
 

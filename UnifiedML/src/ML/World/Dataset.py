@@ -44,6 +44,9 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
         dataset_config.update({key: value
                                for key, value in dataset_config.pop('_if_not_null_').items() if value is not None})
 
+    dataset_config.pop('aug', None)
+    dataset_config.pop('Aug', None)
+
     # If dataset is a directory path, return the string directory path
     if allow_memory and valid_path(dataset_config._target_, dir_path=True, module_path=False, module=False) \
             and glob.glob(dataset_config._target_ + 'card.yaml'):
