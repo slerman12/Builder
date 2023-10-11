@@ -37,6 +37,8 @@ class GroundingDINO(nn.Module):
     def __init__(self, caption='little robot dog', device=None):
         super().__init__()
 
+        print(device)
+
         try:
             from groundingdino.models import build_model
             from groundingdino.util.slconfig import SLConfig
