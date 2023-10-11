@@ -90,7 +90,7 @@ class Environment:
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            if 'reward' not in exp:
+            if 'reward' not in exp and 'reward' in self.exp:
                 exp.reward = self.exp.reward
 
             # if agent.training:
@@ -185,6 +185,7 @@ class Environment:
 
     # Compute metric on batch
     def tally_metric(self, exp):
+        # TODO Maybe standardize to Tensors
         for key, value in exp.items():
             if isinstance(value, torch.Tensor):
                 exp[key] = value.cpu().numpy()
