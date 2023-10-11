@@ -390,7 +390,7 @@ class Batch(Args):
 
 def as_numpy(data):
     return data if isinstance(data, np.ndarray) \
-        else data.numpy() if isinstance(data, torch.Tensor) \
+        else data.cpu().numpy() if isinstance(data, torch.Tensor) \
         else np.array(data)
 
 
