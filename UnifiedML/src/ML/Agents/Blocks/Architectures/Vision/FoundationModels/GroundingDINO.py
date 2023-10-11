@@ -3,7 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
 import os
-import warnings
 
 import torch
 from torch import nn
@@ -34,10 +33,8 @@ class GroundingDINO(nn.Module):
     Repo: ShilongLiu/GroundingDINO.
     """
 
-    def __init__(self, caption='little robot dog', device=None):
+    def __init__(self, caption='little robot dog', device='cpu'):
         super().__init__()
-
-        print(device)
 
         try:
             from groundingdino.models import build_model
@@ -51,13 +48,13 @@ class GroundingDINO(nn.Module):
                                '$ pip install groundingdino-py\n'
                                'and huggingface_hub. See ShilongLiu/GroundingDINO.')
 
-        def load_model_hf(model_config_path, repo_id, filename, device='cpu' if device is None else device):
+        def load_model_hf(model_config_path, repo_id, filename):  # TODO device?
             args = SLConfig.fromfile(model_config_path)
             model = build_model(args)
             args.device = device
 
             cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
-            checkpoint = torch.load(cache_file, map_location='cpu' if device is None else device)
+            checkpoint = torch.load(cache_file, map_location=device)
             model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
             _ = model.eval()
             return model
@@ -70,17 +67,13 @@ class GroundingDINO(nn.Module):
 
         self.GroundingDINO = load_model_hf(cache_config_file,
                                            repo_id=repo_id,
-                                           filename='groundingdino_swinb_cogcoor.pth')
-
-        self.device = device
+                                           filename='groundingdino_swinb_cogcoor.pth').to(device)
 
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
     def forward(self, obs, caption=None):
-        obs = obs.to(torch.float32) if self.device is None else obs.to(self.device, torch.float32)
-
         boxes, logits = self.predict_batch(
-            image=obs,
+            image=obs.to(torch.float32),
             caption=caption or self.caption,
             device=obs.device
         )
@@ -121,7 +114,7 @@ class AutoLabel(nn.Module):
         super().__init__()
 
         # SotA object detection foundation model
-        self.GroundingDINO = GroundingDINO(caption)
+        self.GroundingDINO = GroundingDINO(caption, device)
 
         mps = getattr(torch.backends, 'mps', None)  # M1 MacBook speedup
 
