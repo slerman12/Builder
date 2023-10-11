@@ -62,7 +62,7 @@ class YouTube(Dataset):
                     i += 1
 
                 if frame is None:
-                    open(os.path.dirname(f'{path}/done')).close()
+                    open(f'{path}/done', 'a').close()
                     break
 
                 frames.append(torch.as_tensor(frame, dtype=torch.float32).permute(2, 0, 1))
