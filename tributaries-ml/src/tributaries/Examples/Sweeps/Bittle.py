@@ -15,7 +15,8 @@ my_sweep.hyperparams = [
     dataset.aug.caption='little robot dog'
     test_dataset.url='https://youtu.be/_XpAAd0lr9E'
     aug=Identity
-    action_spec.shape='(4,)' 
+    action_spec.shape='(4,)'
+    replay.mem_size=8 
     batch_size=256
     """,
 ]
