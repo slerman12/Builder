@@ -36,6 +36,14 @@ def load_dataset(path, dataset_config, allow_memory=True, train=True, **kwargs):
     if isinstance(dataset_config, str):
         dataset_config = Args({'_target_': dataset_config})
 
+    while '_default_' in dataset_config:  # Allow inheritance between sub-args
+        dataset_config = Args(_target_=dataset_config['_default_']) if isinstance(dataset_config['_default_'], str) \
+            else Args({**dataset_config.pop('_default_'), **dataset_config})
+
+    if '_if_not_null_' in dataset_config:  # Allows conditional overriding if values aren't None
+        dataset_config.update({key: value
+                               for key, value in dataset_config.pop('_if_not_null_').items() if value is not None})
+
     # If dataset is a directory path, return the string directory path
     if allow_memory and valid_path(dataset_config._target_, dir_path=True, module_path=False, module=False) \
             and glob.glob(dataset_config._target_ + 'card.yaml'):
