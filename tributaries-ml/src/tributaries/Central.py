@@ -111,7 +111,7 @@ def mass_deploy():  # TODO if server= arg included, run as if deploying from loc
             chdir = [key_value.split('=')[1]
                      for key_value in (sweep.hyper or '').split() if key_value.split('=')[0] == 'path'][0]
             print(f'Changing directory to {chdir}')
-            os.chdir(chdir)
+            os.chdir(chdir)  # Note: will only be able to change dir into visible disks
         except FileNotFoundError:
             pass
 

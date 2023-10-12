@@ -89,8 +89,10 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             if x == 'Time':
                 cell_data['Time'] = pd.to_datetime(cell_data['Time'], unit='s')
 
-            y = 'Accuracy' if 'classify' in suite.lower() \
-                else 'Reward'
+            # y = 'Accuracy' if 'classify' in suite.lower() \
+            #     else 'MSE' if 'regression' in suite.lower() else 'Reward' if 'reward' in cell_data.columns \
+            #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
+            y = [col for col in cell_data.columns if col.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
 
             sns.lineplot(x=x, y=y, data=cell_data, ci='sd', hue='Agent', hue_order=np.sort(hue_names), ax=ax,
                          palette=cell_palettes)
@@ -122,8 +124,10 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             if x == 'Time':
                 cell_data['Time'] = pd.to_datetime(cell_data['Time'], unit='s')
 
-            y = 'Accuracy' if 'classify' in ax_title.lower() \
-                else 'Reward'
+            # y = 'Accuracy' if 'classify' in ax_title.lower() \
+            #     else 'MSE' if 'regression' in ax_title.lower() else 'Reward' if 'reward' in cell_data.columns \
+            #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
+            y = [col for col in cell_data.columns if col.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
 
             # Normalize
             for task in cell_data.Task.unique():
@@ -175,7 +179,8 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
         performance = performance[performance['Step'] == min_steps]
 
         # Score name y-axis
-        metrics = [metric for metric in ['Accuracy', 'Reward'] if metric in performance.columns]
+        metrics = [metric
+                   for metric in performance.columns if metric.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']]
 
         # Use Reward or Accuracy as "Score"
         performance['Score'] = performance[metrics[0]]
@@ -430,9 +435,10 @@ def get_data(specs, steps=np.inf, plot_train=False, verbose=False):
         # To csv
         performance = pd.concat(performance, ignore_index=True)
 
-        # Capitalize column names
-        performance.columns = [' '.join([name[0].capitalize() + name[1:] for name in re.split(r'_|\s+', col_name)])
-                               for col_name in performance.columns]
+        # Capitalize column names (uppercase and assume acronym if length <= 3)
+        performance.columns = [' '.join([name[0].capitalize() + name[1:]
+                                         for name in re.split(r'_|\s+', col_name)]) if len(col_name) > 3
+                               else col_name.upper() for col_name in performance.columns]
 
         # Steps cap
         if steps < np.inf:

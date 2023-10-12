@@ -6,6 +6,6 @@ dataset:
   classify: false
 
 metric:
-  accuracy: World.Metrics.MSE
+  mse: World.Metrics.MSE
 
 discrete: false
