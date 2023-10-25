@@ -48,6 +48,7 @@ class Datums:
         # CPU workers
         num_workers = max(1, min(num_workers, os.cpu_count()))
 
+        # TODO Support using Replay (by default)
         self.batches = DataLoader(dataset=dataset,
                                   batch_size=batch_size,
                                   shuffle=True,
@@ -60,7 +61,7 @@ class Datums:
 
         self._batches = iter(self.batches)
 
-        # TODO Perhaps dataset auto-standardized to Args already
+        # TODO Dataset auto-standardized to Args already - can delete
 
         # Check shape of x
         obs_shape = None
@@ -92,7 +93,7 @@ class Datums:
                               'low': low,
                               'high': high})
 
-        # Fill in necessary obs_spec and action_spc stats from dataset  TODO Only when norm or standardize
+        # Fill in necessary obs_spec and action_spec stats from dataset  TODO Only when norm or standardize
         if train and (offline or generate) and (standardize or norm):
             self.obs_spec.update(compute_stats(self.batches))
 
@@ -118,6 +119,7 @@ class Datums:
     def reset(self):  # The reset step is never stored
         batch = self.sample()
 
+        # TODO I've standardized it to Args so this whole IF branch can be deleted
         if isinstance(batch, (tuple, list, torch.Tensor, np.ndarray)):
             if isinstance(batch, (torch.Tensor, np.ndarray)):
                 batch = [batch]
@@ -141,8 +143,17 @@ class Datums:
                 if len(self.exp.label.shape) == 1:
                     self.exp.label = np.expand_dims(self.exp.label, 1)
         else:
-            # TODO Should provide per-Datum specs and maybe standardize some key Datums as above
+            # TODO Should provide per-Datum specs
             self.exp = Args(**batch, done=self.num_sampled_batches == len(self))
+
+            for key, value in self.exp.items():
+                self.exp[key] = value.cpu().numpy() if isinstance(value, torch.Tensor) else np.array(value)
+
+            if 'obs' in self.exp:
+                self.exp.obs.shape = (self.exp.obs.shape[0], *self.obs_spec['shape'])
+            if 'label' in self.exp:
+                if len(self.exp.label.shape) == 1:
+                    self.exp.label = np.expand_dims(self.exp.label, 1)
 
         return self.exp
 
