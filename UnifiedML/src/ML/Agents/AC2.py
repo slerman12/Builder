@@ -30,7 +30,7 @@ class Agent(torch.nn.Module):
                  lr, lr_decay_epochs, weight_decay, ema_decay, ema,  # Optimization
                  rand_steps, stddev_schedule,  # Exploration
                  discrete, RL, supervise, generate, parallel, log,  # On-boarding
-                 num_critics, num_actors, depth  # Ensembles & self-supervision  # TODO Way too many defaults for model
+                 num_critics, num_actors, depth  # Ensembles & self-supervision
                  ):
         super().__init__()
 
@@ -131,7 +131,6 @@ class Agent(torch.nn.Module):
     def act(self, obs, store):
         # "See"
         obs = self.encoder(obs)
-        # features, thought = encoder(obs, output_features=True)  # TODO
 
         # Act
         Pi = self.actor(obs, self.step)

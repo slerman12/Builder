@@ -32,6 +32,8 @@ from torchvision import transforms
 from minihydra import Args, yaml_search_paths, module_paths, added_modules, grammar, instantiate, interpolate, \
     recursive_Args, get_module, portal, add_task_dirs
 
+from Agents.Blocks.Architectures.Ensemble import Ensemble
+
 
 # Sets all Pytorch and Numpy random seeds
 def set_seeds(seed):
