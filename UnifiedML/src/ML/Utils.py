@@ -1,4 +1,4 @@
-# Copyright (c) AGI.__init__. All Rights Reserved.
+# Copyright (c) Sam Lerman. All Rights Reserved.
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
@@ -114,7 +114,7 @@ def preconstruct_agent(agent, model):
     except Exception:
         _target_ = instantiate(agent)
 
-    # If no learn method, use AC2 Agent backbone
+    # If no learn method, use AC2Agent backbone
     if not hasattr(_target_, 'learn'):
         signature = set(inspect.signature(_target_).parameters)
 

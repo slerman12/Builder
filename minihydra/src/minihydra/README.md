@@ -1,13 +1,10 @@
-<img width="50%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/5a32b2d4-1ad4-4386-8ea1-b3f991e60979">
+<img width="50%" alt="logo" src="https://github.com/Cave-Dwellers-Tree-People/minihydra/assets/153214101/8907d6da-e65b-4ca6-a1a9-4f154a4b719b">
 
 ```console
 pip install minihydra
 ```
 
 [//]: # (:fleur_de_lis:)
-
-[//]: # ()
-[//]: # (*minihydra / leviathan* emerged from trying to build the parsing grammar of [UnifiedML]&#40;https://www.github.com/agi-init/UnifiedML&#41; initially via **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**. After running into some limitations with **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**, I ended up needing to build *minihydra / leviathan* from scratch and have found it to be extremely useful and I personally prefer it, in only ~400 lines of code. Great respect to the team at **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** who know I tried my damned hardest to integrate the features I wanted into **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;**. After overdoing the hacking &#40;and the issue-posting&#41;, eventually I built this. Hope people find it useful. No competition intended.)
 
 [//]: # ()
 [//]: # (I left most of the documentation ambiguous, but to my knowledge, *minihydra / leviathan* supports everything you could need. It's ~400 lines of code if you wish to figure it out. Generally speaking, I ask that you put the equal effort that I did into integrating with **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** before blatantly copying or ripping off this work. See if **[Hydra]&#40;https://www.github.com/facebookresearch/hydra&#41;** or this suits your needs. If not, and you really make sure, then go ahead. But be careful, hydras and leviathans are beautiful beasts and they are not to mess with.)
@@ -100,7 +97,7 @@ if __name__ == '__main__':
 
 **Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, expanding module and yaml search paths, project directory inference, instantiation tinkering-syntax inference, portals, and pseudonyms.**
 
-For deeper documentation, [leave an issue]() / please consider [sponsoring](https://github.com/sponsors/AGI-init).
+For deeper documentation, [leave an issue]() / please consider [sponsoring](https://github.com/sponsors/Cave-Dwellers-Tree-People).
 
 [//]: # (:fleur_de_lis:)
 
@@ -131,6 +128,6 @@ For deeper documentation, [leave an issue]() / please consider [sponsoring](http
 
 [//]: # (project directory inference, instantiation tinkering inference, portals, pseudonyms)
 
-<img width="60%" alt="logo" src="https://github.com/AGI-init/Assets/assets/92597756/e55fc36b-2d94-431e-82ec-2fcdcbd01bbf">
+<img width="60%" alt="logo" src="https://github.com/Cave-Dwellers-Tree-People/minihydra/assets/153214101/0ba65a1c-fa62-41a2-bfe3-77358146f18e">
 
 [Licensed under the MIT license.](MIT_LICENSE)
