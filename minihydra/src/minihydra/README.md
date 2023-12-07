@@ -45,7 +45,7 @@ world
 hello: world
 number: 42
 goodbye:
-  cruel: 
+  cruel:
     - world
 ```
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
 **Further features include literals, function calls, instantiation, imports, interpolation, custom grammars, expanding module and yaml search paths, project directory inference, instantiation tinkering-syntax inference, portals, and pseudonyms.**
 
-For deeper documentation, [leave an issue]() / please consider [sponsoring](https://github.com/sponsors/Cave-Dwellers-Tree-People).
+For deeper documentation, please consider [sponsoring](https://github.com/sponsors/Cave-Dwellers-Tree-People).
 
 [//]: # (:fleur_de_lis:)
 
@@ -131,3 +131,4 @@ For deeper documentation, [leave an issue]() / please consider [sponsoring](http
 <img width="60%" alt="logo" src="https://github.com/Cave-Dwellers-Tree-People/minihydra/assets/153214101/0ba65a1c-fa62-41a2-bfe3-77358146f18e">
 
 [Licensed under the MIT license.](MIT_LICENSE)
+
