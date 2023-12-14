@@ -1,7 +1,7 @@
 <img width="50%" alt="logo" src="https://github.com/Cave-Dwellers-Tree-People/minihydra/assets/153214101/8907d6da-e65b-4ca6-a1a9-4f154a4b719b">
 
 ```console
-pip install minihydra
+pip install leviathan
 ```
 
 [//]: # (:fleur_de_lis:)

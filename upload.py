@@ -1,27 +1,17 @@
+# Make sure to install twine: $pip install twine
+
 import glob
-import os, sys
-
-os.system(f'git pull')
-
-builds = glob.glob('*/build/')
-
-for build in builds:
-    os.system(f'rm -rf {build}')
-
-builds = glob.glob('*/Build.py')
-
-for build in builds:
-    os.system(f'python {build}')
+import os
 
 builds = glob.glob('*/dist/*')
 
-if '--from-scratch' in sys.argv:
-    os.system(f'pip install {" ".join(builds)} --force-reinstall')
-else:
-    os.system(f'pip install {" ".join(builds)} --force-reinstall --no-dependencies')
+# Username: __token__
+# Password: pypi-AgEIcHlwaS5vcmcCJDkzZDAzMTViLTVlYTUtNDhhNC04YmY0LTY2ODM4NjBiMGU5ZAACKlszLCI5MTE0MzAwMi1iMzI0LTQ4NzYtOTA3Zi0wOGE0MWYzNzM4NTgiXQAABiAVA6NeKfY62XOl9x5aVTtGulT5pJT5L-TxpwPQo5Uyow
+
+# Can change token via account settings on PyPi
 
 for build in builds:
-    print(f'Uploading {build}')
-    os.system(f'twine upload {build}')
+    print(f'Upload: {build}')
+    # os.system(f'python -m twine upload {build}')
 
 # If issues, may be necessary to delete auto-generated build/ directories and re-run.
