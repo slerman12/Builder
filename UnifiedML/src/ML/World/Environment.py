@@ -22,6 +22,7 @@ class Environment:
         self.generate = generate
 
         self.device = device
+        # Support env.transform= or environment.transform= and with obs or exp as transform input
         self.transform = Modals(instantiate(env.pop('transform', transform), device=device))
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
@@ -35,9 +36,11 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
+            # Allow overriding specs
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
 
+            # Default action space is continuous (not discrete) if unspecified
             if self.action_spec.discrete == '???':
                 self.action_spec.discrete = getattr(self.env, 'action_spec', {}).get('discrete', False)
 
@@ -52,10 +55,14 @@ class Environment:
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
         self.daybreak = None
 
+    """
+    Step the agent in the environment and return new experiences and inference/acting logs
+    """
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
+        # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
         experiences = [*([self.env.step()] if self.disable and self.on_policy and agent.training else [])]
         vlogs = []
 
@@ -66,54 +73,52 @@ class Environment:
             exp = self.exp
 
             # Frame-stacked obs
-            obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
+            obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)  # TODO Send whole exp to agent
             obs = torch.as_tensor(obs, device=self.device)
 
             # Act
-            store = Args()  # TODO Pass in log as well - problem, has to read var name order
+            store = Args()
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store)
+                action = agent.act(obs, store)  # TODO Allow agent to output an exp
 
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            exp = {} if self.generate else self.env.step(action)  # Experience
+            prev, now = {}, {} if self.generate else self.env.step(action)  # Experience
 
-            prev = {}
-            if isinstance(exp, tuple):
-                prev, exp = exp  # TODO Maybe separated prev only needed for metric
+            # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
+            if isinstance(now, tuple):
+                prev, now = now
 
-            self.exp.update(store)  # TODO Maybe separated prev only needed for metric
-            self.exp.update(action=exp.get('action', action), step=agent.step)
-            self.exp.update(prev)
+            now = now or {}  # Can be None
+
+            self.exp.update(store)
+            self.exp.update(action=now.get('action', action), step=agent.step)
+            self.exp.update(prev)  # Prev is only needed for metric
 
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            if 'reward' not in exp and 'reward' in self.exp:
-                exp.reward = self.exp.reward
-
-            # if agent.training:
-            #     experiences.append(self.exp)  # TODO Replay expects prev and exp together
-
-            # exp.update({'prev_' + key: value for key, value in self.exp.items() if key not in exp})  # TODO -Transform
+            if 'reward' not in now and 'reward' in self.exp:
+                now.reward = self.exp.reward  # Metric can actually set reward, e.g. if RL
 
             # Transform
-            exp = self.transform(exp)
+            now = self.transform(now)
 
             if agent.training:
-                # TODO Replay expects prev and exp together - trying this
-                experiences.append(Args({'action': action, 'step': agent.step, **prev, **exp, **store}))
-            else:  # TODO Double check this
+                # These go to Replay and include now (mixed time steps)
+                experiences.append(Args({'action': action, 'step': agent.step, **prev, **now, **store}))
+            else:
+                # These go to logger and don't include now
                 experiences.append(self.exp)
 
-            self.exp = exp
-            if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
+            self.exp = now
+            if isinstance(self.exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
                 # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
-                self.exp.obs = exp.obs.numpy()
+                self.exp.obs = self.exp.obs.numpy()
 
             if vlog and hasattr(self.env, 'render') or self.generate:
-                image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
+                image_frame = action[:24].view(-1, *self.exp.obs.shape[1:]) if self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
 
@@ -124,7 +129,7 @@ class Environment:
             step += 1
             frame += len(action)
 
-            done = exp.get('done', True)  # TODO Datums skips last batch (self.exp doesn't get acted on) (maybe nstep controls this)
+            done = self.exp.get('done', True)
 
             # Done
             self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
@@ -163,28 +168,58 @@ class Environment:
 
         return experiences, log, vlogs
 
+    """
+    Different environments have different inputs/outputs. 
+    These methods infer or add default input (obs) and output (action) spec values, such as shape, action-space, & stats
+    
+    Default spec values
+    - obs_spec: input shape and stats
+    - action_spec: output shape, continuous vs. discrete, and stats
+    """
     @cached_property
     def obs_spec(self):
-        return Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
+        spec = Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
                      **getattr(self.env, 'obs_spec', {})})
+
+        # Update Env spec with defaults
+        self.env.__dict__.setdefault('obs_spec', Args()).update(spec)
+
+        return spec
 
     @cached_property
     def action_spec(self):
         spec = Args({**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
                      **getattr(self.env, 'action_spec', {})})
 
+        # Infer discrete ranges
+        if spec['discrete'] or spec['discrete_bins']:
+            spec['discrete'] = True
+
+            if spec['low'] is None:
+                spec['low'] = 0
+            if spec['high'] is None:
+                spec['high'] = spec['discrete_bins'] - 1
+            elif spec['discrete_bins'] is None:
+                spec['discrete_bins'] = spec['high'] + 1
+
+        # Infer action shape from label or action
         if 'shape' not in spec:
-            # Infer action shape from label or action
             if 'label' in self.exp:
-                spec.shape = (len(self.exp.label)) if isinstance(self.exp.label, (tuple, set, list)) \
+                spec.shape = (len(self.exp.label),) if isinstance(self.exp.label, (tuple, set, list)) \
                     else (1,) if not hasattr(self.exp.label, 'shape') \
-                    else len(self.exp.label.shape[-1]) if spec['discrete'] else self.exp.label.shape
+                    else (self.exp.label.shape[-1],) if spec['discrete'] else self.exp.label.shape
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape[1:]
 
+        # Update Env spec with defaults
+        self.env.__dict__.setdefault('action_spec', Args()).update(spec)
+
         return spec
 
+    """
+    Metric tallying and tabulating for inference/evaluation
+    """
     # Compute metric on batch
     def tally_metric(self, exp):
         # TODO Maybe standardize to Tensors
@@ -241,6 +276,11 @@ class Environment:
             return log
 
         return {}
+
+
+"""
+    "Act mode": No gradients, no randomness like Dropout, and exponential moving average (EMA) if toggled 
+"""
 
 
 # Toggles / resets eval, inference, and EMA modes
