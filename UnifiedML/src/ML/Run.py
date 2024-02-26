@@ -4,8 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from minihydra import instantiate, get_args, interpolate, Args  # minihydra conveniently and cleanly manages sys args
 
-import Utils
-from Utils import init, MT, MP, save, load
+from Utils import init, MT, adaptive_shaping, MP, save, load
 
 
 @get_args(source='Hyperparams/args.yaml')  # Hyper-param arg files located in ./Hyperparams
@@ -28,8 +27,8 @@ def main(args):
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent, **Utils.adaptive_shaping(obs_spec=args.obs_spec,
-                                                              action_spec=args.action_spec)).to(args.device)
+        else instantiate(args.agent, **adaptive_shaping(obs_spec=args.obs_spec,
+                                                        action_spec=args.action_spec)).to(args.device)
 
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
@@ -38,21 +37,22 @@ def main(args):
     logger = instantiate(args.logger, witness=agent)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch
+    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch  # TODO agent.step not resuming???
 
     # Start
     converged = training = args.train_steps == 0
     while True:
         # Evaluate
-        if (converged and agent.step > 0) ^ (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
+        if converged or (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
+                # TODO Logs are reporting inconsistent results after convergence
                 exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                     vlog=args.log_media)
 
                 logger.eval().log(log, exp=exp if converged else None)  # TODO This won't run if converged and logged
 
-            logger.eval().dump_logs()
+            logger.eval().dump_logs()  # TODO Don't print a 2nd time when converged, but dump predicted-actual
 
             if args.log_media:
                 vlogger.dump(vlog, f'{agent.step}')

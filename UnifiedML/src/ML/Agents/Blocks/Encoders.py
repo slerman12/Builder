@@ -31,7 +31,7 @@ class CNNEncoder(nn.Module):
             standardize and None not in [self.mean, self.stddev]  # Whether to center-scale (0 mean, 1 stddev)
         self.normalize = norm and None not in [self.low, self.high]  # Whether to shift-max scale
 
-        self.norm = norm  # Can control normalization range, default: [-1, 1]
+        self.norm = norm  # Can control normalization range, default: [-1, 1] because True is 1, e.g., norm can be 0.5
 
         # Dimensions
         obs_shape = [*(1,) * (len(self.obs_shape) < 2), *self.obs_shape]  # Create at least 1 channel dim & spatial dim

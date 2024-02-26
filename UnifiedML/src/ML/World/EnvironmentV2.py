@@ -13,6 +13,9 @@ from minihydra import instantiate, valid_path, Args
 from Utils import Modals
 
 
+# TODO (See red journal first page for flowchart diagram of current code)
+
+
 class Environment:
     def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
                  stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu',
@@ -22,6 +25,7 @@ class Environment:
         self.generate = generate
 
         self.device = device
+        # Support env.transform= or environment.transform= and with obs or exp as transform input
         self.transform = Modals(instantiate(env.pop('transform', transform), device=device))
 
         # Offline and generate don't use training rollouts! Unless on-policy (stream)
@@ -35,9 +39,11 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
+            # Allow overriding specs
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
 
+            # Default action space is continuous (not discrete) if unspecified
             if self.action_spec.discrete == '???':
                 self.action_spec.discrete = getattr(self.env, 'action_spec', {}).get('discrete', False)
 
@@ -52,10 +58,14 @@ class Environment:
         self.episode_done = self.episode_step = self.episode_frame = self.last_episode_len = 0
         self.daybreak = None
 
+    """
+    Step the agent in the environment and return new experiences and inference/acting logs
+    """
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
+        # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
         experiences = [*([self.env.step()] if self.disable and self.on_policy and agent.training else [])]
         vlogs = []
 
@@ -66,54 +76,72 @@ class Environment:
             exp = self.exp
 
             # Frame-stacked obs
-            obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)
+            obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)  # TODO Send whole exp to agent
             obs = torch.as_tensor(obs, device=self.device)
 
             # Act
-            store = Args()  # TODO Pass in log as well - problem, has to read var name order
+            store = Args()  # TODO Pass in log as well - problem, has to read var name order (custom name order weird)
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store)
+                action = agent.act(obs, store)  # TODO Allow agent to output an exp
 
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            exp = {} if self.generate else self.env.step(action)  # Experience
+            prev, now = {}, {} if self.generate else self.env.step(action)  # Experience TODO Just changed this
+            # prev = now = {} if self.generate else self.env.step(action)  # Experience
 
-            prev = {}
-            if isinstance(exp, tuple):
-                prev, exp = exp  # TODO Maybe separated prev only needed for metric
+            # The point of prev is to group data by time step for intuitive metrics of corresponding datums
+            # (e.g. corresponding action and obs)
+            if isinstance(now, tuple):
+                prev, now = now
 
-            self.exp.update(store)  # TODO Maybe separated prev only needed for metric
-            self.exp.update(action=exp.get('action', action), step=agent.step)
-            self.exp.update(prev)
+            now = now or {}  # Can be None
+
+            # TODO Metric only logged for previous.
+            #  Doesn't get logged for last, and definitely not for done, (unless prev = now)
+            self.exp.update(store)
+            self.exp.update(action=now.get('action', action), step=agent.step)
+            self.exp.update(prev)  # Prev is only needed for metric
 
             # Tally reward & logs
-            self.tally_metric(self.exp)
+            self.tally_metric(self.exp)  # TODO Metric only consists of action if prev is missing.
+            #                                   "now" label doesn't even make it? - it does, via self.exp persistence
+            #                                   - Just fixed this via "prev = now =" instead of "prev, now = {}, {} if"
+            #                                   Or did it carry over from the previous self.exp? - yes
+            #                                   Yes, action was/is one time step delayed in Datums
+            #                                       - Doesn't have to be? Or should be in "prev"?
 
-            if 'reward' not in exp and 'reward' in self.exp:
-                exp.reward = self.exp.reward
+            if 'reward' not in now and 'reward' in self.exp:
+                now.reward = self.exp.reward  # Metric can actually set reward, e.g. if RL
 
             # if agent.training:
-            #     experiences.append(self.exp)  # TODO Replay expects prev and exp together
+            #     experiences.append(self.exp)  # TODO Replay expects prev and exp together. I think can delete this
 
-            # exp.update({'prev_' + key: value for key, value in self.exp.items() if key not in exp})  # TODO -Transform
+            # TODO I don't remember what this is
+            # now.update({'prev_' + key: value for key, value in self.exp.items() if key not in now})  # TODO -Transform
 
             # Transform
-            exp = self.transform(exp)
+            now = self.transform(now)
 
             if agent.training:
-                # TODO Replay expects prev and exp together - trying this
-                experiences.append(Args({'action': action, 'step': agent.step, **prev, **exp, **store}))
-            else:  # TODO Double check this
-                experiences.append(self.exp)
+                # These go to Replay and include now (mixed time steps)
+                experiences.append(Args({'action': action, 'step': agent.step, **prev, **now, **store}))
+            else:
+                # These go to logger and don't include now  TODO: Is this wrong? Should just use above for both cases?
+                experiences.append(self.exp)                # TODO I think so. preditced_vs_actual needs "now", right?
+            #                                       # TODO Depends. If action is prev and corresponds to prev label,
+            #                                           then depends what "done"-state corresponds to
+            # TODO Trying this instead: (Perhaps this above is the bug causing the latest batch to not be logged)
+            #   (But now wouldn't the first batch end up not logged?)
+            # experiences.append(Args({'action': action, 'step': agent.step, **prev, **now, **store}))
 
-            self.exp = exp
-            if isinstance(exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
+            self.exp = now
+            if isinstance(self.exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
                 # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
-                self.exp.obs = exp.obs.numpy()
+                self.exp.obs = self.exp.obs.numpy()
 
             if vlog and hasattr(self.env, 'render') or self.generate:
-                image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if self.generate \
+                image_frame = action[:24].view(-1, *self.exp.obs.shape[1:]) if self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
 
@@ -124,12 +152,21 @@ class Environment:
             step += 1
             frame += len(action)
 
-            done = exp.get('done', True)  # TODO Datums skips last batch (self.exp doesn't get acted on) (maybe nstep controls this)
+            # TODO Perhaps this is the bug. See TODO of line 166 of Datums - reprogram/clean Datums!
+            done = self.exp.get('done', True)  # TODO Datums skips last batch (self.exp doesn't get acted on) (maybe nstep controls this)
 
             # Done
             self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
 
             if done:
+                # TODO Last "now" doesn't get acted on, metric'd, or logged (though does get sent to replay)
+                #     This is correct for RL, but not for supervised where
+                #     all of that is still necessary but w/o "prev" or env-step. Can't do this for RL
+                #     since no corresponding reward for metric or log. Maybe for supervised,
+                #     done "now" can be: (now or {})  [and in Datums, change the "done" output to None.
+                #                                       Or "now" becomes {} here if "done"? Or both]
+                #     and in Datums reset and sample can be more separated, with done state being None or {'done': True}
+                #   I think this summarizes the whole bug and all that's left.
                 self.exp = self.env.reset()
                 self.exp = self.transform(self.exp, device=self.device)
 
@@ -163,11 +200,22 @@ class Environment:
 
         return experiences, log, vlogs
 
+    """
+    Different environments have different inputs/outputs
+    
+    Default spec values
+    - obs_spec: input shape and stats
+    - action_spec: output shape, continuous vs. discrete, and stats
+    """
     @cached_property
     def obs_spec(self):
-        return Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
+        spec = Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
                      **getattr(self.env, 'obs_spec', {})})
+
+        self.env.__dict__.setdefault(self.env, 'obs_spec', {})['obs_spec'] = spec
+
+        return spec
 
     @cached_property
     def action_spec(self):
@@ -183,8 +231,13 @@ class Environment:
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape[1:]
 
+        self.env.__dict__.setdefault(self.env, 'action_spec', {})['action_spec'] = spec
+
         return spec
 
+    """
+    Metric tallying and tabulating for inference/evaluation
+    """
     # Compute metric on batch
     def tally_metric(self, exp):
         # TODO Maybe standardize to Tensors
@@ -241,6 +294,11 @@ class Environment:
             return log
 
         return {}
+
+
+"""
+    "Act mode": No gradients, no randomness like Dropout, and exponential moving average (EMA) if toggled 
+"""
 
 
 # Toggles / resets eval, inference, and EMA modes

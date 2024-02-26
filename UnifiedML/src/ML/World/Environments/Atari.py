@@ -155,7 +155,10 @@ class Atari:
 
         self.exp = Args(exp)  # Experience
 
-        return {'reward': reward}, {'obs': obs, 'done': self.episode_done}
+        prev = {'reward': reward, 'action': action}  # Reward for previous action
+        now = {'obs': obs, 'done': self.episode_done}  # New state
+
+        return prev, now
 
     def frame_stack(self, obs):
         if self.frames.maxlen == 1:

@@ -1,6 +1,6 @@
 <picture>
-  <source width="20%" media="(prefers-color-scheme: dark)" srcset="https://github.com/AGI-init/Assets/assets/92597756/e411328b-a51a-416c-ba97-7b7939ec3351">
-  <img width="20%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/Assets/assets/92597756/f3df44c8-b989-4951-9443-d2b4203b5c4e">
+  <source width="20%" media="(prefers-color-scheme: dark)" srcset="https://github.com/AGI-init/UnifiedML/assets/92597756/7fb01de3-3539-4b7e-b51e-910d781e47a8">
+  <img width="20%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/UnifiedML/assets/92597756/2d124da5-6f32-4265-9784-69f18117d9b9">
 <br><br>
 </picture>
 
@@ -21,8 +21,8 @@ pip install UnifiedML
 <p align="center">
 <a href="https://github.com/AGI-init/Assets/assets/92597756/d92e6b3f-9625-427c-87ef-909b3ec40f08">
 <picture>
-  <source width="40%" media="(prefers-color-scheme: dark)" srcset="https://github.com/AGI-init/Assets/assets/92597756/f8b74f97-7a5a-4643-b08d-a23f8305b5b8">
-  <img width="40%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/Assets/assets/92597756/d92e6b3f-9625-427c-87ef-909b3ec40f08">
+  <source width="40%" media="(prefers-color-scheme: dark)" srcset="https://github.com/AGI-init/UnifiedML/assets/92597756/ee9e96bb-9dfa-41c6-89f4-188502061dbd">
+  <img width="40%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/UnifiedML/assets/92597756/9eaa5423-ea9d-4793-9b1a-f043fc81d3c1">
 <br><br>
 </picture>
 </a>
@@ -32,39 +32,37 @@ UnifiedML is a toolbox & engine for defining ML tasks and training them individu
 
 #
 
-[See full documentation here.](https://slerman12.github.io/Docs/)
+[See full documentation here.](https://agi-init.github.io/UnifiedML) (Documentation in progress)
 
-[//]: # (---)
+[//]: # (TODO: Maybe change "base: import" to "task:" to simplify and perhaps "model:" instead of architecture parts. )
 
-[//]: # (> This work is an effort to create the best of all worlds in ML: accelerated, accessible and easy, state of the art, and general, to meet every ML need and then some. The purpose of a generalist agent is reflected by the expression "to be greater than the sum of parts". For each task in a pool of learnable tasks, a singular agent may learn to better generalize not just on each one individually[1^], but on altogether new tasks[^2] due to the generalization of their inter-related and transferable knowledge-components. In the future, this library will be the easiest way to reproduce ML feats like [Imagen]&#40;&#41; and [Stable Diffusion]&#40;&#41;, not to mention [GATO]&#40;&#41;. In the meantime, I ask for you to [sponsor]&#40;&#41; this work and help in any way to provide me compute and resources and support for realizing the full potential of this "library". UnifiedML is much more than a library.)
 
-[//]: # (### Projects built with UnifiedML)
+# Get started
 
-[//]: # ()
-[//]: # (- [X-ray Diffraction Pattern Images]&#40;&#41;)
+To start a train session, use the ```ML``` command:
 
-[//]: # (- [Self-Meta Learners]&#40;&#41;)
+```console
+ML
+```
 
-[//]: # ()
-[//]: # (### Examples)
+Defaults:
 
-[//]: # ()
-[//]: # (- [\<links to docs\>]&#40;&#41;)
+```dataset=MNIST```
 
-[//]: # (Pure-code examples that just import the relevant envs, etc. with plots, maybe an Examples dir? Or just docs)
+```task=classify```
 
-# Contributing
+Plots, logs, generated images, and videos are automatically stored in: ```./Benchmarking```.
 
-### Sponsorships & support
+# Voluntary support
 
-This library is built by a single individual from low-income means on the funding of a graduate student wage. [Please support financially by sponsoring if you can]()  and if you have access to compute and resources that you would be willing to contribute, please reach out to me at [slerman12@gmail.com]().
+### Sponsoring
 
-### Push-requests
+This library is built by a single individual from low-income means on the funding of a graduate student wage. [Please support financially by sponsoring if you can](https://github.com/sponsors/AGI-init) and if you have access to compute and resources that you would be willing to contribute, please reach out to me at [slerman12@gmail.com](mailto:slerman12@gmail.com?subject=Contributing).
 
-This library is built with passion and dedication, and every effort has been made to make it minimal and elegant. The standards for accepted push requests are high, but if you have a push that you would like to make or a contribution that you would like to propose, you may [make a request]() and/or leave a note to me either in [issues]() or by email at [slerman12@gmail.com]().
+<img width="60%" alt="Text changing depending on mode. Light: 'Light' Dark: 'Dark'" src="https://github.com/AGI-init/UnifiedML-legacy/assets/92597756/b57fe485-51f4-4244-b1ef-d7c35600dd48">
+
+### Contributing code
+
+This library is built with passion and dedication, and every effort has been made to make it minimal and elegant. The standards for accepted push requests are high, but if you have a push that you would like to make or a contribution that you would like to propose, you may [make a request](https://github.com/AGI-init/UnifiedML/edit/main/README.md) and/or leave a note to me either in [issues](https://github.com/AGI-init/UnifiedML/edit/main/README.md) or by email at [slerman12@gmail.com](mailto:slerman12@gmail.com?subject=Contributing).
 
 Thank you.
-
-#
-
-By [Sam Lerman](https://www.github.com/slerman12).

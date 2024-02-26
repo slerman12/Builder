@@ -402,7 +402,9 @@ MT = MultiTask()
 # python XRD.py multi_task='["task=NPCNN Eyes=XRD.Eyes","task=SCNN Eyes=XRD.Eyes"]'
 
 
-# Allows module to support either full batch args with modalities or single-modal (e.g. "obs")
+# Allows module to support either full batch-args with modalities (e.g. "exp" with attributes like exp.obs
+# and exp.reward) or single-modal (e.g. "obs")
+# Makes API for transforms and augmentations (and later, to-do: architecture parts) more adaptive and multi-modal
 class Modals(nn.Module):
     def __init__(self, module, modal='obs', device=None):
         super().__init__()
