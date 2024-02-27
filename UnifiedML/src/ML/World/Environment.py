@@ -113,7 +113,7 @@ class Environment:
                 experiences.append(self.exp)
 
             self.exp = now
-            if isinstance(self.exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
+            if 'obs' in self.exp and isinstance(self.exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
                 # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
                 self.exp.obs = self.exp.obs.numpy()
 
@@ -255,11 +255,6 @@ class Environment:
     # Aggregate metrics
     def tabulate_metric(self):
         if self.episode_done:
-            # TODO See here: episode is inexplicably adding a batch at 0th step???
-            # log = {key: (self.metric[key].tabulate(episode), print(len(episode)))[0]
-            #        for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
-            #                                                                          'tabulate', None)) and episode}
-
             log = {key: self.metric[key].tabulate(episode)
                    for key, episode in self.episode_adds.items() if callable(getattr(self.metric.get(key, None),
                                                                                      'tabulate', None)) and episode}

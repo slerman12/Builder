@@ -8,7 +8,7 @@ class Accuracy:
 
     # At the end of an epoch, a metric is tabulated
     def tabulate(self, epoch):
-        return epoch  # Lists/arrays get concatenated and mean-averaged by default
+        return epoch  # Lists/arrays get concatenated and *mean-averaged by default*
 
 
 class MSE:
@@ -16,7 +16,7 @@ class MSE:
         return (exp.label - exp.action) ** 2  # Gets appended to an epoch list
 
     def tabulate(self, epoch):
-        return epoch  # Lists/arrays get concatenated and mean-averaged by default
+        return epoch  # Lists/arrays get concatenated and *mean-averaged by default*
 
 
 class Reward:

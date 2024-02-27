@@ -132,6 +132,8 @@ class Datums:
             if len(self.exp.label.shape) == 1:
                 self.exp.label = np.expand_dims(self.exp.label, 1)
 
+        self.exp.done = False
+
         return self.exp
 
     def sample(self):

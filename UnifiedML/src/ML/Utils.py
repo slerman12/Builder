@@ -419,8 +419,9 @@ class Modals(nn.Module):
             exp = Args(exp)
 
         # Is it an exp?
-        if isinstance(exp, Args) and self.modal in exp:
-            exp[self.modal] = self.to(exp[self.modal], device=device)
+        if isinstance(exp, Args):
+            if self.modal in exp:
+                exp[self.modal] = self.to(exp[self.modal], device=device)
         else:
             exp = self.to(exp, device=device)
 
@@ -436,9 +437,8 @@ class Modals(nn.Module):
 
         return exp
 
-    def to(self, exp, device=None):
-        return torch.as_tensor(exp, device=device or self.device) if device is not None or \
-                                                                     self.device is not None else torch.as_tensor(exp)
+    def to(self, datum, device=None):
+        return torch.as_tensor(datum, device=device or self.device or getattr(datum, 'device', 'cpu'))
 
 
 # Adaptively fills shaping arguments in instantiated Pytorch modules
