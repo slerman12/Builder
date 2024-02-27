@@ -114,7 +114,7 @@ class Environment:
             # Transform
             now = self.transform(now)
 
-            # TODO Problem: online:
+            # TODO Problem: online (and offline streaming at point 5):
             #  (1) skips storing first batch in Replay,
             #         I would say do: experiences.append(Args({'step': agent.step, **self.exp, **prev, **now, **store}))
             #         but self.exp is updated by Metrics... not needed for Replay.
@@ -133,6 +133,8 @@ class Environment:
             #           Or nothing, since already added to self.exp/exp
             #  (4) Don't forget to update the second-to-last experience/transition stored in Replay and metric'd and
             #      logged as done!
+            #  (5) How would offline streaming respond to this? exp, prev need to be unified; done added to 2nd-to-last;
+            #      & unified (exp, prev, with potentially done) as output; what about metric-originated reward, ignore?.
 
             if agent.training:
                 # These go to Replay and include now (mixed time steps)
