@@ -63,7 +63,7 @@ class Environment:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
         # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
-        experiences = [*([self.env.step()] if self.disable and self.on_policy and agent.training else [])]
+        experiences = [*([self.env.step(None)] if self.disable and self.on_policy and agent.training else [])]
         vlogs = []
 
         self.episode_done = self.disable
@@ -76,17 +76,12 @@ class Environment:
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)  # TODO Send whole exp to agent
             obs = torch.as_tensor(obs, device=self.device)
 
-            # TODO Delete
-            if step == 0:
-                # TODO - inconsistent eval batches? shuffled?
-                #   Yes, and for some reason that changes tabulated eval accuracy (otherwise consistent)
-                #       Maybe logger averaging badly? - try averaging manually in metric tabulate
-                print(obs.mean())
-
             # Act
             store = Args()
             with act_mode(agent, self.ema):
                 action = agent.act(obs, store)  # TODO Allow agent to output an exp
+
+            action = self.infer_action_from_action_spec(action)
 
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
@@ -98,11 +93,6 @@ class Environment:
                 prev, now = now
 
             now = now or {}  # Can be None
-
-            # print(action.shape, now.get('action', action).shape)
-            # print(action.shape, now.get('action', None).shape)
-            # TODO last batch not returning action causes irregularly shaped action (the default before
-            #  adapt-to-discrete) to be outputted
 
             self.exp.update(store)
             self.exp.update(action=now.get('action', action), step=agent.step)
@@ -284,9 +274,45 @@ class Environment:
 
         return {}
 
+    """
+    Action can be inferred from action_spec, even if the agent's output action doesn't perfectly match
+    action_spec, e.g., in discrete Envs, multi-dim actions can be inferred as logits/probas and argmax'd 
+    when action_spec expects shape (1,). Action also gets broadcast to expected shape.
+    """
+
+    def infer_action_from_action_spec(self, action):
+        shape = self.action_spec['shape']
+
+        try:
+            # Broadcast to expected shape
+            action = action.reshape(len(action), *shape)  # Assumes a batch dim
+        except (ValueError, RuntimeError) as e:
+            # Arg-maxes if categorical distribution passed in
+            if self.action_spec['discrete']:
+                try:
+                    action = action.reshape(len(action), -1, *shape)  # Assumes a batch dim
+                except:
+                    raise RuntimeError(f'Discrete environment could not broadcast or adapt action of shape '
+                                       f'{action.shape} to expected batch-action shape {(-1, *shape)}')
+                action = action.argmax(1)
+            else:
+                raise e
+
+        discrete_bins, low, high = self.action_spec['discrete_bins'], self.action_spec['low'], self.action_spec['high']
+
+        # TODO Generalize to regression
+        if self.action_spec['discrete']:
+            # Round to nearest decimal/int corresponding to discrete bins, high, and low
+            action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
+                     (discrete_bins - 1) * (high - low) + low
+        else:
+            pass  # TODO
+
+        return action
+
 
 """
-    "Act mode": No gradients, no randomness like Dropout, and exponential moving average (EMA) if toggled 
+"Act mode": No gradients, no randomness like Dropout, and exponential moving average (EMA) if toggled 
 """
 
 
