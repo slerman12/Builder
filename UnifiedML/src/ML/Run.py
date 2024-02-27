@@ -46,11 +46,13 @@ def main(args):
         if converged or (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
+                # TODO Add if here to not run redundantly
                 exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                     vlog=args.log_media)
 
-                logger.eval().log(log, exp=exp if converged else None)
+                logger.eval().log(log, exp=exp if converged else None)  # TODO  Logger, don't log redundantly; pass step
 
+            # TODO Logger, don't dump redundantly; pass step?
             logger.eval().dump_logs()  # TODO Don't print a 2nd time when converged, but dump predicted-actual
 
             if args.log_media:

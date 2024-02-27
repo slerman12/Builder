@@ -19,37 +19,41 @@ from minihydra import Args
 class Datums:
     """
     Envs must:
-    (1) have a step(action) function
-    (2) have a reset() function
+    (1) include **kwargs as an init arg
+    (2) have a step(action) function
+    (3) have a reset() function
 
         The step() and reset() functions output experiences ("exp")
             i.e. dicts containing datums like "obs", "action", "reward", 'label", "done"
 
-        The end of an episode or epoch may be marked by the "done" boolean. If unspecified, it will be assumed True
-        during step() calls and False during reset() calls.
-        This can be useful for tabulating metrics based on multiple steps of batches
-        or organizing temporal data in Replay.
-        - The "done" step doesn't get acted on. Its contents can be a no-op (either output None or just {'done': True}),
-        or can include any additional datums needed for logging or storing in Replay, such as "reward".
-        - The reset() state can't ever be a "done" state even if you specify it as such. In that case,
-        output None from your step() function.
+        In the step() function, instead of outputting one experience, can output a (prev, now) pair of experiences.
+        Some datums, such as reward, are time-delayed and specifying them in a separate "prev" experience makes
+        it possible to pair corresponding time-step pairs for metrics and Replay.
 
-        Instead of outputting one experience, can output a (prev, now) pair of experiences. Some datums, such as reward,
-        are time-delayed and specifying them in a separate "prev" experience makes it possible to pair corresponding
-        time-step pairs for computing metrics easier.
+        The end of an episode or epoch may be marked by the "done" boolean. If unspecified, it will be assumed True
+        during step() calls.
+            - This sequence demarcation can be useful for tabulating metrics (e.g. based on multiple steps or an epoch
+              of batches) or for the automatic organizing of temporal data in Replay.
+            - The "done" step doesn't get acted on. Its contents can be a no-op (either output None or just
+              {'done': True}), or, if you're using (prev, now) pairs, the prev experience in a done state should still
+              include any additional datums needed for logging or storing in Replay, such as "reward". It shouldn't
+              include the "done" key. The now state, which should hold the "done" key or be None, is ignored.
+            - The reset() state can't ever be a "done" state even if you specify it as such. In that case,
+              output None from your step() function.
 
     Envs can:
     (1) have an obs_spec dict
     (2) have an action_spec dict
+    (3) include a render() method, frame_stack(obs) method, and/or an action_repeat init arg that Env should adapt to
 
         depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
         since it can be inferred from the "obs" output of the reset() function. action_spec.shape from a "label" if
         present.
 
-        For obs_spec, these stats can include: "shape", "mean", "stddev", "low", "high".
+        For obs_spec, these stats can include for example: "shape", "mean", "stddev", "low", "high".
         Useful for standardization and normalization.
 
-        For action_spec, these stats can include: "shape", "discrete_bins", "low", "high", "discrete".
+        For action_spec, these stats can include for example: "shape", "discrete_bins", "low", "high", "discrete".
         For discrete action spaces and action normalization. Many of these can be inferred,
         and see Environment.py "action_spec" @property for what the defaults are if left unspecified.
 
@@ -106,7 +110,7 @@ class Datums:
             self.action_spec = {'discrete_bins': len(dataset.classes)}
 
     def step(self, action):
-        if self.num_sampled_batches < len(self):  # Episode is "done" at end of epoch
+        if self.num_sampled_batches < len(self.batches):  # Episode is "done" at end of epoch
             return self.reset()  # Re-sample datums
 
     def reset(self):
@@ -118,7 +122,7 @@ class Datums:
         for key, value in self.exp.items():
             self.exp[key] = value.cpu().numpy() if isinstance(value, torch.Tensor) else np.array(value)
 
-        # Label should have shape (batch_size, 1)
+        # Label should have shape (batch_size, 1) if its shape is (batch_size,)
         if 'label' in self.exp and len(self.exp.label.shape) == 1:
             self.exp.label = np.expand_dims(self.exp.label, 1)
 
@@ -136,10 +140,7 @@ class Datums:
     def render(self):
         # Assumes image dataset
         image = next(iter(self.sample().values())) if self.exp is None else self.exp.obs
-        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last
-
-    def __len__(self):
-        return len(self.batches)
+        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last)
 
 
 # Mean of empty reward should be NaN, catch acceptable usage warning  TODO Delete if these warnings don't pop up anyway

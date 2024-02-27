@@ -82,6 +82,7 @@ class Environment:
                 action = agent.act(obs, store)  # TODO Allow agent to output an exp
 
             # Inferred action will get passed to Env, Metrics, and Logger. However, original will be stored in Replay.
+            # TODO No need. store accounts for this
             _action = self.infer_action_from_action_spec(action)
 
             if not self.generate:
@@ -129,6 +130,9 @@ class Environment:
             #         Wait - but action should be prev, not now for RL but now for Datums? Why? Why not now for both?
             #           Well, the first batch wouldn't have a corresponding action. After that, not sure...
             #           Why not prev for both? I think do: "prev.action = action" instead. No time-step delay.
+            #           Or nothing, since already added to self.exp/exp
+            #  (4) Don't forget to update the second-to-last experience/transition stored in Replay and metric'd and
+            #      logged as done!
 
             if agent.training:
                 # These go to Replay and include now (mixed time steps)

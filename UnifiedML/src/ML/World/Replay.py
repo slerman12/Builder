@@ -446,6 +446,7 @@ class Worker:
         # Future
         if self.nstep:
             # Transition
+            # TODO Might have to get rid of "+ 1" in this line and the next one, & in traj_a after update to Environment
             experience.action = episode[step + 1].action
 
             traj_r = torch.as_tensor([float(experience.reward)
