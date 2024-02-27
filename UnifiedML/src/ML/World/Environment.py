@@ -113,6 +113,23 @@ class Environment:
             # Transform
             now = self.transform(now)
 
+            # TODO Problem: online:
+            #  (1) skips storing first batch in Replay,
+            #         I would say do: experiences.append(Args({'step': agent.step, **self.exp, **prev, **now, **store}))
+            #         but self.exp is updated by Metrics... not needed for Replay.
+            #         Make/return copy in tally_metric? Or, just before tally_metric: exp = Args(self.exp)
+            #         Then: experiences.append(Args({'step': agent.step, **exp, **prev, **now, **store}))
+            #         But how does that work for RL? The first batch still doesn't have consistent corresponding datums
+            #         ! Maybe Replay should just pair exp and prev and now should never explicitly be stored
+            #         Then prev is necessary for RL to pair the transitions correctly
+            #  (2) stores only "step" and "done" and "action" in Reply at last batch for Datums
+            #       Don't append anything in that case (if now.keys() union prev.keys() \subseteq {'done', 'action'})?
+            #  (3) "now.action = action" means action always 1-time-step delayed. Does Replay always account for that?
+            #         This wouldn't be an issue if experiences stored (step, exp, prev, store) for Replay and not now
+            #         Wait - but action should be prev, not now for RL but now for Datums? Why? Why not now for both?
+            #           Well, the first batch wouldn't have a corresponding action. After that, not sure...
+            #           Why not prev for both? I think do: "prev.action = action" instead. No time-step delay.
+
             if agent.training:
                 # These go to Replay and include now (mixed time steps)
                 experiences.append(Args({'step': agent.step, **prev, **now, **store}))
