@@ -37,7 +37,7 @@ def main(args):
     logger = instantiate(args.logger, witness=agent)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch  # TODO agent.step not resuming???
+    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch  # TODO agent.step/agent.frame not resuming!
 
     # Start
     converged = training = args.train_steps == 0
@@ -82,7 +82,7 @@ def main(args):
                 log = Args(time=None, step=None, frame=None, episode=None, epoch=None)
                 agent.learn(replay, log)  # Learn
 
-                if args.log_per_episodes and args.agent.log:
+                if args.log_per_episodes and args.agent.log:  # TODO Shouldn't agent.step be incremented either way?
                     logger.train().re_witness(log, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision

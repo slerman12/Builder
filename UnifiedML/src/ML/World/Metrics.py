@@ -4,11 +4,16 @@ import numpy as np
 class Accuracy:
     # An experience is a set of batch data that follows an action
     def add(self, exp):
+        # print(exp.label.shape, exp.action.shape)
+        if len(exp.action.shape) == 3:
+            exp.action = exp.action.squeeze(1)  # TODO This is a temporary fix to irregular action shapes on last batch
         return exp.label == exp.action  # Gets appended to an epoch list
 
     # At the end of an epoch, a metric is tabulated
     def tabulate(self, epoch):
-        return epoch  # Lists/arrays get concatenated and *mean-averaged by default*
+        # print(len(epoch), epoch[0].shape, epoch[38].shape, epoch[39].shape)
+        # return np.concatenate(epoch, axis=0).mean()
+        return epoch  # By default, lists/arrays get (1) concatenated and (2) mean-averaged
 
 
 class MSE:
@@ -16,7 +21,7 @@ class MSE:
         return (exp.label - exp.action) ** 2  # Gets appended to an epoch list
 
     def tabulate(self, epoch):
-        return epoch  # Lists/arrays get concatenated and *mean-averaged by default*
+        return epoch  # By default, lists/arrays get (1) concatenated and (2) mean-averaged
 
 
 class Reward:

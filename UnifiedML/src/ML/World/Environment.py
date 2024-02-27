@@ -76,6 +76,13 @@ class Environment:
             obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)  # TODO Send whole exp to agent
             obs = torch.as_tensor(obs, device=self.device)
 
+            # TODO Delete
+            if step == 0:
+                # TODO - inconsistent eval batches? shuffled?
+                #   Yes, and for some reason that changes tabulated eval accuracy (otherwise consistent)
+                #       Maybe logger averaging badly? - try averaging manually in metric tabulate
+                print(obs.mean())
+
             # Act
             store = Args()
             with act_mode(agent, self.ema):
@@ -91,6 +98,11 @@ class Environment:
                 prev, now = now
 
             now = now or {}  # Can be None
+
+            # print(action.shape, now.get('action', action).shape)
+            # print(action.shape, now.get('action', None).shape)
+            # TODO last batch not returning action causes irregularly shaped action (the default before
+            #  adapt-to-discrete) to be outputted
 
             self.exp.update(store)
             self.exp.update(action=now.get('action', action), step=agent.step)
