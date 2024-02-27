@@ -22,17 +22,21 @@ class Datums:
     - have a step(action) function
     - have a reset() function
 
-        The step() and reset() functions output "experiences" ("exp")
+        The step() and reset() functions output experiences ("exp")
             i.e. dicts containing datums like "obs", "action", "reward", 'label", "done"
 
-        The end of an episode or epoch may be marked by the "done" boolean. It will be assumed True during step() calls
-        and False during reset() calls if excluded.
+        The end of an episode or epoch may be marked by the "done" boolean. If unspecified, it will be assumed True
+        during step() calls and False during reset() calls.
         This can be useful for tabulating metrics based on multiple steps of batches
         or organizing temporal data in Replay.
         - The "done" step doesn't get acted on. Its contents can be a no-op (either output None or just {'done': True}),
         or can include any additional datums needed for logging or storing in Replay, such as "reward".
         - The reset() state can't ever be a "done" state even if you specify it as such. In that case,
         output None from your step() function.
+
+        Instead of outputting one experience, can output a (prev, now) pair of experiences. Some datums, such as reward,
+        are time-delayed and specifying them in a separate "prev" experience makes it possible to pair corresponding
+        time-step pairs for computing metrics easier.
 
     Envs can:
     - have an obs_spec dict
@@ -46,7 +50,7 @@ class Datums:
         Useful for standardization and normalization.
 
         For action_spec, these stats can include: "shape", "discrete_bins", "low", "high", "discrete".
-        For discrete action spaces and action normalization. Much of this can be inferred,
+        For discrete action spaces and action normalization. Many of these can be inferred,
         and see Environment.py "action_spec" @property for what the defaults are if left unspecified.
 
     ---
