@@ -81,12 +81,13 @@ class Environment:
             with act_mode(agent, self.ema):
                 action = agent.act(obs, store)  # TODO Allow agent to output an exp
 
-            action = self.infer_action_from_action_spec(action)
+            # Inferred action will get passed to Env, Metrics, and Logger. However, original will be stored in Replay.
+            _action = self.infer_action_from_action_spec(action)
 
             if not self.generate:
-                action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
+                _action = _action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            prev, now = {}, {} if self.generate else self.env.step(action)  # Experience
+            prev, now = {}, {} if self.generate else self.env.step(_action)  # Experience
 
             # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
             if isinstance(now, tuple):
@@ -95,21 +96,26 @@ class Environment:
             now = now or {}  # Can be None
 
             self.exp.update(store)
-            self.exp.update(action=now.get('action', action), step=agent.step)
+            self.exp.update(action=now.get('action', _action), step=agent.step)
             self.exp.update(prev)  # Prev is only needed for metric
 
             # Tally reward & logs
             self.tally_metric(self.exp)
 
             if 'reward' not in now and 'reward' in self.exp:
-                now.reward = self.exp.reward  # Metric can actually set reward, e.g. if RL
+                # Note: Envs should either always return a reward or never return a reward.
+                # Inconsistent presence of reward can lead to tally_metric carrying over last-present
+                # reward to next time steps
+                now.reward = self.exp.reward  # Metric can actually set reward, e.g., if RL
+
+            now.action = action
 
             # Transform
             now = self.transform(now)
 
             if agent.training:
                 # These go to Replay and include now (mixed time steps)
-                experiences.append(Args({'action': action, 'step': agent.step, **prev, **now, **store}))
+                experiences.append(Args({'step': agent.step, **prev, **now, **store}))
             else:
                 # These go to logger and don't include now
                 experiences.append(self.exp)
@@ -223,25 +229,28 @@ class Environment:
     Metric tallying and tabulating for inference/evaluation
     """
     # Compute metric on batch
-    def tally_metric(self, exp):
-        # TODO Maybe standardize to Tensors
+    def tally_metric(self, exp):  # TODO Maybe standardize to Tensors
+        # Convert batch to numpy
         for key, value in exp.items():
             if isinstance(value, torch.Tensor):
                 exp[key] = value.cpu().numpy()
 
+        # Compute each function-based (not string-based) metric on the batch. String-based gets computed in tabulate
         add = {key: m.add(exp) for key, m in self.metric.items() if callable(getattr(m, 'add', None))}
 
+        # Add metrics to episode-long running list of metrics
         self.episode_adds.update({key: self.episode_adds.get(key, []) + [m]
                                   for key, m in add.items() if m is not None})
 
         # Always include reward
         if 'reward' in self.metric and 'reward' in self.episode_adds:
             exp.reward = self.episode_adds['reward'][-1]  # Override Env reward with metric reward
-        elif 'reward' in self.metric or 'reward' in exp:
+        elif ('reward' in self.metric or 'reward' in exp) and not getattr(self, 'popped_reward', None):
             # Evaluate reward from string  Note: No recursion between strings
             if isinstance(self.metric.get('reward', None), str):
                 exp.reward = eval(self.metric['reward'], {key: episode[-1]
                                                           for key, episode in self.episode_adds.items()})
+
             # Override metric reward with Env reward
             self.episode_adds.setdefault('reward', []).append(exp.reward.mean() if hasattr(exp.reward, 'mean')
                                                               else exp.reward)
@@ -253,6 +262,9 @@ class Environment:
             warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
+
+            # To avoid this becoming the reward used next time in the previous elif block, and then never changing
+            setattr(self, 'popped_reward', True)
 
     # Aggregate metrics
     def tabulate_metric(self):
@@ -300,13 +312,13 @@ class Environment:
 
         discrete_bins, low, high = self.action_spec['discrete_bins'], self.action_spec['low'], self.action_spec['high']
 
-        # TODO Generalize to regression
+        # Round to nearest decimal/int corresponding to discrete bins, high, and low
         if self.action_spec['discrete']:
-            # Round to nearest decimal/int corresponding to discrete bins, high, and low
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
         else:
-            pass  # TODO
+            # TODO Generalize to regression
+            pass
 
         return action
 

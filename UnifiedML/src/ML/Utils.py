@@ -200,7 +200,7 @@ def save(path, model, args=None, *attributes):
 
 
 # Loads model or part of model
-def load(path, device='cuda', args=None, preserve=(), distributed=False, attr='', **kwargs):
+def load(path, device='cuda', args=None, preserve=(), attr='', **kwargs):
     while True:
         try:
             to_load = torch.load(path, map_location=device, pickle_module=dill)  # Load
@@ -217,7 +217,7 @@ def load(path, device='cuda', args=None, preserve=(), distributed=False, attr=''
                 args = original_args  # If already instantiated, use instantiated
             break
         except Exception as e:  # Pytorch's load and save are not atomic transactions, can conflict in distributed setup
-            if not distributed:
+            if not preserve:
                 raise RuntimeError(e)
             warnings.warn(f'Load conflict, resolving...')  # For distributed training
 

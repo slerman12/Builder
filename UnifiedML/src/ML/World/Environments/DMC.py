@@ -23,18 +23,13 @@ class DMC:
 
     (1) a "step" function, action -> exp
     (2) "reset" function, -> exp
-    (3) "render" function, -> image
-    (4) "episode_done" attribute
-    (5) "obs_spec" attribute which includes:
+    (3) "obs_spec" attribute which includes:
         - "shape", "mean", "stddev", "low", "high" (the last 4 can be None)
-    (6) "action-spec" attribute which includes:
+    (4) "action-spec" attribute which includes:
         - "shape", "discrete_bins" (should be None if not discrete), "low", "high", and "discrete"
-    (7) "exp" attribute containing the latest exp
 
-    Recommended: Discrete environments should have a conversion strategy for adapting continuous actions (e.g. argmax)
-
-    An "exp" (experience) is an Args consisting of "obs", "action" (prior to adapting), "reward", and "label"
-    as numpy arrays with batch dim or None. "reward" is an exception: should be numpy array, can be empty/scalar/batch.
+    An "exp" (experience) is a dict consisting of keys such as "obs", "action", "reward", and "label"
+    as numpy arrays with batch dim or None. "reward" should be numpy array, can be scalar/batch.
 
     ---
 
@@ -107,13 +102,11 @@ class DMC:
                                  'high': 1,
                                  'discrete': False})
 
-        self.exp = None  # Experience
-
         self.action_repeat = action_repeat
         self.frames = deque([], frame_stack or 1)
 
     def step(self, action):
-        # Remove batch dim, adapt shape
+        # Remove batch dim
         action = np.reshape(action, self.action_spec['shape'])
 
         # Step env
@@ -130,18 +123,13 @@ class DMC:
 
         obs = time_step.observation[self.key].copy()  # DMC returns numpy arrays with negative strides, need to copy
 
-        # Create experience
-        exp = {'obs': obs, 'action': action, 'reward': reward, 'done': self.episode_done}
         # Add batch dim
-        exp['obs'] = np.expand_dims(exp['obs'], 0)
-        exp['action'] = np.expand_dims(exp['action'], 0)
+        obs = np.expand_dims(obs, 0)
         # Channel-first
-        exp['obs'] = exp['obs'].transpose(0, 3, 1, 2)
+        obs = obs.transpose(0, 3, 1, 2)
 
-        self.exp = Args(exp)  # Experience
-
-        prev = {'reward': exp.pop('reward'), 'action': exp.pop('action')}  # Reward for previous action
-        now = exp  # New state
+        prev = {'reward': reward}  # Reward for previous action
+        now = {'obs': obs, 'done': self.episode_done}  # New state
 
         return prev, now
 
@@ -168,9 +156,7 @@ class DMC:
         # Reset frame stack
         self.frames.clear()
 
-        self.exp = Args(exp)  # Experience
-
-        return self.exp
+        return Args(exp)  # Experience
 
     def render(self):
         return self.env.physics.render(height=256, width=256, camera_id=0)

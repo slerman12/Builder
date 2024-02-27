@@ -19,8 +19,8 @@ from minihydra import Args
 class Datums:
     """
     Envs must:
-    - have a step(action) function
-    - have a reset() function
+    (1) have a step(action) function
+    (2) have a reset() function
 
         The step() and reset() functions output experiences ("exp")
             i.e. dicts containing datums like "obs", "action", "reward", 'label", "done"
@@ -39,8 +39,8 @@ class Datums:
         time-step pairs for computing metrics easier.
 
     Envs can:
-    - have an obs_spec dict
-    - have an action_spec dict
+    (1) have an obs_spec dict
+    (2) have an action_spec dict
 
         depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
         since it can be inferred from the "obs" output of the reset() function. action_spec.shape from a "label" if
@@ -56,11 +56,11 @@ class Datums:
     ---
 
     Datasets must:
-    - extend Pytorch Datasets
-    - output (obs, label) pairs, or dicts of named datums, e.g., {'obs': obs, 'label': label, ...}
+    (1) extend Pytorch Datasets
+    (2) output (obs, label) pairs, or dicts of named datums, e.g., {'obs': obs, 'label': label, ...}
 
     Datasets can:
-    - include a "classes" attribute that lists the different class names or classes
+    (1) include a "classes" attribute that lists the different class names or classes
         This allows quick and exact computation of number of classes being predicted from, without having to count
         via iterating through the whole dataset.
     """

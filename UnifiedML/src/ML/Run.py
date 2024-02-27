@@ -2,7 +2,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # MIT_LICENSE file in the root directory of this source tree.
-from minihydra import instantiate, get_args, interpolate, Args  # minihydra conveniently and cleanly manages sys args
+from minihydra import get_args, instantiate, interpolate, Args  # minihydra conveniently and cleanly manages sys args
 
 from Utils import init, MT, adaptive_shaping, MP, save, load
 
@@ -37,7 +37,7 @@ def main(args):
     logger = instantiate(args.logger, witness=agent)
     vlogger = instantiate(args.vlogger) if args.log_media else None
 
-    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch  # TODO agent.step/agent.frame not resuming!
+    train_steps, replay.epoch = args.train_steps + agent.step, agent.epoch
 
     # Start
     converged = training = args.train_steps == 0
@@ -87,10 +87,10 @@ def main(args):
                     MP.update()  # For training speedup via automatic mixed precision
 
         if training and args.save_per_steps and agent.step % args.save_per_steps == 0 or (converged and args.save):
-            save(args.save_path, agent, args.agent, 'frame', 'step', 'episode', 'epoch')
+            save(args.save_path, agent, args.agent, 'birthday', 'frame', 'step', 'episode', 'epoch')
 
         if training and args.load_per_steps and agent.step % args.load_per_steps == 0:
-            agent = load(args.load_path, args.device, args.agent, ['frame', 'step', 'episode', 'epoch'], True)
+            agent = load(args.load_path, args.device, args.agent, ['birthday', 'frame', 'step', 'episode', 'epoch'])
 
     return agent, replay
 
