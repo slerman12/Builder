@@ -140,11 +140,11 @@ class Environment:
             #   has to support Episodes where some datums have more steps than others. Is that already the case?
             #   And I think it's a lot more intuitive to have "done" state actually correspond with datums and for the
             #   reset state to be treated this way
-            #   So, can add reset step as a prioritized "secondary" to (prev, now) sans all datums
-            #   And None not needed for "done" state
-            #   Even confirming that Memory supports varying datums is a lot of work
-            #   Maybe faster to first use current cybernetics and see if adding now as last experience of episode
-            #   (assuming includes more than just "done" key) works
+            #   Summary of what I still want to do: In Env, I want to reconfigure it so that first reset() batch is
+            #   always the extra one appended now prior rather than after) rather than the "done" batch. Meanwhile, prev
+            #   and now should be paired again rather than carry self.exp over for anything other than acting/stepping.
+            #   In Replay, reset to the version in the commit before these recent edits where the time-delay of action
+            #   and reward are accounted for by adding "+ 1" as commented in Replay right now.
             if done and len(now.keys() - {'done', 'step'}):
                 experiences[-1]['done'] = False
                 experiences.append(self.transform(now))  # TODO Transform has fewer datums in this case, inconsistent
