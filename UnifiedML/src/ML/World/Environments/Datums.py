@@ -140,7 +140,7 @@ class Datums:
     def render(self):
         # Assumes image dataset
         image = next(iter(self.sample().values())) if self.exp is None else self.exp.obs
-        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last)
+        return np.array(image[random.randint(0, len(image) - 1)]).transpose(1, 2, 0)  # Channels-last
 
 
 # Mean of empty reward should be NaN, catch acceptable usage warning  TODO Delete if these warnings don't pop up anyway

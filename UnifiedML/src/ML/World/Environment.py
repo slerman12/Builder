@@ -151,6 +151,8 @@ class Environment:
                 experiences[-1]['done'] = True
                 # experiences[-1]['step'] = agent.step
 
+            # TODO Plotting for RL somehow broken, no curves on line graphs, no bar chart
+
             self.exp = now
 
             if vlog and hasattr(self.env, 'render') or self.generate:

@@ -92,7 +92,9 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             # y = 'Accuracy' if 'classify' in suite.lower() \
             #     else 'MSE' if 'regression' in suite.lower() else 'Reward' if 'reward' in cell_data.columns \
             #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
-            y = [col for col in cell_data.columns if col.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
+            y = [col for col in cell_data.columns if col.lower()
+                 not in ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']
+                 and not cell_data[col].isnull().values.any()][0]
 
             sns.lineplot(x=x, y=y, data=cell_data, ci='sd', hue='Agent', hue_order=np.sort(hue_names), ax=ax,
                          palette=cell_palettes)
@@ -127,7 +129,9 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             # y = 'Accuracy' if 'classify' in ax_title.lower() \
             #     else 'MSE' if 'regression' in ax_title.lower() else 'Reward' if 'reward' in cell_data.columns \
             #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
-            y = [col for col in cell_data.columns if col.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
+            y = [col for col in cell_data.columns if col.lower()
+                 not in ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']
+                 and not cell_data[col].isnull().values.any()][0]
 
             # Normalize
             for task in cell_data.Task.unique():
@@ -182,6 +186,7 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
         metrics = [metric
                    for metric in performance.columns if metric.lower() not in
                    ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']]
+        # TODO Note: RL doesn't even make it here (to "performance")
 
         # Use Reward or Accuracy as "Score"
         performance['Score'] = performance[metrics[0]]

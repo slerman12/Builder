@@ -31,7 +31,7 @@ yaml_search_paths = [app, cwd]  # List of paths to search for yamls in
 module_paths = [app, cwd]  # List of paths to instantiate modules from
 added_modules = {}  # Name: module pairs to instantiate from
 
-task_dirs = ['', 'task']  # Extra directories where tasks can be searched
+task_dirs = ['', 'task/']  # Extra directories where tasks can be searched
 
 log_dir = None
 
