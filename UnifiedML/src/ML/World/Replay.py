@@ -378,7 +378,7 @@ class Worker:
             step = 0
 
         # TODO Since not randomly sampling for 'step' need to check relative to step!
-        if dynamic:  # TODO I can add "and False" because of the big TODO below at around line 458
+        if dynamic:
             nstep = bool(self.nstep)  # Allows dynamic nstep if necessary
         else:
             nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
@@ -432,16 +432,11 @@ class Worker:
         # Frame stack
         def frame_stack(traj, key, idx):
             frames = traj[max([0, idx + 1 - self.frame_stack]):idx + 1]
-            bb = len(frames)
             for _ in range(self.frame_stack - idx - 1):  # If not enough frames, reuse the first
                 frames = traj[:1] + frames
-            # TODO Delete this try-catch (not the concat). Debugging
-            try:
-                frames = torch.concat([torch.as_tensor(frame[key])
-                                       for frame in frames]).reshape(frames[0][key].shape[0] * self.frame_stack,
-                                                                     *frames[0][key].shape[1:])
-            except Exception:
-                assert False, f'{(len(traj), len(frames), bb, key, idx)}'
+            frames = torch.concat([torch.as_tensor(frame[key])
+                                   for frame in frames]).reshape(frames[0][key].shape[0] * self.frame_stack,
+                                                                 *frames[0][key].shape[1:])
             return frames
 
         # Present
@@ -458,6 +453,13 @@ class Worker:
             # TODO Had to change to this because reward now corresponds with obs in Env, see below TODO
             traj_r = torch.as_tensor([float(experience.reward)
                                       for experience in episode[step:min(len(episode) - 1, step + self.nstep)]])
+            # TODO In the more intuitive way (described in teh next TODO), might be able to change to:
+            #   traj_r = torch.as_tensor([float(experience.reward)
+            #                               for experience in episode[step + 1:step + self.nstep + 1]])
+            #   And then have to change "experience.action = episode[step].action" to
+            #   "experience.action = episode[step + 1].action
+            #   And finally, the below traj_a to "traj_a = episode['action'][idx + 1:idx + self.nstep + 1]"
+            #   Pretty much: revert everything in Replay to before the last recent commits
 
             # TODO Crashes together with dynamic nstep? Had to add "- 1" - but this is after removing "+ 1"
             #  and changing Env to correspond pairs...
