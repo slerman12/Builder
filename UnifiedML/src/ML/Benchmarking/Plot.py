@@ -180,7 +180,8 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
 
         # Score name y-axis
         metrics = [metric
-                   for metric in performance.columns if metric.lower() not in ['time', 'step', 'frame', 'epoch', 'fps']]
+                   for metric in performance.columns if metric.lower() not in
+                   ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']]
 
         # Use Reward or Accuracy as "Score"
         performance['Score'] = performance[metrics[0]]

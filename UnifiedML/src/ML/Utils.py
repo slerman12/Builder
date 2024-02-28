@@ -415,7 +415,8 @@ class Modals(nn.Module):
         self.device = device
 
     def forward(self, exp, device=None):
-        if isinstance(exp, dict):
+        # if isinstance(exp, dict):
+        if isinstance(exp, (dict, Args)):  # TODO I recently made this make a new Args-dict even if already an Args-dict
             exp = Args(exp)
 
         # Is it an exp?

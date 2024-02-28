@@ -378,7 +378,7 @@ class Worker:
             step = 0
 
         # TODO Since not randomly sampling for 'step' need to check relative to step!
-        if dynamic:
+        if dynamic:  # TODO I can add "and False" because of the big TODO below at around line 458
             nstep = bool(self.nstep)  # Allows dynamic nstep if necessary
         else:
             nstep = self.nstep  # But w/o step as input, models can't distinguish later episode steps
@@ -432,11 +432,16 @@ class Worker:
         # Frame stack
         def frame_stack(traj, key, idx):
             frames = traj[max([0, idx + 1 - self.frame_stack]):idx + 1]
+            bb = len(frames)
             for _ in range(self.frame_stack - idx - 1):  # If not enough frames, reuse the first
                 frames = traj[:1] + frames
-            frames = torch.concat([torch.as_tensor(frame[key])
-                                   for frame in frames]).reshape(frames[0][key].shape[0] * self.frame_stack,
-                                                                 *frames[0][key].shape[1:])
+            # TODO Delete this try-catch (not the concat). Debugging
+            try:
+                frames = torch.concat([torch.as_tensor(frame[key])
+                                       for frame in frames]).reshape(frames[0][key].shape[0] * self.frame_stack,
+                                                                     *frames[0][key].shape[1:])
+            except Exception:
+                assert False, f'{(len(traj), len(frames), bb, key, idx)}'
             return frames
 
         # Present
@@ -446,12 +451,32 @@ class Worker:
         # Future
         if self.nstep:
             # Transition
-            # TODO Might have to get rid of "+ 1" in this line and the next one, & in traj_a after update to Environment
-            experience.action = episode[step + 1].action
+            experience.action = episode[step].action
 
+            # traj_r = torch.as_tensor([float(experience.reward)
+            #                           for experience in episode[step:step + self.nstep]])
+            # TODO Had to change to this because reward now corresponds with obs in Env, see below TODO
             traj_r = torch.as_tensor([float(experience.reward)
-                                      for experience in episode[step + 1:step + self.nstep + 1]])
+                                      for experience in episode[step:min(len(episode) - 1, step + self.nstep)]])
 
+            # TODO Crashes together with dynamic nstep? Had to add "- 1" - but this is after removing "+ 1"
+            #  and changing Env to correspond pairs...
+            #  This might be a problem. next_obs can no longer include final-final obs. And is now the same as obs
+            #  for Nstep=1.
+            #  Question: Is it better to exclude reset obs instead, or to store non-empty/negligible now state
+            #   in Replay as well and account for that here by, for example in the above line:
+            #   changing: "episode[step:step + self.nstep]" to "episode[step:min(len(episode) - 1, step + self.nstep)]"
+            #   This way nothing is deleted. But Env carries over redundant content from previous step to store again
+            #   in Replay?
+            #   Maybe easier: Just don't allow dynamic nstep here, meaning exactly the right number of next obs
+            #   need to be available in the selection of step without traj_r cutting earlier than what's available
+            #   Alternatively, Env has to append the last now (if it's non-empty, meaning more than just "done")
+            #   as a second experience to experiences (and maybe that one gets assigned "done" then) and Replay/Memory
+            #   has to support Episodes where some datums have more steps than others. Is that already the case?
+            #   And I think it's a lot more intuitive to have "done" state actually correspond with datums and for the
+            #   reset state to be treated this way
+            #   Plotting somehow now broken
+            # experience['next_obs'] = frame_stack(episode, 'obs', step + len(traj_r) - 1)
             experience['next_obs'] = frame_stack(episode, 'obs', step + len(traj_r))
 
             # Trajectory TODO
@@ -459,9 +484,9 @@ class Worker:
                 experience['traj_r'] = traj_r
                 traj_o = np.concatenate([episode['obs'][max(0, idx - i):max(idx + self.nstep + 1 - i, self.nstep + 1)]
                                          for i in range(self.frame_stack - 1, -1, -1)], 1)  # Frame_stack
-                traj_a = episode['action'][idx + 1:idx + self.nstep + 1]
+                traj_a = episode['action'][idx:idx + self.nstep]
                 if 'label' in experience:
-                    traj_l = episode['label'][idx:idx + self.nstep + 1]
+                    traj_l = episode['label'][idx:idx + self.nstep]
 
             # Cumulative discounted reward
             discounts = self.discount ** np.arange(len(traj_r) + 1)

@@ -34,7 +34,10 @@ class Environment:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
             # Experience
-            self.exp = self.transform(self.env.reset(), device=self.device)
+            # TODO Originally had "self.exp = self.transform(self.env.reset(), device=self.device)",
+            #  but had to remove device since frame_stack expects numpy - might break Bittle transform?
+            #  Isn't the point of exp to keep self.exp un-transformed?
+            self.exp = self.transform(self.env.reset())
 
             # Allow overriding specs
             self.obs_spec.update(obs_spec)
@@ -63,6 +66,9 @@ class Environment:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
         # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
+        # TODO Problem: Offline streaming:
+        #      How would offline streaming respond to this? exp, prev need to be unified; done added to 2nd-to-last;
+        #      & unified (exp, prev, with potentially done) as output; what about metric-originated reward, irrelevant?.
         experiences = [*([self.env.step(None)] if self.disable and self.on_policy and agent.training else [])]
         vlogs = []
 
@@ -70,10 +76,15 @@ class Environment:
 
         step = frame = 0
         while not self.episode_done and step < steps:
-            exp = self.exp
+            obs = self.exp.obs  # TODO Send whole exp to agent
 
             # Frame-stacked obs
-            obs = getattr(self.env, 'frame_stack', lambda x: x)(exp.obs)  # TODO Send whole exp to agent
+            if hasattr(self.env, 'frame_stack'):
+                if isinstance(self.exp.obs, torch.Tensor):
+                    obs = obs.numpy()
+
+                obs = self.env.frame_stack(obs)
+
             obs = torch.as_tensor(obs, device=self.device)
 
             # Act
@@ -82,71 +93,65 @@ class Environment:
                 action = agent.act(obs, store)  # TODO Allow agent to output an exp
 
             # Inferred action will get passed to Env, Metrics, and Logger. However, original will be stored in Replay.
-            # TODO No need. store accounts for this
-            _action = self.infer_action_from_action_spec(action)
+            action = self.infer_action_from_action_spec(action)
 
             if not self.generate:
-                _action = _action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
+                action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            prev, now = {}, {} if self.generate else self.env.step(_action)  # Experience
+            prev, now = {}, {} if self.generate else self.env.step(action)  # Experience
 
             # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
             if isinstance(now, tuple):
                 prev, now = now
 
-            now = now or {}  # Can be None
+            prev, now = Args(prev), Args(now or {})
 
+            done = now.get('done', True)
+
+            # Combined previous experience and latest action and prev
             self.exp.update(store)
-            self.exp.update(action=now.get('action', _action), step=agent.step)
-            self.exp.update(prev)  # Prev is only needed for metric
+            self.exp.update(action=now.get('action', action), **prev)
+            self.exp.update(done=done,
+                            # step=agent.step
+                            )
+
+            # Transform (and make separate exp in order to not store tallied metrics in Replay)
+            self.exp = self.transform(self.exp)
 
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            if 'reward' not in now and 'reward' in self.exp:
-                # Note: Envs should either always return a reward or never return a reward.
-                # Inconsistent presence of reward can lead to tally_metric carrying over last-present
-                # reward to next time steps
-                now.reward = self.exp.reward  # Metric can actually set reward, e.g., if RL
-
-            now.action = action
-
-            # Transform
-            now = self.transform(now)
-
-            # TODO Problem: online (and offline streaming at point 5):
-            #  (1) skips storing first batch in Replay,
-            #         I would say do: experiences.append(Args({'step': agent.step, **self.exp, **prev, **now, **store}))
-            #         but self.exp is updated by Metrics... not needed for Replay.
-            #         Make/return copy in tally_metric? Or, just before tally_metric: exp = Args(self.exp)
-            #         Then: experiences.append(Args({'step': agent.step, **exp, **prev, **now, **store}))
-            #         But how does that work for RL? The first batch still doesn't have consistent corresponding datums
-            #         ! Maybe Replay should just pair exp and prev and now should never explicitly be stored
-            #         Then prev is necessary for RL to pair the transitions correctly
-            #  (2) stores only "step" and "done" and "action" in Reply at last batch for Datums
-            #       Don't append anything in that case (if now.keys() union prev.keys() \subseteq {'done', 'action'})?
-            #  (3) "now.action = action" means action always 1-time-step delayed. Does Replay always account for that?
-            #         This wouldn't be an issue if experiences stored (step, exp, prev, store) for Replay and not now
-            #         Wait - but action should be prev, not now for RL but now for Datums? Why? Why not now for both?
-            #           Well, the first batch wouldn't have a corresponding action. After that, not sure...
-            #           Why not prev for both? I think do: "prev.action = action" instead. No time-step delay.
-            #           Or nothing, since already added to self.exp/exp
-            #  (4) Don't forget to update the second-to-last experience/transition stored in Replay and metric'd and
-            #      logged as done!
-            #  (5) How would offline streaming respond to this? exp, prev need to be unified; done added to 2nd-to-last;
-            #      & unified (exp, prev, with potentially done) as output; what about metric-originated reward, ignore?.
-
-            if agent.training:
-                # These go to Replay and include now (mixed time steps)
-                experiences.append(Args({'step': agent.step, **prev, **now, **store}))
-            else:
-                # These go to logger and don't include now
-                experiences.append(self.exp)
+            # These go to Replay and Logger
+            experiences.append(Args(**self.exp, **store))
+            # TODO Replay keeps crashing on frame stack of next_obs!
+            # TODO Crashes together with dynamic nstep? Had to add "- 1" - but this is after removing "+ 1"
+            #  and changing Env to correspond pairs...
+            #  This might be a problem. next_obs can no longer include final-final obs. And is now the same as obs
+            #  for Nstep=1.
+            #  Question: Is it better to exclude reset obs instead, or to store non-empty/negligible now state
+            #   in Replay as well and account for that here by, for example in the above line:
+            #   changing: "episode[step:step + self.nstep]" to "episode[step:min(len(episode) - 1, step + self.nstep)]"
+            #   This way nothing is deleted. But Env carries over redundant content from previous step to store again
+            #   in Replay?
+            #   Maybe easier: Just don't allow dynamic nstep here, meaning exactly the right number of next obs
+            #   need to be available in the selection of step without traj_r cutting earlier than what's available
+            #   Alternatively, Env has to append the last now (if it's non-empty, meaning more than just "done")
+            #   as a second experience to experiences (and maybe that one gets assigned "done" then) and Replay/Memory
+            #   has to support Episodes where some datums have more steps than others. Is that already the case?
+            #   And I think it's a lot more intuitive to have "done" state actually correspond with datums and for the
+            #   reset state to be treated this way
+            #   So, can add reset step as a prioritized "secondary" to (prev, now) sans all datums
+            #   And None not needed for "done" state
+            #   Even confirming that Memory supports varying datums is a lot of work
+            #   Maybe faster to first use current cybernetics and see if adding now as last experience of episode
+            #   (assuming includes more than just "done" key) works
+            if done and len(now.keys() - {'done', 'step'}):
+                experiences[-1]['done'] = False
+                experiences.append(self.transform(now))  # TODO Transform has fewer datums in this case, inconsistent
+                experiences[-1]['done'] = True
+                # experiences[-1]['step'] = agent.step
 
             self.exp = now
-            if 'obs' in self.exp and isinstance(self.exp.obs, torch.Tensor) and hasattr(self.env, 'frame_stack'):
-                # TODO What if not Numpy? Assume frame stack Tensor? Transform as class?
-                self.exp.obs = self.exp.obs.numpy()
 
             if vlog and hasattr(self.env, 'render') or self.generate:
                 image_frame = action[:24].view(-1, *self.exp.obs.shape[1:]) if self.generate \
@@ -160,14 +165,15 @@ class Environment:
             step += 1
             frame += len(action)
 
-            done = self.exp.get('done', True)
-
             # Done
             self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
 
             if done:
                 self.exp = self.env.reset()
-                self.exp = self.transform(self.exp, device=self.device)
+                # TODO Originally had "self.exp = self.transform(self.env.reset(), device=self.device)",
+                #  but had to remove device since frame_stack expects numpy - might break Bittle transform?
+                #  Isn't the point of exp to keep self.exp un-transformed?
+                self.exp = self.transform(self.exp)
 
         agent.episode += agent.training * self.episode_done  # Increment agent episode
 
