@@ -136,7 +136,7 @@ class Atari:
         elif self.color == 'rgb':
             obs = obs.transpose(2, 0, 1)  # Channel-first
 
-        # Resize image
+        # Resize image  TODO Via env.transform?
         obs = resize(as_tensor(obs), self.obs_spec['shape'][1:], antialias=True).numpy()
 
         # Add batch dim

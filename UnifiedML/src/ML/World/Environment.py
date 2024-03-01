@@ -34,10 +34,7 @@ class Environment:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
             # Experience
-            # TODO Originally had "self.exp = self.transform(self.env.reset(), device=self.device)",
-            #  but had to remove device since frame_stack expects numpy - might break Bittle transform?
-            #  Isn't the point of exp to keep self.exp un-transformed?
-            self.exp = self.transform(self.env.reset())
+            self.exp = self.transform(self.env.reset(), device=self.device)
 
             # Allow overriding specs
             self.obs_spec.update(obs_spec)
@@ -65,9 +62,10 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
-        # TODO This doesn't work - what if reset() needed or step() is None or first batch for example?
+        # Experiences to send to Replay or Logger
         # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
-        experiences = [self.null_step()] if self.disable and self.on_policy and agent.training else []
+        # s.t. exp goes directly to Agent-learn method (since streaming and training) without rollouts (since offline)
+        experiences = self.step() if self.disable and self.on_policy and agent.training else []
         vlogs = []
 
         self.episode_done = self.disable
@@ -79,7 +77,7 @@ class Environment:
             # Frame-stacked obs
             if hasattr(self.env, 'frame_stack'):
                 if isinstance(self.exp.obs, torch.Tensor):
-                    obs = obs.numpy()
+                    obs = obs.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
                 obs = self.env.frame_stack(obs)
 
@@ -96,44 +94,11 @@ class Environment:
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            prev, now = {}, {} if self.generate else self.env.step(action)  # Experience
-
-            # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
-            if isinstance(now, tuple):
-                prev, now = now
-
-            prev, now = Args(prev), Args(now or {})
-
-            done = now.get('done', True)
-
-            # Combined previous experience and latest action and prev
-            self.exp.update(store)
-            self.exp.update(action=now.get('action', action), **prev)
-            self.exp.update(done=done,
-                            # step=agent.step
-                            )
-
-            # Transform (and make separate exp in order to not store tallied metrics in Replay)
-            self.exp = self.transform(self.exp)
-
-            # Tally reward & logs
-            self.tally_metric(self.exp)
-
-            # These go to Replay and Logger
-            experiences.append(Args(**self.exp, **store))
-
-            # Final "done" state should also be appended
-            if done and len(now.keys() - {'done', 'step'}):
-                experiences[-1]['done'] = False
-                # TODO Transform has fewer datums in this case, inconsistent
-                experiences.append(Args(**self.transform(now), **store))
-                experiences[-1]['done'] = True
-                # experiences[-1]['step'] = agent.step
-
-            self.exp = now
+            # Step Env, return experiences to send to Replay (if agent training) or Logger (if agent evaluating)
+            experiences += self.step(action, store)
 
             if vlog and hasattr(self.env, 'render') or self.generate:
-                image_frame = action[:24].view(-1, *self.exp.obs.shape[1:]) if self.generate \
+                image_frame = action[:24].view(-1, *obs.shape[1:]) if self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
 
@@ -143,16 +108,6 @@ class Environment:
 
             step += 1
             frame += len(action)
-
-            # Done
-            self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
-
-            if done:
-                self.exp = self.env.reset()
-                # TODO Originally had "self.exp = self.transform(self.env.reset(), device=self.device)",
-                #  but had to remove device since frame_stack expects numpy - might break Bittle transform?
-                #  Isn't the point of exp to keep self.exp un-transformed?
-                self.exp = self.transform(self.exp)
 
         agent.episode += agent.training * self.episode_done  # Increment agent episode
 
@@ -185,36 +140,55 @@ class Environment:
         return experiences, log, vlogs
 
     """
-    If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action.
-    This step goes directly to Agent learn(·) method (since streaming and training) without rollouts (since offline).
+    Take an Env step and return the experiences that need to be stored in Replay or logged.
     """
-    def null_step(self):
-        prev, now = {}, {} if self.generate else self.env.step(None)  # Experience
+    def step(self, action=None, store=None):
+        experiences = [self.exp]
 
-        # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
+        # The point of prev is to group data by time step since some
+        # datums, like reward, are delayed 1 time step
+        prev, now = {}, {} if self.generate else self.env.step(action)  # Environment step
+
+        # Parse, since prev is optional in Env
         if isinstance(now, tuple):
             prev, now = now
+        prev, now = Args(prev or {}), Args(now or {})
 
-        prev, now = Args(prev), Args(now or {})
+        # Transform
+        now = self.transform(now, device=self.device)
 
-        done = now.get('done', True)
+        # Group all prev data
+        if action is not None:
+            self.exp.update(action=action)
+        self.exp.update(prev)
+        self.exp.update(store)
 
-        # Combined previous experience and latest action and prev
-        self.exp.update(prev, done=done)
+        # Episode done
+        done = now.setdefault('done', True)
 
-        # Transform - this goes to Replay and Logger
-        exp = self.transform(self.exp)
+        self.exp.done = done
 
-        self.exp = now
+        # Assume None action implies offline streaming training (metric, replay, logging not needed from Env)
+        if action is not None:
+            # Tally reward & logs
+            self.tally_metric(self.exp)
+
+            # Final "done" state should also be appended unless empty
+            if done and len(now.keys() - {'done', 'step'}):
+                self.exp.done = False
+
+                experiences.append(now)
+
+        self.exp = now  # Becomes prev data
 
         # Done
         self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
 
         if done:
             self.exp = self.env.reset()
-            self.exp = self.transform(self.exp)
+            self.exp = self.transform(self.exp, device=self.device)
 
-        return exp
+        return experiences  # Send to Replay or Logger, or directly to Agent-learn if offline streaming training
 
     """
     Different environments have different inputs/outputs. 
@@ -224,6 +198,7 @@ class Environment:
     - obs_spec: input shape and stats
     - action_spec: output shape, continuous vs. discrete, and stats
     """
+
     @cached_property
     def obs_spec(self):
         spec = Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
@@ -268,7 +243,8 @@ class Environment:
     """
     Metric tallying and tabulating for inference/evaluation
     """
-    # Compute metric on batch
+
+    # Compute metric on each batch
     def tally_metric(self, exp):  # TODO Maybe standardize to Tensors
         # Convert batch to numpy
         for key, value in exp.items():
@@ -282,10 +258,10 @@ class Environment:
         self.episode_adds.update({key: self.episode_adds.get(key, []) + [m]
                                   for key, m in add.items() if m is not None})
 
-        # Always include reward
+        # Always (try to) include reward especially if RL
         if 'reward' in self.metric and 'reward' in self.episode_adds:
             exp.reward = self.episode_adds['reward'][-1]  # Override Env reward with metric reward
-        elif ('reward' in self.metric or 'reward' in exp) and not getattr(self, 'popped_reward', None):
+        elif 'reward' in self.metric or 'reward' in exp:
             # Evaluate reward from string  Note: No recursion between strings
             if isinstance(self.metric.get('reward', None), str):
                 exp.reward = eval(self.metric['reward'], {key: episode[-1]
@@ -303,10 +279,7 @@ class Environment:
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
 
-            # To avoid this becoming the reward used next time in the previous elif block, and then never changing
-            setattr(self, 'popped_reward', True)
-
-    # Aggregate metrics
+    # Aggregate metrics over an episode
     def tabulate_metric(self):
         if self.episode_done:
             log = {key: self.metric[key].tabulate(episode)
@@ -328,8 +301,8 @@ class Environment:
 
     """
     Action can be inferred from action_spec, even if the agent's output action doesn't perfectly match
-    action_spec, e.g., in discrete Envs, multi-dim actions can be inferred as logits/probas and argmax'd 
-    when action_spec expects shape (1,). Action also gets broadcast to expected shape.
+    as expected in action_spec, e.g., in discrete Envs, multi-dim actions can be inferred as logits/probas and argmax'd 
+    when action_spec expects shape (1,). Action also may get broadcast to expected shape.
     """
 
     def infer_action_from_action_spec(self, action):

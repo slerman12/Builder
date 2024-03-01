@@ -34,6 +34,7 @@ class Datums:
         during step() calls.
             - This sequence demarcation can be useful for tabulating metrics (e.g. based on multiple steps or an epoch
               of batches) or for the automatic organizing of temporal data in Replay.
+
             - The "done" step doesn't get acted on. Its contents can be a no-op (either output None or just
               {'done': True}), or, if you're using (prev, now) pairs, the prev experience in a done state should still
               include any additional datums needed for logging or storing in Replay, such as "reward". It shouldn't
@@ -118,7 +119,8 @@ class Datums:
 
     def reset(self):
         # Sample batch
-        self.exp = Args(done=False, **self.sample())
+        batch = self.sample()
+        self.exp = Args(done=False, **batch)
         self.num_sampled_batches += 1
 
         # Convert sample to numpy  TODO Maybe not necessary
