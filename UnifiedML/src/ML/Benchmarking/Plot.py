@@ -180,13 +180,15 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             min_time = min_time[0]  # if so, use that time
 
         # Only show results for a consistent step count
+        # TODO Allow results for differing step counts (non-uniform step count).
+        #  Otherwise, RL and Classify become hard to plot together since RL logs by the 1000s while Classify
+        #  logs by the 100s
         performance = performance[performance['Step'] == min_steps]
 
         # Score name y-axis
         metrics = [metric
                    for metric in performance.columns if metric.lower() not in
                    ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']]
-        # TODO Note: RL doesn't even make it here (to "performance")
 
         # Use Reward or Accuracy as "Score"
         performance['Score'] = performance[metrics[0]]
