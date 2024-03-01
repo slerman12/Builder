@@ -46,6 +46,7 @@ class Datums:
     (1) have an obs_spec dict
     (2) have an action_spec dict
     (3) include a render() method, frame_stack(obs) method, and/or an action_repeat init arg that Env should adapt to
+        and include as a self.action_repeat int attribute
 
         (1) and (2) depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
         since it can be inferred from the "obs" output of the reset() function. action_spec.shape from a "label" if

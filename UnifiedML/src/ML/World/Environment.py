@@ -30,6 +30,8 @@ class Environment:
 
         self.truncate_after = train and truncate_episode_steps or inf  # Truncate episodes shorter (inf if None)
 
+        self.frame_stack = frame_stack
+
         if not self.disable or stream:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
                                    offline=offline, generate=generate, train=train, seed=seed, device=device)
@@ -56,15 +58,13 @@ class Environment:
         self.daybreak = None
 
     """
-    Step the agent in the environment and return new experiences and inference/acting logs
+    Step Agent in Env and return new experiences & eval/act logs
     """
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
-        # Experiences to send to Replay or Logger
-        # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
-        # s.t. exp goes directly to Agent-learn method (since streaming and training) without rollouts (since offline)
+        # Experiences to send to Replay or Logger, or directly to agent to if offline streaming training
         experiences = self.step() if self.disable and self.on_policy and agent.training else []
         vlogs = []
 
@@ -145,17 +145,13 @@ class Environment:
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
-        # The point of prev is to group data by time step since some
-        # datums, like reward, are delayed 1 time step
+        # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
         prev, now = {}, {} if self.generate else self.env.step(action)  # Environment step
 
         # Parse, since prev is optional in Env
         if isinstance(now, tuple):
             prev, now = now
         prev, now = Args(prev or {}), Args(now or {})
-
-        # Transform
-        now = self.transform(now, device=self.device)
 
         # Group all prev data
         if action is not None:
@@ -167,6 +163,10 @@ class Environment:
         done = now.setdefault('done', True)
 
         self.exp.done = done
+
+        # Transform
+        if len(now.keys() - {'done', 'step'}):  # Unless empty
+            now = self.transform(now, device=self.device)
 
         # Assume None action implies offline streaming training (metric, replay, logging not needed from Env)
         if action is not None:
@@ -205,6 +205,11 @@ class Environment:
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
                      **getattr(self.env, 'obs_spec', {})})
 
+        # Frame stack
+        spec['shape'] = torch.Size([spec['shape'][0] * self.frame_stack, *spec['shape'][1:]])
+
+        # TODO Maybe override Env shape with self.exp shape (currently prioritizing Env spec)
+
         # Update Env spec with defaults
         self.env.__dict__.setdefault('obs_spec', Args()).update(spec)
 
@@ -234,6 +239,8 @@ class Environment:
                     else (self.exp.label.shape[-1],) if spec['discrete'] else self.exp.label.shape
             elif 'action' in self.exp:
                 spec.shape = self.exp.action.shape[1:]
+            elif spec['discrete']:
+                spec.shape = (1,)  # Discrete default is single-action
 
         # Update Env spec with defaults
         self.env.__dict__.setdefault('action_spec', Args()).update(spec)

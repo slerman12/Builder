@@ -87,22 +87,14 @@ class Atari:
 
         # Number of channels
         self.color = color
-        channels = 3 if color == 'rgb' else 1
 
-        self.obs_spec = Args({'shape': (channels * frame_stack, screen_size, screen_size),
-                              'mean': None,
-                              'stddev': None,
-                              'low': 0,
-                              'high': 255})
+        self.screen_size = screen_size
 
-        self.action_spec = Args({'shape': (1,),
-                                 'discrete_bins': self.env.action_space.n,
-                                 'low': 0,
-                                 'high': self.env.action_space.n - 1,
-                                 'discrete': True})
+        self.obs_spec = {'low': 0, 'high': 255}
+        self.action_spec = {'discrete_bins': self.env.action_space.n}
 
-        self.action_repeat = action_repeat or 1
-        self.frames = deque([], frame_stack or 1)
+        self.action_repeat = action_repeat or 1 # action_repeat attribute
+        self.frames = deque([], frame_stack or 1)  # For frame_stack method
 
     def step(self, action):
         # Remove batch dim
@@ -137,7 +129,7 @@ class Atari:
             obs = obs.transpose(2, 0, 1)  # Channel-first
 
         # Resize image  TODO Via env.transform?
-        obs = resize(as_tensor(obs), self.obs_spec['shape'][1:], antialias=True).numpy()
+        obs = resize(as_tensor(obs), (self.screen_size, self.screen_size), antialias=True).numpy()
 
         # Add batch dim
         obs = np.expand_dims(obs, 0)
@@ -173,7 +165,7 @@ class Atari:
             obs = obs.transpose(2, 0, 1)  # Channel-first
 
         # Resize image
-        obs = resize(as_tensor(obs), self.obs_spec['shape'][1:], antialias=True).numpy()
+        obs = resize(as_tensor(obs), (self.screen_size, self.screen_size), antialias=True).numpy()
 
         # Add batch dim
         obs = np.expand_dims(obs, 0)

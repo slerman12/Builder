@@ -82,28 +82,11 @@ class DMC:
                                       pixels_only=True,  # No proprioception (key <- 'position')
                                       render_kwargs=render_kwargs)  # Should be applied after action repeat!
 
-        # Channel-first
-        obs_shape = self.env.observation_spec()[self.key].shape
-        if len(obs_shape) == 3:
-            obs_shape = [obs_shape[-1], *obs_shape[:-1]]
+        self.obs_spec = {'low': 0, 'high': 255}
+        self.action_spec = {'shape': self.env.action_spec().shape, 'low': -1, 'high': 1}
 
-        # Frame stack
-        obs_shape[0] *= frame_stack
-
-        self.obs_spec = Args({'shape': obs_shape,
-                              'mean': None,
-                              'stddev': None,
-                              'low': 0,
-                              'high': 255})
-
-        self.action_spec = Args({'shape': self.env.action_spec().shape,
-                                 'discrete_bins': None,  # Should be None for continuous
-                                 'low': -1,
-                                 'high': 1,
-                                 'discrete': False})
-
-        self.action_repeat = action_repeat
-        self.frames = deque([], frame_stack or 1)
+        self.action_repeat = action_repeat  # action_repeat attribute
+        self.frames = deque([], frame_stack or 1)  # For frame_stack method
 
     def step(self, action):
         # Remove batch dim

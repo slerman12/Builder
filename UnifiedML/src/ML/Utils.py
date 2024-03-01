@@ -429,6 +429,7 @@ class Modals(nn.Module):
         # Adapt to experience (exp.obs) or full exp
         if self.module is not None:
             if isinstance(exp, Args) and self.modal in exp:
+                # _exp_ and _batch_ are boolean flags that toggle passing in full exp/batch-dict instead of just obs
                 if getattr(self.module, '_exp_', getattr(self.module, '_batch_', None)) is None:
                     exp[self.modal] = self.module(exp[self.modal])
                 else:
