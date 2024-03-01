@@ -65,11 +65,9 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
+        # TODO This doesn't work - what if reset() needed or step() is None or first batch for example?
         # If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action
-        # TODO Problem: Offline streaming:
-        #      How would offline streaming respond to this? exp, prev need to be unified; done added to 2nd-to-last;
-        #      & unified (exp, prev, with potentially done) as output; what about metric-originated reward, irrelevant?.
-        experiences = [*([self.env.step(None)] if self.disable and self.on_policy and agent.training else [])]
+        experiences = [self.null_step()] if self.disable and self.on_policy and agent.training else []
         vlogs = []
 
         self.episode_done = self.disable
@@ -123,35 +121,14 @@ class Environment:
 
             # These go to Replay and Logger
             experiences.append(Args(**self.exp, **store))
-            # TODO Replay keeps crashing on frame stack of next_obs!
-            # TODO Crashes together with dynamic nstep? Had to add "- 1" - but this is after removing "+ 1"
-            #  and changing Env to correspond pairs...
-            #  This might be a problem. next_obs can no longer include final-final obs. And is now the same as obs
-            #  for Nstep=1.
-            #  Question: Is it better to exclude reset obs instead, or to store non-empty/negligible now state
-            #   in Replay as well and account for that here by, for example in the above line:
-            #   changing: "episode[step:step + self.nstep]" to "episode[step:min(len(episode) - 1, step + self.nstep)]"
-            #   This way nothing is deleted. But Env carries over redundant content from previous step to store again
-            #   in Replay?
-            #   Maybe easier: Just don't allow dynamic nstep here, meaning exactly the right number of next obs
-            #   need to be available in the selection of step without traj_r cutting earlier than what's available
-            #   Alternatively, Env has to append the last now (if it's non-empty, meaning more than just "done")
-            #   as a second experience to experiences (and maybe that one gets assigned "done" then) and Replay/Memory
-            #   has to support Episodes where some datums have more steps than others. Is that already the case?
-            #   And I think it's a lot more intuitive to have "done" state actually correspond with datums and for the
-            #   reset state to be treated this way
-            #   Summary of what I still want to do: In Env, I want to reconfigure it so that first reset() batch is
-            #   always the extra one appended now prior rather than after) rather than the "done" batch. Meanwhile, prev
-            #   and now should be paired again rather than carry self.exp over for anything other than acting/stepping.
-            #   In Replay, reset to the version in the commit before these recent edits where the time-delay of action
-            #   and reward are accounted for by adding "+ 1" as commented in Replay right now.
+
+            # Final "done" state should also be appended
             if done and len(now.keys() - {'done', 'step'}):
                 experiences[-1]['done'] = False
-                experiences.append(self.transform(now))  # TODO Transform has fewer datums in this case, inconsistent
+                # TODO Transform has fewer datums in this case, inconsistent
+                experiences.append(Args(**self.transform(now), **store))
                 experiences[-1]['done'] = True
                 # experiences[-1]['step'] = agent.step
-
-            # TODO Plotting for RL somehow broken, no curves on line graphs, no bar chart
 
             self.exp = now
 
@@ -206,6 +183,38 @@ class Environment:
             self.daybreak = sundown
 
         return experiences, log, vlogs
+
+    """
+    If offline streaming (no Replay) and training, then take an Env step (get next batch) without an Agent action.
+    This step goes directly to Agent learn(·) method (since streaming and training) without rollouts (since offline).
+    """
+    def null_step(self):
+        prev, now = {}, {} if self.generate else self.env.step(None)  # Experience
+
+        # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
+        if isinstance(now, tuple):
+            prev, now = now
+
+        prev, now = Args(prev), Args(now or {})
+
+        done = now.get('done', True)
+
+        # Combined previous experience and latest action and prev
+        self.exp.update(prev, done=done)
+
+        # Transform - this goes to Replay and Logger
+        exp = self.transform(self.exp)
+
+        self.exp = now
+
+        # Done
+        self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
+
+        if done:
+            self.exp = self.env.reset()
+            self.exp = self.transform(self.exp)
+
+        return exp
 
     """
     Different environments have different inputs/outputs. 
@@ -348,7 +357,7 @@ class Environment:
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
         else:
-            # TODO Generalize to regression
+            # TODO Generalise to regression
             pass
 
         return action
@@ -367,6 +376,7 @@ class act_mode:
         self.models = {key: getattr(agent, key) for key in {'encoder', 'actor'} if hasattr(agent, key)}
 
         # TODO Assuming blocks. Eval should be entered agent-wise ? iterated .children() ?
+        #   A.K.A. Generalise to Agents/Models that don't use Encoder/Actor Blocks
         # if ema and not self.models:
         #     # TODO ema_decay each time learn called
         #     # TODO ema_begin_step (no point early in training in supervised setting - RL act/eval-ema matters)

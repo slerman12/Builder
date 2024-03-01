@@ -448,40 +448,8 @@ class Worker:
             # Transition
             experience.action = episode[step].action
 
-            # traj_r = torch.as_tensor([float(experience.reward)
-            #                           for experience in episode[step:step + self.nstep]])
-            # TODO Had to change to this because reward now corresponds with obs in Env, see below TODO
             traj_r = torch.as_tensor([float(experience.reward)
                                       for experience in episode[step:min(len(episode) - 1, step + self.nstep)]])
-            # TODO In the more intuitive way (described in teh next TODO), might be able to change to:
-            #   traj_r = torch.as_tensor([float(experience.reward)
-            #                               for experience in episode[step + 1:step + self.nstep + 1]])
-            #   And then have to change "experience.action = episode[step].action" to
-            #   "experience.action = episode[step + 1].action
-            #   And finally, the below traj_a to "traj_a = episode['action'][idx + 1:idx + self.nstep + 1]"
-            #   Pretty much: revert everything in Replay to before the last recent commits
-
-            # TODO Crashes together with dynamic nstep? Had to add "- 1" - but this is after removing "+ 1"
-            #  and changing Env to correspond pairs...
-            #  This might be a problem. next_obs can no longer include final-final obs. And is now the same as obs
-            #  for Nstep=1.
-            #  Question: Is it better to exclude reset obs instead, or to store non-empty/negligible now state
-            #   in Replay as well and account for that here by, for example in the above line:
-            #   changing: "episode[step:step + self.nstep]" to "episode[step:min(len(episode) - 1, step + self.nstep)]"
-            #   This way nothing is deleted. But Env carries over redundant content from previous step to store again
-            #   in Replay?
-            #   Maybe easier: Just don't allow dynamic nstep here, meaning exactly the right number of next obs
-            #   need to be available in the selection of step without traj_r cutting earlier than what's available
-            #   Alternatively, Env has to append the last now (if it's non-empty, meaning more than just "done")
-            #   as a second experience to experiences (and maybe that one gets assigned "done" then) and Replay/Memory
-            #   has to support Episodes where some datums have more steps than others. Is that already the case?
-            #   And I think it's a lot more intuitive to have "done" state actually correspond with datums and for the
-            #   reset state to be treated this way
-            #   Summary of what I still want to do: In Env, I want to reconfigure it so that first reset() batch is
-            #   always the extra one appended now prior rather than after) rather than the "done" batch. Meanwhile, prev
-            #   and now should be paired again rather than carry self.exp over for anything other than acting/stepping.
-            #   In Replay, reset to the version in the commit before these recent edits where the time-delay of action
-            #   and reward are accounted for by adding "+ 1" as commented in Replay right now.
 
             # experience['next_obs'] = frame_stack(episode, 'obs', step + len(traj_r) - 1)
             experience['next_obs'] = frame_stack(episode, 'obs', step + len(traj_r))

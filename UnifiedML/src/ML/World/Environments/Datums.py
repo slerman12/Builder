@@ -28,7 +28,7 @@ class Datums:
 
         In the step() function, instead of outputting one experience, can output a (prev, now) pair of experiences.
         Some datums, such as reward, are time-delayed and specifying them in a separate "prev" experience makes
-        it possible to pair corresponding time-step pairs for metrics and Replay.
+        it possible to pair corresponding pairs without time-delay for metrics and Replay.
 
         The end of an episode or epoch may be marked by the "done" boolean. If unspecified, it will be assumed True
         during step() calls.
@@ -46,16 +46,19 @@ class Datums:
     (2) have an action_spec dict
     (3) include a render() method, frame_stack(obs) method, and/or an action_repeat init arg that Env should adapt to
 
-        depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
+        (1) and (2) depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
         since it can be inferred from the "obs" output of the reset() function. action_spec.shape from a "label" if
         present.
 
-        For obs_spec, these stats can include for example: "shape", "mean", "stddev", "low", "high".
+        - For obs_spec, besides "shape", these stats can include for example: "shape", "mean", "stddev", "low", "high".
         Useful for standardization and normalization.
 
-        For action_spec, these stats can include for example: "shape", "discrete_bins", "low", "high", "discrete".
+        - For action_spec, these stats can include for example: "shape", "discrete_bins", "low", "high", "discrete".
         For discrete action spaces and action normalization. Many of these can be inferred,
         and see Environment.py "action_spec" @property for what the defaults are if left unspecified.
+
+        See DMC.py and Atari.py for examples of frame_stack(obs) and action_repeat. Used commonly in RL.
+        Video logging online rollouts can be facilitated by the render() method.
 
     ---
 
