@@ -30,7 +30,7 @@ class Environment:
 
         self.truncate_after = train and truncate_episode_steps or inf  # Truncate episodes shorter (inf if None)
 
-        self.frame_stack = frame_stack
+        self.frame_stack = frame_stack  # Can combine temporal image data via channel-stacking TODO Generalise to Time
 
         if not self.disable or stream:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
@@ -65,7 +65,7 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
-        # Experiences to send to Replay or Logger, or directly to agent to if offline streaming training
+        # Experiences to send to Replay or Logger, or directly to Agent-learn if offline streaming training
         experiences = self.step() if self.disable and self.on_policy and agent.training else []
         vlogs = []
 
@@ -73,7 +73,7 @@ class Environment:
 
         step = frame = 0
         while not self.episode_done and step < steps:
-            obs = self.exp.obs  # TODO Send whole exp to agent
+            obs = self.exp.obs  # TODO Send whole exp to agent, or ordered datums depending on signature
 
             # Frame-stacked obs
             if hasattr(self.env, 'frame_stack'):
@@ -87,15 +87,15 @@ class Environment:
             # Act
             store = Args()
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store)  # TODO Allow agent to output an exp
+                action = agent.act(obs, store)  # TODO Send in depending on signature, allow agent to output an exp
 
-            # Inferred action will get passed to Env, Metrics, and Logger. However, original will be stored in Replay.
+            # Inferred action will get passed to Env, Metrics, and Logger
             action = self.infer_action_from_action_spec(action)
 
             if not self.generate:
                 action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-            # Step Env, return experiences to send to Replay (if agent training) or Logger (if agent evaluating)
+            # Step Env, and add experiences to send to Replay (if agent training) or Logger (if agent evaluating)
             experiences += self.step(action, store)
 
             if vlog and hasattr(self.env, 'render') or self.generate:
@@ -143,7 +143,6 @@ class Environment:
     """
     Take an Env step and return the experiences that need to be stored in Replay or logged.
     """
-
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
@@ -175,7 +174,7 @@ class Environment:
             # Tally reward & logs
             self.tally_metric(self.exp)
 
-            # Final "done" state should also be appended unless empty
+            # Final "done" state should also be appended unless empty  TODO Replay should keep (prev, now) order
             if done and len(now.keys() - {'done', 'step'}):
                 self.exp.done = False
 
@@ -208,7 +207,10 @@ class Environment:
                      **getattr(self.env, 'obs_spec', {})})  # TODO Maybe override Env shape with self.exp shape
         #                                                       - (currently prioritizing Env spec)
 
-        if spec['shape']:
+        if self.frame_stack and int(self.frame_stack) > 1:
+            assert spec['shape'], f'Frame stack {self.frame_stack} ' \
+                                  f'specified but obs_shape has no channel-dims: {spec["shape"]}'
+
             # Frame stack
             spec['shape'] = torch.Size([spec['shape'][0] * self.frame_stack, *spec['shape'][1:]])
 
@@ -298,6 +300,8 @@ class Environment:
             # Allow no return statement e.g. hacking metric for vlogging media
             log = {key: value for key, value in log.items() if value is not None}
 
+            assert 'precision' in log, log  # TODO Why can log be empty??  python Run.py metric.precision=World.Metrics.Precision metric.recall=World.Metrics.Recall metric.F1='2*precision*recall/(precision+recall)'
+
             log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
             if 'reward' in self.episode_adds and 'reward' not in self.metric:
@@ -313,7 +317,6 @@ class Environment:
     as expected in action_spec, e.g., in discrete Envs, multi-dim actions can be inferred as logits/probas and argmax'd 
     when action_spec expects shape (1,). Action also may get broadcast to expected shape.
     """
-
     def infer_action_from_action_spec(self, action):
         shape = self.action_spec['shape']
 

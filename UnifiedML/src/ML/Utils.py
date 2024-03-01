@@ -627,6 +627,16 @@ def repr_shape(input_shape, *blocks):
     return input_shape
 
 
+# Helper function for center-scaling (e.g. 0 mean, 1 stddev)
+def standardize(x, mean=0, stddev=1):
+    return (x - mean) / stddev
+
+
+# Helper function for shift-max scaling (e.g. between [-width, width]) given low/high (min/max) of data stats
+def normalize(x, low, high, width=1):
+    return (width * 2) * (x - low) / (high - low) - width
+
+
 # Replaces tensor's batch items with Normal-sampled random latent
 class Rand(nn.Module):
     def __init__(self, size=1, output_shape=None, uniform=False):

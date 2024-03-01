@@ -48,8 +48,9 @@ class Datums:
     (3) include a render() method, frame_stack(obs) method, and/or an action_repeat init arg that Env should adapt to
         and include as a self.action_repeat int attribute
 
-        (1) and (2) depending on what can or can't be inferred. For example, obs_spec.shape often isn't necessary
-        since it can be inferred from the "obs" output of the reset() function. action_spec.shape from a "label" if
+        (1) and (2) if you want custom inout/output spec info to be passed to your Agent/Model (as dicts/Args).
+        The Environment infers many input/output specs by default. For example, obs_spec.shape often isn't necessary
+        since it can be inferred from an "obs"-key value of the reset() function. action_spec.shape from a "label" if
         present.
 
         - For obs_spec, besides "shape", these stats can include for example: "shape", "mean", "stddev", "low", "high".
@@ -59,8 +60,11 @@ class Datums:
         For discrete action spaces and action normalization. Many of these can be inferred,
         and see Environment.py "action_spec" @property for what the defaults are if left unspecified.
 
+        All of this is optional and doesn't have to be used / can be ignored. Include obs_spec and action_spec as
+        args in your agent/model's __init__ method to get access to the configured specs of the Env.
+
         See DMC.py and Atari.py for examples of frame_stack(obs) and action_repeat. Used commonly in RL.
-        Video logging online rollouts can be facilitated by the render() method.
+        Video logging online rollouts can be facilitated by the render() method. Also can be ignored.
 
     ---
 
@@ -68,11 +72,15 @@ class Datums:
     (1) extend Pytorch Datasets
     (2) output (obs, label) pairs, or dicts of named datums, e.g., {'obs': obs, 'label': label, ...}
 
+        Accessed in the API via dataset= or test_dataset=, or via env.dataset= / env.test_dataset=
+
     Datasets can:
     (1) include a "classes" attribute that lists the different class names or classes
+
         This allows quick and exact computation of number of classes being predicted from, without having to count
         via iterating through the whole dataset.
     """
+    # TODO Check if "(1) include **kwargs as an init arg" is necessary.
     def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False, batch_size=8,
                  num_workers=1, standardize=False, norm=False, device='cpu', **kwargs):
         if not train and test_dataset is not None:
