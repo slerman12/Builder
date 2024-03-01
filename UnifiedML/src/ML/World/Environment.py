@@ -60,6 +60,7 @@ class Environment:
     """
     Step Agent in Env and return new experiences & eval/act logs
     """
+
     def rollout(self, agent, steps=inf, vlog=False):
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
@@ -142,6 +143,7 @@ class Environment:
     """
     Take an Env step and return the experiences that need to be stored in Replay or logged.
     """
+
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
@@ -203,12 +205,12 @@ class Environment:
     def obs_spec(self):
         spec = Args({'shape': self.exp.obs.shape[1:] if 'obs' in self.exp else (),
                      **{'mean': None, 'stddev': None, 'low': None, 'high': None},
-                     **getattr(self.env, 'obs_spec', {})})
+                     **getattr(self.env, 'obs_spec', {})})  # TODO Maybe override Env shape with self.exp shape
+        #                                                       - (currently prioritizing Env spec)
 
-        # Frame stack
-        spec['shape'] = torch.Size([spec['shape'][0] * self.frame_stack, *spec['shape'][1:]])
-
-        # TODO Maybe override Env shape with self.exp shape (currently prioritizing Env spec)
+        if spec['shape']:
+            # Frame stack
+            spec['shape'] = torch.Size([spec['shape'][0] * self.frame_stack, *spec['shape'][1:]])
 
         # Update Env spec with defaults
         self.env.__dict__.setdefault('obs_spec', Args()).update(spec)
