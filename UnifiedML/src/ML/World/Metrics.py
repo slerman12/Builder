@@ -49,6 +49,7 @@ class Precision:
             / sum([total[c] for _, total in epoch for c in total])
 
         # TODO Macro-average since micro-averaging only works for binary classification (otherwise precision=accuracy)
+        #       - Test on binary MNIST subset
         # For macro-average, get "num_classes" and divide sum-of-precision-for-each-class by "num_classes"
 
 
@@ -70,6 +71,7 @@ class Recall:
             / sum([total[c] for _, total in epoch for c in total])
 
         # TODO Macro-average since micro-averaging only works for binary classification (otherwise recall=accuracy)
+        #       - Test on binary MNIST subset
         # For macro-average, get "num_classes" and divide sum-of-recall-for-each-class by "num_classes"
 
 

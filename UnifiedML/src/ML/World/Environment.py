@@ -171,14 +171,14 @@ class Environment:
 
         # Assume None action implies offline streaming training (metric, replay, logging not needed from Env)
         if action is not None:
-            # Tally reward & logs
-            self.tally_metric(self.exp)
-
             # Final "done" state should also be appended unless empty  TODO Replay should keep (prev, now) order
             if done and len(now.keys() - {'done', 'step'}):
                 self.exp.done = False
 
                 experiences.append(now)
+
+            # Tally reward & logs
+            self.tally_metric(self.exp)
 
         self.exp = now  # Becomes prev data
 
@@ -300,12 +300,11 @@ class Environment:
             # Allow no return statement e.g. hacking metric for vlogging media
             log = {key: value for key, value in log.items() if value is not None}
 
-            assert 'precision' in log, log  # TODO Why can log be empty??  python Run.py metric.precision=World.Metrics.Precision metric.recall=World.Metrics.Recall metric.F1='2*precision*recall/(precision+recall)'
-
-            log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
+            if log:
+                log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
             if 'reward' in self.episode_adds and 'reward' not in self.metric:
-                # Reward, by default, sums
+                # Reward, by default, sums  TODO Maybe to-numpy, flatten, concatenate, and then sum
                 log['reward'] = sum(self.episode_adds['reward'])
 
             return log
@@ -337,13 +336,12 @@ class Environment:
 
         discrete_bins, low, high = self.action_spec['discrete_bins'], self.action_spec['low'], self.action_spec['high']
 
-        # Round to nearest decimal/int corresponding to discrete bins, high, and low
+        # Round to nearest decimal/int corresponding to discrete bins, high, and low,
+        #   e.g., action=2.1 --> 2, if low=0, high=10, and discrete_bins=11 (2.1 corresponds to the 2nd index).
+        #   Or action=1.38 --> 1.5, if low=0, high=2, and discrete_bins=5 (1.38 corresponds to the 1.5th index).
         if self.action_spec['discrete']:
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
-        else:
-            # TODO Generalise to regression
-            pass
 
         return action
 
