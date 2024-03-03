@@ -44,13 +44,15 @@ class Precision:
         return true_positives, total
 
     def tabulate(self, epoch):
-        # Micro-average precision
-        return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
-            / sum([total[c] for _, total in epoch for c in total])
+        # Micro-average precision (only works for binary classification)
+        c = next(iter(epoch[0][0].keys()))
+        return sum([true_positives[c] for true_positives, _ in epoch]) \
+            / sum([total[c] for _, total in epoch])
 
-        # TODO Macro-average since micro-averaging only works for binary classification (otherwise precision=accuracy)
-        #       - But test on dataset.subset='[0,1]' still shows the same ?
-        #   For macro-average, get "num_classes" and divide sum-of-precision-for-each-class by "num_classes"
+        # Macro-average precision  TODO For macro-average, get "num_classes"
+        #                               and divide sum-of-precision-for-each-class by "num_classes"
+        # return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
+        #     / sum([total[c] for _, total in epoch for c in total])
 
 
 class Recall:
@@ -66,13 +68,15 @@ class Recall:
         return true_positives, total
 
     def tabulate(self, epoch):
-        # Micro-average precision
-        return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
-            / sum([total[c] for _, total in epoch for c in total])
+        # Micro-average precision (only works for binary classification)
+        c = next(iter(epoch[0][0].keys()))
+        return sum([true_positives[c] for true_positives, _ in epoch]) \
+            / sum([total[c] for _, total in epoch])
 
-        # TODO Macro-average since micro-averaging only works for binary classification (otherwise recall=accuracy)
-        #       - But test on dataset.subset='[0,1]' still shows the same ?
-        #   For macro-average, get "num_classes" and divide sum-of-recall-for-each-class by "num_classes"
+        # Macro-average precision  TODO For macro-average, get "num_classes"
+        #                               and divide sum-of-precision-for-each-class by "num_classes"
+        # return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
+        #     / sum([total[c] for _, total in epoch for c in total])
 
 
 """
