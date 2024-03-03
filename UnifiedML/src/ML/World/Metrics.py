@@ -45,7 +45,7 @@ class Precision:
 
     def tabulate(self, epoch):
         # Micro-average precision (only works for binary classification, e.g., dataset.subset='[0,1]')
-        c = next(iter(epoch[0][0].keys()))
+        c = next(iter(epoch[0][0].keys()))  # Use first class, e.g., 0
         return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
             / sum([total[c] for true_positives, total in epoch if c in true_positives])
 
@@ -69,7 +69,7 @@ class Recall:
 
     def tabulate(self, epoch):
         # Micro-average recall (only works for binary classification, e.g., dataset.subset='[0,1]')
-        c = next(iter(epoch[0][0].keys()))
+        c = next(iter(epoch[0][0].keys()))  # Use first class, e.g., 0
         return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
             / sum([total[c] for true_positives, total in epoch if c in true_positives])
 
