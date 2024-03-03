@@ -36,9 +36,9 @@ class Precision:
         classes = np.unique(exp.action)
 
         # True positives are the number of correct predictions for a class
-        # For Precision, total is the number of predictions for the class
-
         true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in classes}
+
+        # For Precision, total is the number of predictions for the class
         total = {c: sum(exp.action == c) for c in classes}
 
         return true_positives, total
@@ -49,8 +49,8 @@ class Precision:
             / sum([total[c] for _, total in epoch for c in total])
 
         # TODO Macro-average since micro-averaging only works for binary classification (otherwise precision=accuracy)
-        #       - Test on binary MNIST subset
-        # For macro-average, get "num_classes" and divide sum-of-precision-for-each-class by "num_classes"
+        #       - But test on dataset.subset='[0,1]' still shows the same ?
+        #   For macro-average, get "num_classes" and divide sum-of-precision-for-each-class by "num_classes"
 
 
 class Recall:
@@ -58,9 +58,9 @@ class Recall:
         classes = np.unique(exp.label)
 
         # True positives are the number of correct predictions for a class
-        # For Recall, total is the number of labels for the class
-
         true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in classes}
+
+        # For Recall, total is the number of labels for the class
         total = {c: sum(exp.label == c) for c in classes}
 
         return true_positives, total
@@ -71,8 +71,8 @@ class Recall:
             / sum([total[c] for _, total in epoch for c in total])
 
         # TODO Macro-average since micro-averaging only works for binary classification (otherwise recall=accuracy)
-        #       - Test on binary MNIST subset
-        # For macro-average, get "num_classes" and divide sum-of-recall-for-each-class by "num_classes"
+        #       - But test on dataset.subset='[0,1]' still shows the same ?
+        #   For macro-average, get "num_classes" and divide sum-of-recall-for-each-class by "num_classes"
 
 
 """
