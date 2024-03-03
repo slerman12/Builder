@@ -39,6 +39,8 @@ class Reward:  # By default, the Environment tabulate_metric already does this i
 class Precision:
     def add(self, exp):
         # Keep track of classes
+        #   Note: can make this more efficient by only doing on first epoch, that is, prior to first tabulate,
+        #   but that assumes a fixed offline dataset.
         self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.action)]))
 
         # True positives are the number of correct predictions for a class
@@ -65,6 +67,8 @@ class Precision:
 class Recall:
     def add(self, exp):
         # Keep track of classes
+        #   Note: can make this more efficient by only doing on first epoch, that is, prior to first tabulate,
+        #   but that assumes a fixed offline dataset.
         self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.label)]))
 
         # True positives are the number of correct predictions for a class
