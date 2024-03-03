@@ -1,7 +1,12 @@
+# Copyright (c) Sam Lerman. All Rights Reserved.
+#
+# This source code is licensed under the MIT license found in the
+# MIT_LICENSE file in the root directory of this source tree.
 import numpy as np
 
+
 """
-Examples
+Examples:
 """
 
 
@@ -80,7 +85,7 @@ class Recall:
 
 
 """
-    For example, call via command-line as follows: 
+    Call via command-line as follows: 
     
         ML metric.precision=World.Metrics.Precision metric.recall=World.Metrics.Recall
 

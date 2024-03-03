@@ -316,29 +316,30 @@ class Environment:
     when action_spec expects shape (1,). Action also may get broadcast to expected shape.
     """
     def infer_action_from_action_spec(self, action):
-        shape = self.action_spec['shape']
+        shape = self.action_spec.get('shape', None)
 
-        try:
-            # Broadcast to expected shape
-            action = action.reshape(len(action), *shape)  # Assumes a batch dim
-        except (ValueError, RuntimeError) as e:
-            # Arg-maxes if categorical distribution passed in
-            if self.action_spec['discrete']:
-                try:
-                    action = action.reshape(len(action), -1, *shape)  # Assumes a batch dim
-                except:
-                    raise RuntimeError(f'Discrete environment could not broadcast or adapt action of shape '
-                                       f'{action.shape} to expected batch-action shape {(-1, *shape)}')
-                action = action.argmax(1)
-            else:
-                raise e
+        if shape:
+            try:
+                # Broadcast to expected shape
+                action = action.reshape(len(action), *shape)  # Assumes a batch dim
+            except (ValueError, RuntimeError) as e:
+                # Arg-maxes if categorical distribution passed in
+                if self.action_spec['discrete']:
+                    try:
+                        action = action.reshape(len(action), -1, *shape)  # Assumes a batch dim
+                    except:
+                        raise RuntimeError(f'Discrete environment could not broadcast or adapt action of shape '
+                                           f'{action.shape} to expected batch-action shape {(-1, *shape)}')
+                    action = action.argmax(1)
+                else:
+                    raise e
 
         discrete_bins, low, high = self.action_spec['discrete_bins'], self.action_spec['low'], self.action_spec['high']
 
         # Round to nearest decimal/int corresponding to discrete bins, high, and low,
         #   e.g., action=2.1 --> 2, if low=0, high=10, and discrete_bins=11 (2.1 corresponds to the 2nd index).
         #   Or action=1.38 --> 1.5, if low=0, high=2, and discrete_bins=5 (1.38 corresponds to the 1.5th index).
-        if self.action_spec['discrete']:
+        if discrete_bins:
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
 
