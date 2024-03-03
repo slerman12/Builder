@@ -40,7 +40,7 @@ class Precision:
     def add(self, exp):
         # Keep track of classes
         #   Note: can make this more efficient by only doing on first epoch, that is, prior to first tabulate.
-        #   Skipping for now because that assumes a fixed offline dataset.
+        #   Skipping for now because that assumes a fixed offline (non-growing) dataset.
         self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.action)]))
 
         # True positives are the number of correct predictions for a class
@@ -67,7 +67,7 @@ class Recall:
     def add(self, exp):
         # Keep track of classes
         #   Note: can make this more efficient by only doing on first epoch, that is, prior to first tabulate.
-        #   Skipping for now because that assumes a fixed offline dataset.
+        #   Skipping for now because that assumes a fixed offline (non-growing) dataset.
         self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.label)]))
 
         # True positives are the number of correct predictions for a class
