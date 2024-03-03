@@ -46,16 +46,13 @@ def main(args):
         if converged or (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
-                # if agent.step == 0 or agent.step > logger.step:  # TODO Count step in Logger
+                if not agent.step or agent.step > logger.step:
                     exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
                                                         vlog=args.log_media)
 
-                    logger.eval().log(log, exp=exp,
-                                      # step=agent.step  # TODO Ignore exp until dump_logs(True)
-                                      )
+                    logger.eval().log(log, step=agent.step)
 
-            logger.eval().dump_logs()
-            # logger.eval().dump_logs(converged)  # TODO Don't print a 2nd time for a logger.step, dump exp if converged
+            logger.eval().dump(exp if converged else None)  # Dump logs. At convergence, also dump eval experiences
 
             if args.log_media:
                 vlogger.dump(vlog, f'{agent.step}')
@@ -84,10 +81,10 @@ def main(args):
             for _ in range(args.learn_steps_after if converged else args.learn_steps):
                 log = Args(time=None, step=None, frame=None, episode=None, epoch=None)
                 agent.learn(replay, log)  # Learn
+                logger.train().re_witness(log, agent, replay)
+                if args.log_per_episodes and args.agent.log:
+                    logger.log(log)
 
-                if args.log_per_episodes and args.agent.log:  # TODO Shouldn't agent.step be incremented either way?
-                    #                                               Move to args.yaml and re-witness adaptively?
-                    logger.train().re_witness(log, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision
 
