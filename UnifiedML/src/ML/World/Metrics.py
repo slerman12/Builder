@@ -67,11 +67,11 @@ class Recall:
         return true_positives, total
 
     def tabulate(self, epoch):
-        # Micro-average precision (only works for binary classification, e.g., dataset.subset='[0,1]')
+        # Micro-average recall (only works for binary classification, e.g., dataset.subset='[0,1]')
         return sum([true_positives[next(iter(true_positives.keys()))] for true_positives, _ in epoch]) \
             / sum([total[next(iter(true_positives.keys()))] for true_positives, total in epoch])
 
-        # Macro-average precision  TODO For macro-average, get "num_classes"
+        # Macro-average recall  TODO For macro-average, get "num_classes"
         #                               and divide sum-of-precision-for-each-class by "num_classes"
         # return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
         #     / sum([total[c] for _, total in epoch for c in total])
