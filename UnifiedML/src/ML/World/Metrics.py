@@ -38,50 +38,54 @@ class Reward:  # By default, the Environment tabulate_metric already does this i
 
 class Precision:
     def add(self, exp):
-        classes = np.unique(exp.action)
+        # Keep track of classes
+        self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.action)]))
 
         # True positives are the number of correct predictions for a class
-        true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in classes}
+        true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in self.classes}
 
         # For Precision, total is the number of predictions for the class
-        total = {c: sum(exp.action == c) for c in classes}
+        total = {c: sum(exp.action == c) for c in self.classes}
 
         return true_positives, total
 
     def tabulate(self, epoch):
-        # Micro-average precision (only works for binary classification, e.g., dataset.subset='[0,1]')
-        c = next(iter(epoch[0][0].keys()))  # Use first class, e.g., 0
-        return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
-            / sum([total[c] for true_positives, total in epoch if c in true_positives])
+        # Micro-average precision (only use for binary classification, e.g., dataset.subset='[0,1]')
+        # c = self.classes[0]  # Use first class, e.g., 0
+        # return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
+        #     / sum([total[c] for true_positives, total in epoch if c in true_positives])
 
-        # Macro-average precision  TODO For macro-average, get "num_classes"
-        #                               and divide sum-of-precision-for-each-class by "num_classes"
-        # return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
-        #     / sum([total[c] for _, total in epoch for c in total])
+        # Macro-average precision
+        # For macro-average, divide sum-of-precision-for-each-class by num-classes
+        return sum([sum([true_positives[c] for true_positives, _ in epoch if c in true_positives])
+                    / sum([total[c] for true_positives, total in epoch if c in true_positives])
+                    for c in self.classes]) / len(self.classes)
 
 
 class Recall:
     def add(self, exp):
-        classes = np.unique(exp.label)
+        # Keep track of classes
+        self.classes = np.unique(np.concatenate([getattr(self, 'classes', [])] + [np.unique(exp.label)]))
 
         # True positives are the number of correct predictions for a class
-        true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in classes}
+        true_positives = {c: sum((exp.action == exp.label) & (exp.action == c)) for c in self.classes}
 
         # For Recall, total is the number of labels for the class
-        total = {c: sum(exp.label == c) for c in classes}
+        total = {c: sum(exp.label == c) for c in self.classes}
 
         return true_positives, total
 
     def tabulate(self, epoch):
-        # Micro-average recall (only works for binary classification, e.g., dataset.subset='[0,1]')
-        c = next(iter(epoch[0][0].keys()))  # Use first class, e.g., 0
-        return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
-            / sum([total[c] for true_positives, total in epoch if c in true_positives])
+        # Micro-average recall (only use for binary classification, e.g., dataset.subset='[0,1]')
+        # c = self.classes[0]  # Use first class, e.g., 0
+        # return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
+        #     / sum([total[c] for true_positives, total in epoch if c in true_positives])
 
-        # Macro-average recall  TODO For macro-average, get "num_classes"
-        #                               and divide sum-of-precision-for-each-class by "num_classes"
-        # return sum([true_positives[c] for true_positives, _ in epoch for c in true_positives]) \
-        #     / sum([total[c] for _, total in epoch for c in total])
+        # Macro-average recall
+        # For macro-average, divide sum-of-recall-for-each-class by num-classes
+        return sum([sum([true_positives[c] for true_positives, _ in epoch if c in true_positives])
+                    / sum([total[c] for true_positives, total in epoch if c in true_positives])
+                    for c in self.classes]) / len(self.classes)
 
 
 """
