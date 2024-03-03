@@ -46,14 +46,16 @@ def main(args):
         if converged or (args.evaluate_per_steps and agent.step % args.evaluate_per_steps == 0):
 
             for _ in range(args.generate or args.evaluate_episodes):
-                # TODO Add if here to not run redundantly
-                exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
-                                                    vlog=args.log_media)
+                # if agent.step == 0 or agent.step > logger.step:  # TODO Count step in Logger
+                    exp, log, vlog = generalize.rollout(agent.eval(),  # agent.eval() just sets agent.training to False
+                                                        vlog=args.log_media)
 
-                logger.eval().log(log, exp=exp if converged else None)  # TODO  Logger, don't log redundantly; pass step
+                    logger.eval().log(log, exp=exp,
+                                      # step=agent.step  # TODO Ignore exp until dump_logs(True)
+                                      )
 
-            # TODO Logger, don't dump redundantly; pass step?
-            logger.eval().dump_logs()  # TODO Don't print a 2nd time when converged, but dump predicted-actual
+            logger.eval().dump_logs()
+            # logger.eval().dump_logs(converged)  # TODO Don't print a 2nd time for a logger.step, dump exp if converged
 
             if args.log_media:
                 vlogger.dump(vlog, f'{agent.step}')
@@ -84,6 +86,7 @@ def main(args):
                 agent.learn(replay, log)  # Learn
 
                 if args.log_per_episodes and args.agent.log:  # TODO Shouldn't agent.step be incremented either way?
+                    #                                               Move to args.yaml and re-witness adaptively?
                     logger.train().re_witness(log, agent, replay)
                 if args.mixed_precision:
                     MP.update()  # For training speedup via automatic mixed precision

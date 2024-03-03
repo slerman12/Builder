@@ -73,6 +73,8 @@ class Environment:
         step = frame = 0
         while not self.episode_done and step < steps:
             obs = self.exp.obs  # TODO Send whole exp to agent, or ordered datums depending on signature
+            #                       Convert those values to tensor. Change obs in frame-stack to self.exp.obs and
+            #                       remove this line. Frame-stack can check if 'obs' in self.exp as well.
 
             # Frame-stacked obs
             if hasattr(self.env, 'frame_stack'):
@@ -87,6 +89,11 @@ class Environment:
             store = Args()
             with act_mode(agent, self.ema):
                 action = agent.act(obs, store)  # TODO Send in depending on signature, allow agent to output an exp
+            #                                       the next line can convert to exp either way, then each value to
+            #                                       numpy, a representative action can be iterated via next on values,
+            #                                       step can be the same, and the representative action can be used on
+            #                                       vlog and frame count. Signature can name values, e.g., **exp, store=
+            #                                       and check how preconstruct_agent handles act signature.
 
             # Inferred action will get passed to Env, Metrics, and Logger
             action = self.infer_action_from_action_spec(action)

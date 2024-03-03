@@ -57,7 +57,7 @@ class Precision:
         # return sum([true_positives[c] for true_positives, _ in epoch if c in true_positives]) \
         #     / sum([total[c] for true_positives, total in epoch if c in true_positives])
 
-        # Macro-average precision
+        # Macro-average precision  TODO Double-check correct expression
         # For macro-average, divide sum-of-precision-for-each-class by num-classes
         return sum([sum([true_positives[c] for true_positives, _ in epoch if c in true_positives])
                     / sum([total[c] for _, total in epoch if c in total]) for c in self.classes]) / len(self.classes)
