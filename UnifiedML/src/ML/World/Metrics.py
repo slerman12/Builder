@@ -60,8 +60,7 @@ class Precision:
         # Macro-average precision
         # For macro-average, divide sum-of-precision-for-each-class by num-classes
         return sum([sum([true_positives[c] for true_positives, _ in epoch if c in true_positives])
-                    / sum([total[c] for true_positives, total in epoch if c in true_positives])
-                    for c in self.classes]) / len(self.classes)
+                    / sum([total[c] for _, total in epoch if c in total]) for c in self.classes]) / len(self.classes)
 
 
 class Recall:
@@ -88,8 +87,7 @@ class Recall:
         # Macro-average recall
         # For macro-average, divide sum-of-recall-for-each-class by num-classes
         return sum([sum([true_positives[c] for true_positives, _ in epoch if c in true_positives])
-                    / sum([total[c] for true_positives, total in epoch if c in true_positives])
-                    for c in self.classes]) / len(self.classes)
+                    / sum([total[c] for _, total in epoch if c in total]) for c in self.classes]) / len(self.classes)
 
 
 """
