@@ -63,7 +63,7 @@ def init(args):
         else 'mps' if mps and mps.is_available() \
         else 'cpu'
 
-    # Note: device=cpu seems to be crucial on MPS for generate - add a warning?
+    # Note: device=cpu seems to be crucial on MPS for generate - adding a warning
     if args.generate and args.device == 'mps':
         warnings.warn(f'Using device=mps with generate=true. I\'ve noticed MPS can struggle with generative training '
                       f'sometimes, compared to CPU and CUDA. Consider using device=cpu if you have issues.')
