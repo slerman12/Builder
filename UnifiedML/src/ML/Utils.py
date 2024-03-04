@@ -184,8 +184,13 @@ def preconstruct_agent(agent, model):
     signature = set(inspect.signature(act).parameters) - {'self'}
 
     # Act store optional
-    if len(signature) == 1:
-        agent.setdefault('_overrides_', Args()).act = lambda a, obs, store: act(a, obs)
+    # if len(signature) == 1:
+    #     agent.setdefault('_overrides_', Args()).act = lambda a, obs, store: act(a, obs)
+
+    # Act signature adaptive
+    agent.setdefault('_overrides_', Args()).act = lambda a, *v, **k: \
+        act(a, *v[:len(signature)], **{p: k[p] for p in list(signature)[len(v):]})
+    agent.setdefault('_overrides_', Args())['get_act_signature'] = lambda a, *v, **k: signature
 
 
 # Saves model + args + selected attributes

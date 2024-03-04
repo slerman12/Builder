@@ -72,28 +72,46 @@ class Environment:
 
         step = frame = 0
         while not self.episode_done and step < steps:
-            obs = self.exp.obs  # TODO Send whole exp to agent, or ordered datums depending on signature
-            #                       Convert those values to tensor. Change obs in frame-stack to self.exp.obs and
-            #                       remove this line. Frame-stack can check if 'obs' in self.exp as well.
+            obs = Args(self.exp)
 
             # Frame-stacked obs
             if hasattr(self.env, 'frame_stack'):
-                if isinstance(self.exp.obs, torch.Tensor):
-                    obs = obs.cpu().numpy()  # TODO Maybe standardize Env as Tensor
+                if 'obs' in obs and isinstance(obs.obs, torch.Tensor):
+                    obs.obs = obs.obs.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
-                obs = self.env.frame_stack(obs)
+                obs.obs = self.env.frame_stack(obs.obs)
 
-            obs = torch.as_tensor(obs, device=self.device)
+            # Agent can output separate Env actions/datums vs. those that get stored in Replay
+            store = Args()
+
+            # Datums for agent act() method, which supports adaptive signatures, and allocate them to device as tensors
+            params = agent.get_act_signature()
+            for datum in (obs.keys() if 'exp' in params else params) - {'store', 'exp'}:
+                obs[datum] = torch.as_tensor(obs[datum], device=self.device)  # To tensor
+            obs.update(store=store, exp=Args(obs))
 
             # Act
-            store = Args()
             with act_mode(agent, self.ema):
-                action = agent.act(obs, store)  # TODO Send in depending on signature, allow agent to output an exp
+                action = agent.act(**obs)  # TODO Allow agent to output an exp
             #                                       the next line can convert to exp either way, then each value to
             #                                       numpy, a representative action can be iterated via next on values,
             #                                       step can be the same, and the representative action can be used on
-            #                                       vlog and frame count. Signature can name values, e.g., **exp, store=
-            #                                       and check how preconstruct_agent handles act signature.
+            #                                       vlog and frame count.
+            #     action = agent.act(**exp)
+
+            # Inferred action will get passed to Env, Metrics, and Logger
+            # action = self.infer_action_from_action_spec(exp)  # TODO Maybe output the above exp, action = ?
+            #                                                      At least convert to exp & remove below if-else check
+
+            # if not self.generate:  # TODO Move this to above as well
+            #     for datum in exp:
+            #         if isinstance(exp[datum], torch.Tensor):
+            #             exp[datum] = exp[datum].cpu().numpy()  # TODO Maybe standardize Env as Tensor
+
+            # Step Env, and add experiences to send to Replay (if agent training) or Logger (if agent evaluating)
+            # experiences += self.step(action, store)  # TODO Adapt exp-action to Env step signature
+
+            # action = exp.get('action', next(iter(exp.values())))  # TODO Then can leave vlogging, etc. as is
 
             # Inferred action will get passed to Env, Metrics, and Logger
             action = self.infer_action_from_action_spec(action)
@@ -105,7 +123,7 @@ class Environment:
             experiences += self.step(action, store)
 
             if vlog and hasattr(self.env, 'render') or self.generate:
-                image_frame = action[:24].view(-1, *obs.shape[1:]) if self.generate \
+                image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if 'obs' in exp and self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
 
