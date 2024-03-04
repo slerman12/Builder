@@ -59,9 +59,14 @@ def init(args):
     mps = getattr(torch.backends, 'mps', None)  # M1 MacBook speedup
 
     # Set device
-    args.device = args.device if args.device != '???' else 'cuda' if torch.cuda.is_available() \
+    args.device = args.device.lower() if args.device != '???' else 'cuda' if torch.cuda.is_available() \
         else 'mps' if mps and mps.is_available() \
         else 'cpu'
+
+    # Note: device=cpu seems to be crucial on MPS for generate - add a warning?
+    if args.generate and args.device == 'mps':
+        warnings.warn(f'Using device=mps with generate=true. I\'ve noticed MPS can struggle with generative training '
+                      f'sometimes, compared to CPU and CUDA. Consider using device=cpu if you have issues.')
 
     # CUDA speedup via automatic mixed precision
     MP.enable(args)

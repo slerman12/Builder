@@ -34,7 +34,7 @@ class Agent(torch.nn.Module):
                  ):
         super().__init__()
 
-        self.discrete = discrete and not generate  # Discrete & Continuous supported!
+        self.discrete = discrete and not generate  # Discrete & continuous supported!
         self.supervise = supervise  # And classification...
         self.classify = action_spec.discrete  # Regression
         self.RL = RL or generate  # RL,
