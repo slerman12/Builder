@@ -76,7 +76,6 @@ class Agent(torch.nn.Module):
 
             action_spec.discrete_bins = num_actions  # Continuous env has no discrete bins by default, must specify
 
-        # Note: Slower unnecessary EMA updates when not RL or EMA
         self.encoder = CNNEncoder(obs_spec, standardize=standardize, norm=norm, **recipes.encoder, parallel=parallel,
                                   lr=lr, lr_decay_epochs=lr_decay_epochs, weight_decay=weight_decay,
                                   ema_decay=ema_decay * (RL and not generate and depth or ema))

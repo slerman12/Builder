@@ -36,7 +36,7 @@ task_dirs = ['', 'task/']  # Extra directories where tasks can be searched
 log_dir = None
 
 
-def get_module(_target_, paths=None, modules=None, recurse=False):
+def get_module(_target_, paths=None, modules=None, recurse=False, try_again=False):
     if callable(_target_):
         return _target_
 
@@ -114,6 +114,13 @@ def get_module(_target_, paths=None, modules=None, recurse=False):
                         sys.modules[path] = module
                         break
         if module is None:
+            # Try one more possibility (_target_ refers to modules in an __init__.py file)
+            if not try_again:
+                _target_, *module_names = _target_.split('.')
+                module = get_module(_target_, paths, modules, recurse, try_again=True)
+                for name in module_names:
+                    module = getattr(module, name)
+                return module
             raise FileNotFoundError(f'Could not find path {path}. Search paths include: {paths}')
         else:
             # Return the relevant sub-module

@@ -3,3 +3,4 @@ imports:
 metric: {}
 suite_name: generate
 generate: true
+generator: MLP
