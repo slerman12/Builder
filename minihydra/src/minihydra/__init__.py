@@ -306,8 +306,11 @@ def recursive_Args(args):
 
 def recursive_update(original, update, _target_inference=True):
     for key, value in update.items():
-        if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)):
+        if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)) and value:
             original[key].update(recursive_update(original[key], value))
+            # TODO When should it update and when should it override? metric: {} should override.
+            #   Ideally, {...} would override while .x= or -->x: would update.
+            #   How to parse {...} specially? For now, just checking non-empty via "and value".
         elif key in original and isinstance(original[key], (Args, dict)) and '_target_' in original[key] \
                 and not (isinstance(value, (dict, Args)) and '_target_' in value) and _target_inference:
             original[key]['_target_'] = value  # Infer value as _target_

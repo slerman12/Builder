@@ -19,7 +19,7 @@ lr_decay_epochs: null
 weight_decay: 0
 ema_decay: 0.99
 stddev_schedule: ${stddev_schedule}
-num_critics: 2
+num_critics: 1
 num_actors: 1
 # Domains
 online: true  # Shorthand for not offline

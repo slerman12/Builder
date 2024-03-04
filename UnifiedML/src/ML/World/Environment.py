@@ -82,7 +82,7 @@ class Environment:
                 obs.obs = self.env.frame_stack(obs.obs)
 
             # Agent can output separate Env actions/datums vs. those that get stored in Replay
-            store = Args()
+            store = Args()  # TODO log and dump
 
             # Datums for agent act() method, which supports adaptive signatures, and allocate them to device as tensors
             params = agent.get_act_signature() - {'store'}
@@ -157,7 +157,7 @@ class Environment:
         experiences = [self.exp]
 
         # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
-        prev, now = {}, {} if self.generate else self.env.step(action)  # Environment step
+        prev, now = {}, {} if self.generate and action is not None else self.env.step(action)  # Environment step
 
         # Parse, since prev is optional in Env
         if isinstance(now, tuple):
