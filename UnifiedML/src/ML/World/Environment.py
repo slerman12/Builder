@@ -92,38 +92,21 @@ class Environment:
 
             # Act
             with act_mode(agent, self.ema):
-                action = agent.act(**obs)  # TODO Allow agent to output an exp
-            #                                       the next line can convert to exp either way, then each value to
-            #                                       numpy, a representative action can be iterated via next on values,
-            #                                       step can be the same, and the representative action can be used on
-            #                                       vlog and frame count.
-            #     action = agent.act(**exp)
-
-            # Inferred action will get passed to Env, Metrics, and Logger
-            # action = self.infer_action_from_action_spec(exp)  # TODO Maybe output the above exp, action = ?
-            #                                                      At least convert to exp & remove below if-else check
-
-            # if not self.generate:  # TODO Move this to above as well
-            #     for datum in exp:
-            #         if isinstance(exp[datum], torch.Tensor):
-            #             exp[datum] = exp[datum].cpu().numpy()  # TODO Maybe standardize Env as Tensor
-
-            # Step Env, and add experiences to send to Replay (if agent training) or Logger (if agent evaluating)
-            # experiences += self.step(action, store)  # TODO Adapt exp-action to Env step signature
-
-            # action = exp.get('action', next(iter(exp.values())))  # TODO Then can leave vlogging, etc. as is
+                action = agent.act(**obs)
 
             # Inferred action will get passed to Env, Metrics, and Logger
             action = self.infer_action_from_action_spec(action)
 
-            if not self.generate:
-                action = action.cpu().numpy()  # TODO Maybe standardize Env as Tensor
-
             # Step Env, and add experiences to send to Replay (if agent training) or Logger (if agent evaluating)
             experiences += self.step(action, store)
 
+            # Pick a representative action if multi-modal
+            if isinstance(action, (dict, Args)):
+                action = action.get('action', next(iter(action.values())))
+
             if vlog and hasattr(self.env, 'render') or self.generate:
-                image_frame = action[:24].view(-1, *exp.obs.shape[1:]) if 'obs' in exp and self.generate \
+                # Generative currently only supports "obs", "action" image modality
+                image_frame = action[:24].view(-1, *obs.obs.shape[1:]) if 'obs' in obs and self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
 
@@ -180,7 +163,7 @@ class Environment:
 
         # Group all prev data
         if action is not None:
-            self.exp.update(action=action)
+            self.exp.update(action if isinstance(action, (dict, Args)) else dict(action=action))
         self.exp.update(prev)
         self.exp.update(store)
 
@@ -195,7 +178,7 @@ class Environment:
 
         # Assume None action implies offline streaming training (metric, replay, logging not needed from Env)
         if action is not None:
-            # Final "done" state should also be appended unless empty  TODO Replay should keep (prev, now) order
+            # Final "done" state should also be appended unless empty
             if done and len(now.keys() - {'done', 'step'}):
                 self.exp.done = False
 
@@ -341,6 +324,24 @@ class Environment:
     when action_spec expects shape (1,). Action also may get broadcast to expected shape.
     """
     def infer_action_from_action_spec(self, action):
+        # If multi-modality (or output is a dict)
+        modals = isinstance(action, (dict, Args))
+
+        original_action = action
+
+        if modals:
+            action = action.get('action', None)
+
+        # If "action" isn't part of multi-modal/dict output, then don't infer anything
+        if action is None:
+            # Convert to numpy
+            if not self.generate:
+                original_action = Args({key: value.cpu().numpy() if isinstance(value, torch.Tensor) else value
+                                        for key, value in original_action.items()}) if modals \
+                    else original_action.cpu().numpy()
+
+            return original_action
+
         shape = self.action_spec.get('shape', None)
 
         if shape:
@@ -367,6 +368,17 @@ class Environment:
         if discrete_bins:
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
+
+        # If the original action was multi-modality or a dict,
+        # return the inferred action as part of the original multi-modality/dict structure
+        if modals:
+            original_action.update(action=action)
+            action = Args(original_action)
+
+        # Convert to numpy
+        if not self.generate:
+            action = Args({key: value.cpu().numpy() if isinstance(value, torch.Tensor) else value
+                           for key, value in action.items()}) if modals else action.cpu().numpy()
 
         return action
 
