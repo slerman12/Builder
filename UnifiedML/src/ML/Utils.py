@@ -66,7 +66,8 @@ def init(args):
     # Note: device=cpu seems to be crucial on MPS for generate - adding a warning
     if args.generate and args.device == 'mps':
         warnings.warn(f'Using device=mps with generate=true. I\'ve noticed MPS can struggle with generative training '
-                      f'sometimes, compared to CPU and CUDA. Consider using device=cpu if you have issues.')
+                      f'sometimes, compared to CPU and CUDA. Consider using device=cpu if you have issues. '
+                      f'This is an issue with Pytorch and MPS.')
 
     # CUDA speedup via automatic mixed precision
     MP.enable(args)
