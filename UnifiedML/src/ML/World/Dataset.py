@@ -225,12 +225,6 @@ def get_dataset_path(dataset_config, path):
             if isinstance(dataset_config[key], (dict, Args)) and 'device' in dataset_config[key]:
                 dataset_config[key].pop('device', None)
 
-        if 'transform' in card:
-            card['transform'].pop('device', None)
-
-        if 'transform' in dataset_config:
-            dataset_config['transform'].pop('device', None)
-
         # Just a shorthand
         if 'Transform' in card:
             card.pop('Transform')
