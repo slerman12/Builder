@@ -38,7 +38,7 @@ class Environment:
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
-            # Allow overriding specs
+            # Allow overriding specs  TODO Allow receiving Agent updates
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
 
@@ -74,9 +74,9 @@ class Environment:
         while not self.episode_done and step < steps:
             obs = Args(self.exp)
 
-            # Frame-stacked obs
-            if hasattr(self.env, 'frame_stack'):
-                if 'obs' in obs and isinstance(obs.obs, torch.Tensor):
+            # Frame-stacked obs  TODO Generalise to other datums/modalities
+            if 'obs' in obs and hasattr(self.env, 'frame_stack'):
+                if isinstance(obs.obs, torch.Tensor):
                     obs.obs = obs.obs.cpu().numpy()  # TODO Maybe standardize Env as Tensor
 
                 obs.obs = self.env.frame_stack(obs.obs)
@@ -89,6 +89,8 @@ class Environment:
             for datum in (obs.keys() if len(params - obs.keys()) else params & obs.keys()):
                 obs[datum] = torch.as_tensor(obs[datum], device=self.device)  # To tensor
             exp = Args(obs)  # Params not in obs will just pass in the whole experience batch
+
+            # For clarity sake I can just say act() adapts to individual datum names or pass in "batch" for the batch
             obs.update(store=store, **{key: exp for key in params - obs.keys()})
 
             # Act
@@ -228,7 +230,7 @@ class Environment:
         return spec
 
     @cached_property
-    def action_spec(self):
+    def action_spec(self):  # TODO Action spec, e.g., in generative mode, not being updated by Agent
         spec = Args({**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
                      **getattr(self.env, 'action_spec', {})})
 
@@ -244,7 +246,7 @@ class Environment:
                 spec['discrete_bins'] = spec['high'] + 1
 
         # Infer action shape from label or action
-        if 'shape' not in spec:
+        if 'shape' not in spec and not self.generate:  # TODO Can permit self.generate if spec updates from Agent work
             if 'label' in self.exp:
                 spec.shape = (len(self.exp.label),) if isinstance(self.exp.label, (tuple, set, list)) \
                     else (1,) if not hasattr(self.exp.label, 'shape') \
@@ -345,7 +347,7 @@ class Environment:
 
         shape = self.action_spec.get('shape', None)
 
-        if shape:
+        if shape and not self.generate:  # TODO Can permit for self.generate if spec updates from Agent work
             try:
                 # Broadcast to expected shape
                 action = action.reshape(len(action), *shape)  # Assumes a batch dim
@@ -366,7 +368,7 @@ class Environment:
         # Round to nearest decimal/int corresponding to discrete bins, high, and low,
         #   e.g., action=2.1 --> 2, if low=0, high=10, and discrete_bins=11 (2.1 corresponds to the 2nd index).
         #   Or action=1.38 --> 1.5, if low=0, high=2, and discrete_bins=5 (1.38 corresponds to the 1.5th index).
-        if discrete_bins:
+        if discrete_bins and not self.generate:  # TODO Can permit for self.generate if spec updates from Agent work
             action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
                      (discrete_bins - 1) * (high - low) + low
 
