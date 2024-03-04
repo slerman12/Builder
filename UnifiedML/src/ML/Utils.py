@@ -409,7 +409,7 @@ MT = MultiTask()
 
 # Allows module to support either full batch-args with modalities (e.g. "exp" with attributes like exp.obs
 # and exp.reward) or single-modal (e.g. "obs")
-# Makes API for transforms and augmentations (and later, to-do: architecture parts) more adaptive and multi-modal
+#   - Makes API for transforms and augmentations (and later, to-do: architecture parts) more adaptively multi-modal
 class Modals(nn.Module):
     def __init__(self, module, modal='obs', device=None):
         super().__init__()
@@ -421,7 +421,7 @@ class Modals(nn.Module):
 
     def forward(self, exp, device=None):
         # if isinstance(exp, dict):
-        if isinstance(exp, (dict, Args)):  # TODO I recently made this make a new Args-dict even if already an Args-dict
+        if isinstance(exp, (dict, Args)):  # Note I recently made this make a new Args-dict even if already an Args-dict
             exp = Args(exp)
 
         # Is it an exp?
