@@ -85,10 +85,11 @@ class Environment:
             store = Args()
 
             # Datums for agent act() method, which supports adaptive signatures, and allocate them to device as tensors
-            params = agent.get_act_signature()
-            for datum in (obs.keys() if 'exp' in params else params) - {'store', 'exp'}:
+            params = agent.get_act_signature() - {'store'}
+            for datum in (obs.keys() if len(params - obs.keys()) else params & obs.keys()):
                 obs[datum] = torch.as_tensor(obs[datum], device=self.device)  # To tensor
-            obs.update(store=store, exp=Args(obs))
+            exp = Args(obs)  # Params not in obs will just pass in the whole experience batch
+            obs.update(store=store, **{key: exp for key in params - obs.keys()})
 
             # Act
             with act_mode(agent, self.ema):
