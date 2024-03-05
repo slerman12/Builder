@@ -65,7 +65,6 @@ def main(args):
 
         # Rollout
         experiences, log, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
-
         replay.add(experiences)
 
         if env.episode_done:  # TODO log_per_steps

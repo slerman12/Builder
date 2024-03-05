@@ -256,7 +256,7 @@ class Agent(torch.nn.Module):
 
             # Critic loss
             critic_loss = QLearning.ensembleQLearning(self.critic, self.actor, batch.obs, batch.action, batch.reward,
-                                                      batch.discount, getattr(batch, 'next_obs', None),
+                                                      batch.get('discount', 1), batch.get('next_obs', None),
                                                       self.step, log=log)
 
             # "Foretell"

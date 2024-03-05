@@ -116,6 +116,8 @@ def get_module(_target_, paths=None, modules=None, recurse=False, try_again=Fals
         if module is None:
             # Try one more possibility (_target_ refers to modules in an __init__.py file)
             if not try_again:
+                # TODO Can make even more general by iterating through different depths of _target_ and module_names
+                #     Currently supports the second-to-last being an __init__.py file
                 _target_, *module_names = _target_.split('.')
                 module = get_module(_target_, paths, modules, recurse, try_again=True)
                 for name in module_names:

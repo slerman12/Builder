@@ -82,7 +82,7 @@ class Environment:
                 obs.obs = self.env.frame_stack(obs.obs)
 
             # Agent can output separate Env actions/datums vs. those that get stored in Replay
-            store = Args()  # TODO log and dump
+            store = Args()  # TODO In addition to store: log and dump
 
             # Datums for agent act() method, which supports adaptive signatures, and allocate them to device as tensors
             params = agent.get_act_signature() - {'store'}
@@ -108,7 +108,7 @@ class Environment:
                 action = action.get('action', next(iter(action.values())))
 
             if vlog and hasattr(self.env, 'render') or self.generate:
-                # Generative currently only supports "obs", "action" image modality
+                # Generate currently only supports "obs", "action" image modality
                 image_frame = action[:24].view(-1, *obs.obs.shape[1:]) if 'obs' in obs and self.generate \
                     else self.env.render()
                 vlogs.append(image_frame)
@@ -156,6 +156,7 @@ class Environment:
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
+        # TODO /Conditional/ GANs do require step (later condition=true/false/"datum")
         # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
         prev, now = {}, {} if self.generate and action is not None else self.env.step(action)  # Environment step
 
@@ -246,7 +247,7 @@ class Environment:
                 spec['discrete_bins'] = spec['high'] + 1
 
         # Infer action shape from label or action
-        if 'shape' not in spec and not self.generate:  # TODO Can permit self.generate if spec updates from Agent work
+        if 'shape' not in spec and not self.generate:  # TODO Can permit self.generate if spec-updates-from-Agent works
             if 'label' in self.exp:
                 spec.shape = (len(self.exp.label),) if isinstance(self.exp.label, (tuple, set, list)) \
                     else (1,) if not hasattr(self.exp.label, 'shape') \

@@ -127,11 +127,12 @@ def preconstruct_agent(agent, model):
             if key in args:
                 agent.pop(key)
 
-        # Use Eyes when no output shape, else Pi_head
-        if outs:
+        # Use Eyes when no output shape, else Pi_head TODO Maybe use Pi_head whenever args.generate and input shape? ins
+        if outs:  # TODO Maybe allow Agent discriminate()/critic() method to override agent.recipes.critic.Q_head
             agent.recipes.actor.Pi_head = args  # As Pi_head when output shape
             agent.recipes.encoder.Eyes = agent.recipes.encoder.pool = agent.recipes.actor.trunk = Identity()
-        else:
+        else:  # TODO What if user wants to use fixed shapes but not the default trunk/Pi_head? Require shape args?
+            #         Or maybe adaptively set (either in Agent or somehow here) based on whether output matches expected
             agent.recipes.encoder.Eyes = args  # Otherwise as Eyes
 
         # Override agent act method with model
@@ -182,10 +183,6 @@ def preconstruct_agent(agent, model):
         else _target_.act
 
     signature = set(inspect.signature(act).parameters) - {'self'}
-
-    # Act store optional
-    # if len(signature) == 1:
-    #     agent.setdefault('_overrides_', Args()).act = lambda a, obs, store: act(a, obs)
 
     # Act signature adaptive
     agent.setdefault('_overrides_', Args()).act = lambda a, *v, **k: \

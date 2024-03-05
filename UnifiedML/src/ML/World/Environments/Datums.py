@@ -32,26 +32,27 @@ class Datums:
 
         The end of an episode or epoch may be marked by the "done" boolean. If unspecified, it will be assumed True
         during step() calls.
-            - This sequence demarcation can be useful for tabulating metrics (e.g. based on multiple steps or an epoch
+            - This sequence demarcation can be useful for aggregating metrics (e.g. based on multiple steps or an epoch
               of batches) or for the automatic organizing of temporal data in Replay.
 
             - The "done" step doesn't get acted on. Its contents can be a no-op (either output None or just
               {'done': True}), or, if you're using (prev, now) pairs, the prev experience in a done state should still
               include any additional datums needed for logging or storing in Replay, such as "reward". It shouldn't
-              include the "done" key. The now state, which should hold the "done" key or be None, is ignored.
+              include the "done" key. The now state, which should hold the "done" key or be None, is ignored if it holds
+              no other key, otherwise it's also sent to Replay and can be retrieved as a "next_obs" for RL for example.
             - The reset() state can't ever be a "done" state even if you specify it as such. In that case,
               output None from your step() function.
 
     Envs can:
-    (1) have an obs_spec dict
-    (2) have an action_spec dict
+    (1) have an obs_spec dict as an attribute
+    (2) have an action_spec dict as an attribute
     (3) include a render() method, frame_stack(obs) method, and/or an action_repeat init arg that Env should adapt to
         and include as a self.action_repeat int attribute
 
-        (1) and (2) if you want custom inout/output spec info to be passed to your Agent/Model (as dicts/Args).
-        The Environment infers many input/output specs by default. For example, obs_spec.shape often isn't necessary
-        since it can be inferred from an "obs"-key value of the reset() function. action_spec.shape from a "label" if
-        present.
+        (1) and (2) if you want custom input/output spec info to be passed to your Agent/Model (as dicts/Args).
+        The Environment infers many input/output specs by default. For example, obs_spec.shape often is automatically
+        included since it can be inferred from an "obs"-key value of the reset() function. action_spec.shape
+        from a "label" if present.
 
         - For obs_spec, besides "shape", these stats can include for example: "shape", "mean", "stddev", "low", "high".
         Useful for standardization and normalization.
@@ -61,7 +62,7 @@ class Datums:
         and see Environment.py "action_spec" @property for what the defaults are if left unspecified.
 
         All of this is optional and doesn't have to be used / can be ignored. Include obs_spec and action_spec as
-        args in your agent/model's __init__ method to get access to the configured specs of the Env.
+        args in your Agent/Model's __init__ method to get access to the configured specs of the Env.
 
         See DMC.py and Atari.py for examples of frame_stack(obs) and action_repeat. Used commonly in RL.
         Video logging online rollouts can be facilitated by the render() method. Also can be ignored.
@@ -72,7 +73,7 @@ class Datums:
     (1) extend Pytorch Datasets
     (2) output (obs, label) pairs, or dicts of named datums, e.g., {'obs': obs, 'label': label, ...}
 
-        Accessed in the API via dataset= or test_dataset=, or via env.dataset= / env.test_dataset=
+        Accessed in the API via dataset= and/or test_dataset=.
 
     Datasets can:
     (1) include a "classes" attribute that lists the different class names or classes
