@@ -18,6 +18,15 @@ class Environment:
     #  - Mean, Stddev, Low, High not getting passed in to Agent from Env during Streaming.
     #  - Online doesn't print training logs.
     #  - Continuous-ization doesn't compute Eval.
+    #  - Test discretization.
+    #  - Test RL again (including on-policy?) and maybe generate, with above (including RL + supervise).
+    #  - Test run calls in Playground.
+    #  - Test ML commands in Playground.
+    #  - Debug self-supervised RL.
+    #  - Test autocast, EMA, parallel, capacities, num_actors/num_critics.
+    #  - Debug multi-task.
+    #  - Test saving/loading.
+    #  - Automate all of these checks in Playground. Maybe call this "Quick showcase:".
     def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
                  stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu',
                  obs_spec=None, action_spec=None):
