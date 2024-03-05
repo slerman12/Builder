@@ -77,6 +77,8 @@ def get_module(_target_, paths=None, modules=None, recurse=False, try_again=Fals
         else:
             # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
             for i, base in enumerate(paths.union({''})):
+                base = base.replace('..', '!@#$%^&*').replace('.py', 'replace_py').replace('.', '/').replace(
+                    '!@#$%^&*', '..').replace('replace_py', '.py')
                 base = os.path.abspath(base)
                 if prefix:
                     base += '/' + prefix[0] + '..'  # Move relative backwards to base
