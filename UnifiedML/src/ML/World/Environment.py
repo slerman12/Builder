@@ -14,6 +14,10 @@ from Utils import Modals
 
 
 class Environment:
+    # TODO
+    #  - Mean, Stddev, Low, High not getting passed in to Agent from Env during Streaming.
+    #  - Online doesn't print training logs.
+    #  - Continuous-ization doesn't compute Eval.
     def __init__(self, env, frame_stack=1, truncate_episode_steps=1e3, action_repeat=1, RL=True, offline=False,
                  stream=True, generate=False, ema=False, train=True, seed=0, transform=None, device='cpu',
                  obs_spec=None, action_spec=None):
@@ -156,7 +160,7 @@ class Environment:
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
-        # TODO /Conditional/ GANs do require step (later condition=true/false/"datum")
+        # TODO /Conditional/ GANs do require step (later condition=true/false)
         # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
         prev, now = {}, {} if self.generate and action is not None else self.env.step(action)  # Environment step
 

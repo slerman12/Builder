@@ -250,7 +250,7 @@ class Replay:
                 self._replay = None  # Reset iterator when depleted
                 sample = next(self.replay)
 
-        self.last_batch_size = len(sample['obs'])
+        self.last_batch_size = len(sample.get('obs', next(iter(sample.values()))))
 
         return Batch({key: torch.as_tensor(value).to(device=self.device, non_blocking=True)
                       for key, value in sample.items()})
