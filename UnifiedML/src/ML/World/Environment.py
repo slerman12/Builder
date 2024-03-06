@@ -15,7 +15,6 @@ from Utils import Modals
 
 class Environment:
     # TODO
-    #  - Supervised + RL can't sum reward lists.
     #  - Test discretization.
     #  - Test RL again (including on-policy?) and maybe generate, with above (including RL + supervise).
     #  - Test run calls in Playground.
@@ -305,11 +304,14 @@ class Environment:
         elif len(self.episode_adds) and self.RL:
             # Use random popped metric as reward if RL
             key = next(iter(self.episode_adds.keys() - {'reward'}))
-            self.episode_adds.setdefault('reward', []).append(self.episode_adds.pop(key))
+            self.episode_adds['reward'] = list(self.episode_adds[key])
             exp.reward = self.episode_adds['reward'][-1]
             warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
                           f'Customize your own reward with the "reward=" flag. For example: '
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
+            self.metric['reward'] = self.metric[key]
+        if 'reward' in self.episode_adds:
+            self.episode_adds['reward'][-1] = torch.as_tensor(self.episode_adds['reward'][-1], dtype=torch.float32)
 
     # Aggregate metrics over an episode
     def tabulate_metric(self):
@@ -325,8 +327,8 @@ class Environment:
                 log.update({key: eval(m, None, log) for key, m in self.metric.items() if isinstance(m, str)})
 
             if 'reward' in self.episode_adds and 'reward' not in self.metric:
-                # Reward, by default, sums  TODO Maybe to-numpy, flatten, concatenate, and then sum
-                log['reward'] = sum(self.episode_adds['reward'])
+                # Reward, by default, sums
+                log['reward'] = torch.concatenate(self.episode_adds['reward']).sum().item()
 
             return log
 

@@ -91,19 +91,19 @@ class Recall:
 
 
 """
-    Call via command-line as follows: 
+Call via command-line as follows: 
     
-        ML metric.precision=World.Metrics.Precision metric.recall=World.Metrics.Recall
+    ML metric.precision=Metrics.Precision metric.recall=Metrics.Recall
 
-    -------------------------------------------------
+-------------------------------------------------
     
-    Supports math string expressions as well. Example:
+Supports math string expressions as well. Example:
     
-    F1-Score:
+F1-Score:
     
-        metric.F1='2*precision*recall/(precision+recall)'
+    metric.F1='2*precision*recall/(precision+recall)'
     
-    Try calling via pure command line:
+Try calling via pure command line:
     
-        ML metric.precision=World.Metrics.Precision metric.recall=World.Metrics.Recall metric.F1='2*precision*recall/(precision+recall)'
+    ML metric.precision=Metrics.Precision metric.recall=Metrics.Recall metric.F1='2*precision*recall/(precision+recall)'
 """

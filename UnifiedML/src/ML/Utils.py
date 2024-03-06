@@ -924,7 +924,8 @@ def import_paths():
     # added_modules.update(globals())  # Adds everything in Utils to module instantiation path
 
     # For direct accessibility via command line
-    module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents'])
+    module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents',
+                         'World'])
     added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'nn': nn, 'Identity': Identity,
                           'Flatten': Flatten, 'Sequential': Sequential, 'load': load, 'save': save})
 
