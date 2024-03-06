@@ -311,7 +311,8 @@ class Environment:
                           f'"reward=path.to.rewardfunction" or even "reward=-{key}+1". See docs for more demos.')
             self.metric['reward'] = self.metric[key]
         if 'reward' in self.episode_adds:
-            self.episode_adds['reward'][-1] = torch.as_tensor(self.episode_adds['reward'][-1], dtype=torch.float32)
+            self.episode_adds['reward'][-1] = torch.as_tensor(self.episode_adds['reward'][-1],
+                                                              dtype=torch.float32).reshape(-1, 1)
 
     # Aggregate metrics over an episode
     def tabulate_metric(self):
