@@ -4,7 +4,7 @@
 # MIT_LICENSE file in the root directory of this source tree.
 from minihydra import get_args, instantiate, interpolate, Args  # minihydra conveniently and cleanly manages sys args
 
-from Utils import init, MT, adaptive_shaping, MP, save, load
+from Utils import MT, init, adaptive_shaping, MP, save, load
 
 
 @get_args(source='Hyperparams/args.yaml')  # Hyper-param arg files located in ./Hyperparams
