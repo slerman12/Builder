@@ -21,11 +21,7 @@ from minihydra import Args
 
 class Atari:
     """
-    A general-purpose environment:
-
-    Must accept: **kwargs as init arg.
-
-    Must have:
+    A general-purpose environment must have:
 
     (1) a "step" function, action -> exp
     (2) "reset" function, -> exp
@@ -34,8 +30,7 @@ class Atari:
     (4) "action-spec" attribute which includes:
         - "shape", "discrete_bins" (should be None if not discrete), "low", "high", and "discrete"
 
-    An "exp" (experience) is a dict consisting of keys such as "obs", "action", "reward", and "label"
-    as numpy arrays with batch dim or None. "reward" should be numpy array, can be scalar/batch.
+    An "exp" (experience) is a dict consisting of keys such as "obs", "action", "reward", and "label".
 
     ---
 
@@ -44,7 +39,7 @@ class Atari:
     """
     def __init__(self, game='Pong', seed=0, frame_stack=3, action_repeat=4,
                  screen_size=84, color='grayscale', sticky_action_proba=0, action_space_union=False,
-                 last_2_frame_pool=True, terminal_on_life_loss=False, **kwargs):  # Atari-specific
+                 last_2_frame_pool=True, terminal_on_life_loss=False):  # Atari-specific
         self.episode_done = False
 
         # Make env

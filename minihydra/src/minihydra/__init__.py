@@ -40,7 +40,9 @@ def get_module(_target_, paths=None, modules=None, recurse=False, try_again=Fals
     if callable(_target_):
         return _target_
 
-    paths = set(list(paths or []) + module_paths)
+    # paths = set(list(paths or []) + module_paths)
+    # TODO Recently changed to this
+    paths = set(list(paths or []) + [path if '/' in path else path.replace('.', '/') for path in module_paths])
 
     if modules is None:
         modules = Args()
@@ -77,8 +79,6 @@ def get_module(_target_, paths=None, modules=None, recurse=False, try_again=Fals
         else:
             # Import a module from an arbitrary directory s.t. it can be pickled! Can't use trivial SourceFileFolder
             for i, base in enumerate(paths.union({''})):
-                base = base.replace('..', '!@#$%^&*').replace('.py', 'replace_py').replace('.', '/').replace(
-                    '!@#$%^&*', '..').replace('replace_py', '.py')
                 base = os.path.abspath(base)
                 if prefix:
                     base += '/' + prefix[0] + '..'  # Move relative backwards to base
@@ -212,9 +212,12 @@ def valid_path(path, dir_path=False, module_path=True, module=True, _modules_=No
             pass
 
     if module_path and not truth and path.count('.') > 0:
-        *root, file, _ = path.replace('.', '/').rsplit('/', 2)
+        # *root, file, _ = path.replace('.', '/').rsplit('/', 2)
+        *root, file, _ = path.replace('.', '.' if '/' in path else '/').rsplit('/', 2)  # TODO Recently changed to this
         root = root[0].strip('/') + '/' if root else ''
         for base in module_paths:
+            if '/' not in base:
+                base = base.replace('.', '/')  # TODO Recently added this
             try:
                 truth = os.path.exists(base + '/' + root + file + '.py')
             except FileNotFoundError:
@@ -319,9 +322,8 @@ def recursive_update(original, update, _target_inference=True):
     for key, value in update.items():
         if isinstance(value, (Args, dict)) and key in original and isinstance(original[key], (Args, dict)) and value:
             original[key].update(recursive_update(original[key], value))
-            # TODO When should it update and when should it override? metric: {} should override.
-            #   Ideally, {...} would override while .x= or -->x: would update.
-            #   How to parse {...} specially? For now, just checking non-empty via "and value".
+            # TODO Ideally, {...} would override, while .x= or -->x: would update.
+            #      How to parse {...} specially? For now, just checking non-empty via "and value".
         elif key in original and isinstance(original[key], (Args, dict)) and '_target_' in original[key] \
                 and not (isinstance(value, (dict, Args)) and '_target_' in value) and _target_inference:
             original[key]['_target_'] = value  # Infer value as _target_
@@ -540,6 +542,9 @@ grammar = []  # List of funcs
 def interpolate(arg, args=None, **kwargs):
     if isinstance(arg, Args):
         recursive_update(arg, kwargs)  # Note: Doesn't create new dicts if pre-existing
+    # Perhaps instead do:
+    # for key, value in kwargs.items():
+    #     arg[key] = value
 
     if args is None:
         args = arg

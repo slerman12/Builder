@@ -305,7 +305,8 @@ class Logger:
         if replay.offline:
             agent.step += 1
             agent.frame += replay.last_batch_size
-            agent.epoch = logs['epoch'] = replay.epoch
+            # agent.epoch = logs['epoch'] = replay.epoch
+            agent.epoch = logs['epoch'] = logs['episode'] if replay.stream else replay.epoch
             logs['frame'] += 1  # Offline is 1 behind Online in training loop
             logs.pop('episode')
         elif 'epoch' in logs:

@@ -42,6 +42,7 @@ class Replay:
         self.begin_flag = Flag()  # Wait until first call to sample before initial fetch
 
         self.last_batch_size = None
+        self.partitions = 0
 
         if self.stream:
             return

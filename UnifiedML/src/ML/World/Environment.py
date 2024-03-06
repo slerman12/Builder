@@ -15,9 +15,7 @@ from Utils import Modals
 
 class Environment:
     # TODO
-    #  - Mean, Stddev, Low, High not getting passed in to Agent from Env during Streaming.
-    #  - Online doesn't print training logs.
-    #  - Continuous-ization doesn't compute Eval.
+    #  - Supervised + RL can't sum reward lists.
     #  - Test discretization.
     #  - Test RL again (including on-policy?) and maybe generate, with above (including RL + supervise).
     #  - Test run calls in Playground.
@@ -47,17 +45,13 @@ class Environment:
 
         if not self.disable or stream:
             self.env = instantiate(env, frame_stack=int(stream) or frame_stack, action_repeat=action_repeat, RL=RL,
-                                   offline=offline, generate=generate, train=train, seed=seed, device=device)
+                                   stream=stream, generate=generate, train=train, seed=seed, device=device)
             # Experience
             self.exp = self.transform(self.env.reset(), device=self.device)
 
-            # Allow overriding specs  TODO Allow receiving Agent updates
+            # Allow overriding specs
             self.obs_spec.update(obs_spec)
             self.action_spec.update(action_spec)
-
-            # Default action space is continuous (not discrete) if unspecified
-            if self.action_spec.discrete == '???':
-                self.action_spec.discrete = getattr(self.env, 'action_spec', {}).get('discrete', False)
 
         self.action_repeat = getattr(getattr(self, 'env', 1), 'action_repeat', 1)  # Optional, can skip frames
 
@@ -77,14 +71,14 @@ class Environment:
         if self.daybreak is None:
             self.daybreak = time.time()  # "Daybreak" for whole episode
 
+        self.episode_done = self.disable
+
         # Experiences to send to Replay or Logger, or directly to Agent-learn if offline streaming training
         experiences = self.step() if self.disable and self.on_policy and agent.training else []
         vlogs = []
 
-        self.episode_done = self.disable
-
         step = frame = 0
-        while not self.episode_done and step < steps:
+        while not (self.episode_done or self.disable) and step < steps:
             obs = Args(self.exp)
 
             # Frame-stacked obs  TODO Generalise to other datums/modalities
@@ -169,7 +163,9 @@ class Environment:
     def step(self, action=None, store=None):
         experiences = [self.exp]
 
-        # TODO /Conditional/ GANs do require step (later condition=true/false)
+        # TODO /Conditional/ GANs do require step (later: condition=true/false)
+        #   And/or can just make an env.step=true/false arg, env.infer_action=true/false, & get rid of self.generate
+        #   Or call "rollout_step"
         # The point of prev is to group data by time step since some datums, like reward, are delayed 1 time step
         prev, now = {}, {} if self.generate and action is not None else self.env.step(action)  # Environment step
 
@@ -182,7 +178,6 @@ class Environment:
         if action is not None:
             self.exp.update(action if isinstance(action, (dict, Args)) else dict(action=action))
         self.exp.update(prev)
-        self.exp.update(store)
 
         # Episode done
         done = now.setdefault('done', True)
@@ -204,10 +199,12 @@ class Environment:
             # Tally reward & logs
             self.tally_metric(self.exp)
 
+        self.exp.update(store)  # Update stored Replay data
+
         self.exp = now  # Becomes prev data
 
         # Done
-        self.episode_done = done or self.episode_step > self.truncate_after - 2 or self.generate
+        self.episode_done = done or self.episode_step > self.truncate_after - 2
 
         if done:
             self.exp = self.env.reset()
@@ -238,13 +235,13 @@ class Environment:
             # Frame stack
             spec['shape'] = torch.Size([spec['shape'][0] * self.frame_stack, *spec['shape'][1:]])
 
-        # Update Env spec with defaults
+        # Update Env spec with defaults  Note: Env spec is fixed after this point (no update from Agent or obs_spec=)
         self.env.__dict__.setdefault('obs_spec', Args()).update(spec)
 
         return spec
 
     @cached_property
-    def action_spec(self):  # TODO Action spec, e.g., in generative mode, not being updated by Agent
+    def action_spec(self):
         spec = Args({**{'discrete_bins': None, 'low': None, 'high': None, 'discrete': False},
                      **getattr(self.env, 'action_spec', {})})
 
@@ -260,7 +257,7 @@ class Environment:
                 spec['discrete_bins'] = spec['high'] + 1
 
         # Infer action shape from label or action
-        if 'shape' not in spec and not self.generate:  # TODO Can permit self.generate if spec-updates-from-Agent works
+        if 'shape' not in spec:
             if 'label' in self.exp:
                 spec.shape = (len(self.exp.label),) if isinstance(self.exp.label, (tuple, set, list)) \
                     else (1,) if not hasattr(self.exp.label, 'shape') \
@@ -270,7 +267,7 @@ class Environment:
             elif spec['discrete']:
                 spec.shape = (1,)  # Discrete default is single-action
 
-        # Update Env spec with defaults
+        # Update Env spec with defaults  Note: Env spec is fixed after this point (no update from Agent or action_spec=)
         self.env.__dict__.setdefault('action_spec', Args()).update(spec)
 
         return spec
@@ -307,7 +304,7 @@ class Environment:
                                                               else exp.reward)
         elif len(self.episode_adds) and self.RL:
             # Use random popped metric as reward if RL
-            key = next(iter(self.episode_adds.keys()))
+            key = next(iter(self.episode_adds.keys() - {'reward'}))
             self.episode_adds.setdefault('reward', []).append(self.episode_adds.pop(key))
             exp.reward = self.episode_adds['reward'][-1]
             warnings.warn(f'"RL" enabled but no Env reward found. Using metric "{key}" as reward. '
@@ -340,6 +337,7 @@ class Environment:
     as expected in action_spec, e.g., in discrete Envs, multi-dim actions can be inferred as logits/probas and argmax'd 
     when action_spec expects shape (1,). Action also may get broadcast to expected shape.
     """
+    # TODO Some of this can have unexpected behavior if action_spec is specified one way but user outputs something else
     def infer_action_from_action_spec(self, action):
         # If multi-modality (or output is a dict)
         modals = isinstance(action, (dict, Args))
@@ -361,7 +359,7 @@ class Environment:
 
         shape = self.action_spec.get('shape', None)
 
-        if shape and not self.generate:  # TODO Can permit for self.generate if spec updates from Agent work
+        if shape and not self.generate:
             try:
                 # Broadcast to expected shape
                 action = action.reshape(len(action), *shape)  # Assumes a batch dim
@@ -382,9 +380,9 @@ class Environment:
         # Round to nearest decimal/int corresponding to discrete bins, high, and low,
         #   e.g., action=2.1 --> 2, if low=0, high=10, and discrete_bins=11 (2.1 corresponds to the 2nd index).
         #   Or action=1.38 --> 1.5, if low=0, high=2, and discrete_bins=5 (1.38 corresponds to the 1.5th index).
-        if discrete_bins and not self.generate:  # TODO Can permit for self.generate if spec updates from Agent work
-            action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
-                     (discrete_bins - 1) * (high - low) + low
+        # if discrete_bins and not self.generate:
+        #     action = torch.round((action - low) / (high - low) * (discrete_bins - 1)) / \
+        #              (discrete_bins - 1) * (high - low) + low
 
         # If the original action was multi-modality or a dict,
         # return the inferred action as part of the original multi-modality/dict structure

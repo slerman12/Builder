@@ -15,11 +15,7 @@ from minihydra import Args
 
 class DMC:
     """
-    A general-purpose environment:
-
-    Must accept: **kwargs as init arg.
-
-    Must have:
+    A general-purpose environment must have:
 
     (1) a "step" function, action -> exp
     (2) "reset" function, -> exp
@@ -28,15 +24,14 @@ class DMC:
     (4) "action-spec" attribute which includes:
         - "shape", "discrete_bins" (should be None if not discrete), "low", "high", and "discrete"
 
-    An "exp" (experience) is a dict consisting of keys such as "obs", "action", "reward", and "label"
-    as numpy arrays with batch dim or None. "reward" should be numpy array, can be scalar/batch.
+    An "exp" (experience) is a dict consisting of keys such as "obs", "action", "reward", and "label".
 
     ---
 
     Can optionally include a frame_stack, action_repeat method.
 
     """
-    def __init__(self, task='cheetah_run', seed=0, frame_stack=3, action_repeat=2, **kwargs):
+    def __init__(self, task='cheetah_run', seed=0, frame_stack=3, action_repeat=2):
         self.episode_done = False
 
         # Make env

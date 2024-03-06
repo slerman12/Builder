@@ -20,15 +20,15 @@ def main(args):
     generalize = instantiate(args.environment, train=False, seed=args.seed + 1234)
 
     # Update args
-    interpolate(args, obs_spec=generalize.obs_spec, action_spec=generalize.action_spec)
+    interpolate(args, _obs_spec_=Args(generalize.obs_spec), _action_spec_=Args(generalize.action_spec))
 
     # Experience replay
     replay = instantiate(args.replay) if args.train_steps else args.replay
 
     # Agent
     agent = load(args.load_path, args.device, args.agent) if args.load \
-        else instantiate(args.agent, **adaptive_shaping(obs_spec=args.obs_spec,
-                                                        action_spec=args.action_spec)).to(args.device)
+        else instantiate(args.agent, **adaptive_shaping(obs_spec=args.agent.obs_spec,
+                                                        action_spec=args.agent.action_spec)).to(args.device)
 
     # Synchronize multi-task models (if exist)
     agent = MT.unify_agent_models(agent, args.agent, args.device, args.load and args.load_path)
@@ -58,7 +58,7 @@ def main(args):
                 vlogger.dump(vlog, f'{agent.step}')
 
         if args.plot_per_steps and (agent.step + 1) % args.plot_per_steps == 0 and not args.generate or converged:
-            instantiate(args.plotting)  # TODO show=converged + web browser
+            instantiate(args.plotting)  # TODO show=converged and args.show -> plot in web browser or window-pane
 
         if converged:
             break
@@ -67,9 +67,9 @@ def main(args):
         experiences, log, _ = env.rollout(agent.train(), steps=1)  # agent.train() just sets agent.training to True
         replay.add(experiences)
 
-        if env.episode_done:  # TODO log_per_steps
-            if args.log_per_episodes and (agent.episode - 2 * replay.offline) % args.log_per_episodes == 0:
-                logger.mode('Train' if training else 'Seed').log(log, dump=True)
+        if env.episode_done and args.log_per_episodes and (agent.episode - 2 * args.offline) % args.log_per_episodes \
+                == 0 or args.log_per_steps and agent.step > 1 and (agent.step - args.offline) % args.log_per_steps == 0:
+            logger.mode('Train' if training else 'Seed').log(log, dump=True)
 
         converged = agent.step >= train_steps
         training = training or agent.step > args.seed_steps and len(replay) > replay.partitions - 1 or replay.offline
@@ -81,7 +81,7 @@ def main(args):
                 log = Args(time=None, step=None, frame=None, episode=None, epoch=None)
                 agent.learn(replay, log)  # Learn
                 logger.train().re_witness(log, agent, replay)
-                if args.log_per_episodes and args.agent.log:
+                if (args.log_per_episodes or args.log_per_steps) and args.agent.log:
                     logger.log(log)
 
                 if args.mixed_precision:

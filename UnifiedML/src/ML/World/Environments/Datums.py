@@ -19,9 +19,8 @@ from minihydra import Args
 class Datums:
     """
     Envs must:
-    (1) include **kwargs as an init arg
-    (2) have a step(action) function
-    (3) have a reset() function
+    (1) have a step(action) function
+    (2) have a reset() function
 
         The step() and reset() functions output experiences ("exp")
             i.e. dicts containing datums like "obs", "action", "reward", 'label", "done"
@@ -81,9 +80,8 @@ class Datums:
         This allows quick and exact computation of number of classes being predicted from, without having to count
         via iterating through the whole dataset.
     """
-    # TODO Check if "(1) include **kwargs as an init arg" is necessary.
-    def __init__(self, dataset, test_dataset=None, train=True, offline=True, generate=False, batch_size=8,
-                 num_workers=1, standardize=False, norm=False, device='cpu', **kwargs):
+    def __init__(self, dataset, test_dataset=None, train=True, stream=False, batch_size=8, num_workers=1,
+                 standardize=False, norm=False, device='cpu'):
         if not train and test_dataset is not None:
             # Assume test_dataset
             dataset = test_dataset
@@ -115,9 +113,8 @@ class Datums:
         self.exp = None
 
         # Fill in necessary obs_spec and action_spec stats (e.g. mean, stddev, low, high) from dataset
-        if train and (offline or generate) and (standardize or norm):
-            # TODO Alternatively, load_dataset can output Args of recollected stats as well;
-            #  maybe specify what to save in card replay
+        if (not train and stream) and (standardize or norm):
+            # TODO load_dataset can recall stats from card as well; maybe allow specifying what stats to compute
             self.obs_spec = compute_stats(self.batches)  # TODO Should provide per-Datum specs
 
         if discrete:
