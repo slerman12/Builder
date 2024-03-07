@@ -55,22 +55,10 @@ class DMC:
 
         # Load task
         if (domain, task) in suite.ALL_TASKS:
-            try:
-                self.env = suite.load(domain,
-                                      task,
-                                      task_kwargs={'random': seed},
-                                      visualize_reward=False)  # Don't visualize reward
-            except AttributeError as e:
-                # TODO This was a pip setuptools error. Should be fixed. Can delete this block.
-                if "'MjModel' object has no attribute 'bvh_geomid'" not in str(e):
-                    raise e
-                warnings.warn('AttributeError caught. Since the DeepMind Control Suite sometimes doesn\'t install '
-                              'successfully, attempting one-time force-reinstall.')
-                os.system(f'pip install dm_control==1.0.16 force-reinstall')  # dm_control doesn't install sometimes
-                self.env = suite.load(domain,
-                                      task,
-                                      task_kwargs={'random': seed},
-                                      visualize_reward=False)  # Don't visualize reward
+            self.env = suite.load(domain,
+                                  task,
+                                  task_kwargs={'random': seed},
+                                  visualize_reward=False)  # Don't visualize reward
             self.key = 'pixels'
         else:
             task = f'{domain}_{task}_vision'
