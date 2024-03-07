@@ -15,6 +15,8 @@ from Utils import Modals
 
 class Environment:
     # TODO
+    #  - Logging per epochs/episodes is logging every step
+    #  - Online not printing training accuracy
     #  - Test discretization.
     #  - Test RL again (including on-policy?) and maybe generate, with above (including RL + supervise).
     #  - Test run calls in Playground.

@@ -16,6 +16,7 @@ for build in builds:
 builds = glob.glob('*/dist/*')
 
 if '--from-scratch' in sys.argv:
+    os.system(f'pip uninstall UnifiedML')
     os.system(f'pip install {" ".join(builds)} --force-reinstall')
 else:
     os.system(f'pip install {" ".join(builds)} --force-reinstall --no-dependencies')
