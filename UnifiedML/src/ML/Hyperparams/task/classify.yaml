@@ -3,4 +3,4 @@ imports:
 suite_name: classify
 
 metric:
-  accuracy: World.Metrics.Accuracy
+  accuracy: Metrics.Accuracy

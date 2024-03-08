@@ -94,7 +94,10 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
             y = [col for col in cell_data.columns if col.lower()
                  not in ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']
-                 and not cell_data[col].isnull().values.any()][0]
+                 and not cell_data[col].isnull().values.any()]
+            assert len(y), 'Could not find a Metric to plot. Try metrics.accuracy=World.Metrics.Accuracy for example.' \
+                           ' Or make your own by following the examples in World/Metrics.py.'
+            y = y[0]
 
             sns.lineplot(x=x, y=y, data=cell_data, ci='sd', hue='Agent', hue_order=np.sort(hue_names), ax=ax,
                          palette=cell_palettes)
@@ -131,7 +134,10 @@ def plot(path, plot_experiments=None, plot_agents=None, plot_suites=None, plot_t
             #     else [col for col in cell_data.columns if col not in ['time', 'step', 'frame', 'epoch', 'fps']][0]
             y = [col for col in cell_data.columns if col.lower()
                  not in ['time', 'step', 'frame', 'epoch', 'fps', 'agent', 'suite', 'task', 'seed', 'episode']
-                 and not cell_data[col].isnull().values.any()][0]
+                 and not cell_data[col].isnull().values.any()]
+            assert len(y), 'Could not find a Metric to plot. Try metrics.accuracy=World.Metrics.Accuracy for example.' \
+                           ' Or make your own by following the examples in World/Metrics.py.'
+            y = y[0]
 
             # Normalize
             for task in cell_data.Task.unique():

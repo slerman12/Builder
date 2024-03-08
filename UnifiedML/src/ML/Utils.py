@@ -730,10 +730,20 @@ class Sequential(nn.Module):
         self.Sequence = nn.ModuleList()
 
         for _target_ in _targets_:
-            self.Sequence.append(Modals(instantiate(Args({'_target_': _target_}) if isinstance(_target_, str)
+            self.Sequence.append(Modals(instantiate(Args(_target_=_target_) if isinstance(_target_, str)
                                                     else _target_, i, **kwargs)))
 
-            if 'input_shape' in kwargs:
+            if {'input_shape', 'in_shape', 'in_features', 'in_dim', 'in_channels', 'obs_spec'} & set(kwargs):
+                # TODO Dynamically append learn methods if exist as well into one learn method
+                #   - Update input_shape (or full set of adaptive-shaping that is via adaptive_shaping(obs_spec))
+                #   X Make sure this Sequence sufficiently similar/identical to nn.Sequence API and can be accessed
+                #       via model: Sequential(['Path.To.Thing', 'Path.To.Stuff'])
+                #           Why does this lead to no shaping in input?
+                #           Okay, that makes sense. The function-call syntax already initializes it so new args can't be
+                #           added.
+                #   [Check] Metrics.X instead of World.Metrics.X burns
+                #   - "task: classify" in XRDs might not be needed, but removing it causes a recursion error.
+                #       (No-task-task overrides args calls MNIST calls classify calls supervised, shouldn't recurse)
                 kwargs['input_shape'] = repr_shape(kwargs['input_shape'], self.Sequence[-1])
 
         self._exp_ = True  # Flag that toggles passing in full exp/batch-dict instead of just obs
@@ -796,6 +806,7 @@ class Norm(nn.Module):
 
 # Pytorch incorrect (in this case) warning suppression
 warnings.filterwarnings("ignore", message='.* skipping the first value of the learning rate schedule')
+
 
 # Scales gradients for automatic mixed precision training speedup, or updates gradients normally
 class MixedPrecision:
@@ -924,10 +935,12 @@ def import_paths():
     # added_modules.update(globals())  # Adds everything in Utils to module instantiation path
 
     # For direct accessibility via command line
-    module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents',
-                         'World'])
+    module_paths.extend(['World.Environments', 'Agents.Blocks.Architectures', 'Agents.Blocks.Augmentations', 'Agents'])
     added_modules.update({'torchvision': torchvision, 'transforms': transforms, 'nn': nn, 'Identity': Identity,
                           'Flatten': Flatten, 'Sequential': Sequential, 'load': load, 'save': save})
+
+    from World import Metrics
+    added_modules.update(Metrics=Metrics)
 
     # Adds Hyperparams dir to search path
     add_task_dirs('Hyperparams')

@@ -12,7 +12,6 @@ logger:
   log_actions: ${not:${generate}}
 suite_name: supervised
 task_name: ${format:${dataset._target_}}
-train_steps: 200000
 stddev_schedule: 'linear(1.0,0.1,100000)'
 frame_stack: null
 action_repeat: null
@@ -26,3 +25,4 @@ log_per_epochs: 0
 log_per_steps: 300
 RL: false
 online: false  # Same as offline: true
+Aug: Identity
