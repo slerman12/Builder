@@ -722,7 +722,9 @@ def batched_cartesian_prod(items: (list, tuple), dim=-1, collapse_dims=True):
         for i, item in enumerate(items)], -1).view(*lead_dims, *[-1] if collapse_dims else dims, *tail_dims, len(items))
 
 
-# Sequential of instantiations e.g. python Run.py eyes=Utils.Sequential eyes._targets_="[CNN, Transformer]"
+# TODO What - This example breaks. Prioritizes torch.nn.Transformer over internal Transformer
+#  (minihydra should prioritize directory paths before module paths I guess, or have some way to specify priority)
+# Sequential of instantiations e.g. ML model=Sequential model._targets_='["CNN", "Transformer"]'
 class Sequential(nn.Module):
     def __init__(self, _targets_, i=0, **kwargs):
         super().__init__()
