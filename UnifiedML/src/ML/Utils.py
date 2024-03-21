@@ -134,6 +134,10 @@ def preconstruct_agent(agent, model):
         else:  # TODO What if user wants to use fixed shapes but not the default trunk/Pi_head? Require shape args?
             #         Or maybe adaptively set (either in Agent or somehow here) based on whether output matches expected
             agent.recipes.encoder.Eyes = args  # Otherwise as Eyes
+            warnings.warn(f'Model/Agent didn\'t include output shape specification. '
+                          f'Appending a default MLP to the forward pass to flatten the output and '
+                          f'project to a pre-specified shape. If this isn\'t desired behavior, just include '
+                          f'"output_shape" as a variable in your Model/Agent\'s __init__ signature.')
 
         # Override agent act method with model
         if callable(getattr(_target_, 'act', ())) and ('_overrides_' not in agent or 'act' not in agent._overrides_):
