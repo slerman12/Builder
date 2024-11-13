@@ -5,11 +5,6 @@
 import numpy as np
 
 
-"""
-Examples:
-"""
-
-
 class Accuracy:
     # An "exp" (experience) is a key-value structure of batch data that follows an action
     def add(self, exp):
