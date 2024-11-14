@@ -235,17 +235,16 @@ class Poo:
 
 
 """
-1. Convert paths to '/' and include current working directory at start
-2. Go through target and pull out known_path and dot_paths. Convert former to '/'
+1. Convert paths to '/' and include current working directory at start. Each end with '/'
+2. Go through target and pull out known_path and dot_paths. Convert former to '/'. Known path ends with '/'
 3. If known path starts with '/', then treat paths as empty
 4. Iterate through paths, and go through each dot path one by one
-    - Check 1: If module, followed by sub-modules
-    - Except for last dot path, which should always be a module or sub-module, do:
-        - Check 2: If python file, followed by module, followed by sub-modules
-        - Check 3: If folder with __init__.py file followed by module, followed by sub-modules
+    - Except for last dot path, which should always be a module or sub-module, add as folder path and do:
+        - Check 1: If python file, followed by module, followed by sub-modules if any further dots
+        - Check 2: If folder with __init__.py file followed by module, followed by sub-modules if any further dots
     - If any check throws an error, continue to trying the next check, proceeding with the iteration from 4
 5. Iterate through named modules/added_modules 
-    - requires first dots or no dots of target be key in modules, then getattr
+    - Requires first dots or no dots of target be key in modules, then getattr
 """
 
 
