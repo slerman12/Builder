@@ -236,6 +236,7 @@ class Poo:
 
 """
 1. Convert paths to '/' and include current working directory at start. Each end with '/'
+    $ path.replace(os.sep, '/')
 2. Go through target and pull out known_path and dot_paths. Convert former to '/'. Known path ends with '/'
 3. If known path starts with '/', then treat paths as empty
 4. Iterate through paths, and go through each dot path one by one
