@@ -241,6 +241,7 @@ class Poo:
 4. Iterate through paths, and go through each dot path one by one
     - Except for last dot path, which should always be a module or sub-module, add as folder path and do:
         - Check 1: If python file, followed by module, followed by sub-modules if any further dots
+            - This can be known if '.py' extension, and no iteration needed from the beginning
         - Check 2: If folder with __init__.py file followed by module, followed by sub-modules if any further dots
     - If any check throws an error, continue to trying the next check, proceeding with the iteration from 4
 5. Iterate through named modules/added_modules 
