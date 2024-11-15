@@ -339,12 +339,20 @@ def get_module_v2(_target_, paths=None, modules=None):
 
         dots = dot_path.split('.')
 
+        # If first part of path is a module in modules, get module from that
         if dots[0] in modules:
+            module = modules[dots[0]]
 
+            for dot in dots[1:]:
+                module = getattr(module, dot)
+
+            # Return retrieved module
+            return module
         else:
+            # Otehrwise, see if belongs as sub-module of any modules
             for module in modules.values():
                 for dot in dots:
-                    module = getattr(module, dot)
+                    module = getattr(module, dot)  # TODO Try-catch-continue
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
