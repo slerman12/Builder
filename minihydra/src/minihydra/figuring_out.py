@@ -255,12 +255,12 @@ def get_module_v2(_target_, paths=None, modules=None):
         # If target is a function or module already, just return target
         return _target_
 
-    # 1. Convert paths to base search paths in '/' format and include current working directory at start.
-    #    Each end with '/'
+    # 1. Convert paths and module paths to base search paths in '/' format and include current
+    #    working directory at start. Each end with '/'
 
-    # Base search paths (formatted with '/' separated directories)
+    # Paths and module paths formatted with '/' separated directories
     base_search_paths = set(list(paths or []) + [path.replace(os.sep, '/') if '/' in path.replace(os.sep, '/')
-                                          else path.replace('.', '/') for path in module_paths])
+                                                 else path.replace('.', '/') for path in module_paths])
 
     # Make the paths absolute, include current working directory at start
     base_search_paths = set([os.path.abspath('')] + [os.path.abspath(base) for base in base_search_paths])
@@ -302,9 +302,26 @@ def get_module_v2(_target_, paths=None, modules=None):
     #        - Check 2: If folder with __init__.py file followed by module, followed by sub-modules if any further dots
     #     - If any check throws an error, continue to trying the next check, proceeding with the iteration from 4
 
+    module = None
+
     # Iterate base paths
     for base in base_search_paths:
         dots = dot_path.split('.')
+
+        for i, dot in enumerate(dots):
+            # If '.py' extension in target, file is known and can assume dots are all modules of that file
+            if isinstance(known_path, str):
+                if '.py' in known_path:
+                    if module is None:
+                        module = import_file(base + known_path)  # TODO Wrap in try-catch
+                    module = getattr(module, dot)
+                else:
+                    # Otherwise, first dot can be module in [known_path]__init__.py file or a python file itself.
+                    # The rest of the dots must be modules/sub-modules
+                    return
+            else:
+                # 5. Iterate through named modules/added_modules and return on last dot: i == len(dots) - 1
+                return
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
@@ -417,7 +434,7 @@ def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
         return
 
 """
-If I had to rebuild it from scratch, I would again start by parsing. First, is when there's a '/' in the target. 
+If I had to rebuild it from scratch, I would start by parsing. First, is when there's a '/' in the target. 
 The question is, to assume that there is only one module, or to allow multiple modules. Well, in this case, can 
 allow multiple modules since path and modules are disambiguated. So in this case, can separate out the path, get the
 module from the corresponding file -- might have to be an __init__ file if no '.py' and last path part is only a 
