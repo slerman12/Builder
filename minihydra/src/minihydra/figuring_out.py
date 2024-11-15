@@ -323,6 +323,11 @@ def get_module_v2(_target_, paths=None, modules=None):
                     # The rest of the dots must be modules/sub-modules
                     # TODO return on last dot: i == len(dots) - 1
                     return
+            else:
+                # Except for last dot, check each dot as possibly being a folder path,
+                # and if modules/sub-modules follow
+                # TODO return on last dot: i == len(dots) - 1
+                return
     else:
         # 5. Iterate through named modules/added_modules
 
