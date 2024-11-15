@@ -316,18 +316,18 @@ def get_module_v2(_target_, paths=None, modules=None):
                         module = import_file(base + known_path)  # TODO Wrap in try-catch
                     module = getattr(module, dot)
 
-                    # TODO return on last dot: i == len(dots) - 1
-                    return
+                    # TODO break on last dot: i == len(dots) - 1
+                    break
                 else:
                     # Otherwise, first dot can be module in [known_path]__init__.py file or a python file itself.
                     # The rest of the dots must be modules/sub-modules
-                    # TODO return on last dot: i == len(dots) - 1
-                    return
+                    # TODO break on last dot: i == len(dots) - 1
+                    break
             else:
                 # Except for last dot, check each dot as possibly being a folder path,
                 # and if modules/sub-modules follow
-                # TODO return on last dot: i == len(dots) - 1
-                return
+                # TODO break on last dot: i == len(dots) - 1
+                break
     else:
         # 5. Iterate through named modules/added_modules if no path found
 
@@ -351,10 +351,10 @@ def get_module_v2(_target_, paths=None, modules=None):
                 for dot in dots:
                     module = getattr(module, dot)  # TODO Try-catch-continue
 
-        assert module is not None, ''  # TODO Error message
+    assert module is not None, ''  # TODO Error message
 
-        # Return retrieved module
-        return module
+    # Return retrieved module
+    return module
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
