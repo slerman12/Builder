@@ -329,7 +329,7 @@ def get_module_v2(_target_, paths=None, modules=None):
                 # TODO return on last dot: i == len(dots) - 1
                 return
     else:
-        # 5. Iterate through named modules/added_modules
+        # 5. Iterate through named modules/added_modules if no path found
 
         # Accept modules to search the subclasses of even when there are no paths to search from
         if modules is None:
