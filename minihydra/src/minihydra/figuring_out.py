@@ -315,13 +315,31 @@ def get_module_v2(_target_, paths=None, modules=None):
                     if module is None:
                         module = import_file(base + known_path)  # TODO Wrap in try-catch
                     module = getattr(module, dot)
+
+                    # TODO return on last dot: i == len(dots) - 1
+                    return
                 else:
                     # Otherwise, first dot can be module in [known_path]__init__.py file or a python file itself.
                     # The rest of the dots must be modules/sub-modules
+                    # TODO return on last dot: i == len(dots) - 1
                     return
-            else:
-                # 5. Iterate through named modules/added_modules and return on last dot: i == len(dots) - 1
-                return
+    else:
+        # 5. Iterate through named modules/added_modules
+
+        # Accept modules to search the subclasses of even when there are no paths to search from
+        if modules is None:
+            modules = Args()
+
+        modules.update(added_modules)
+
+        dots = dot_path.split('.')
+
+        if dots[0] in modules:
+
+        else:
+            for module in modules.values():
+                for dot in dots:
+                    module = getattr(module, dot)
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
