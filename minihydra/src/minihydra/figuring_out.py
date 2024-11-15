@@ -308,7 +308,7 @@ def get_module_v2(_target_, paths=None, modules=None):
     for base in base_search_paths:
         dots = dot_path.split('.')
 
-        for i, dot in enumerate(dots):
+        for i, dot in enumerate(dots):  # TODO Might be able to nest deeper to avoid redundant dot iterations
             # If '.py' extension in target, file is known and can assume dots are all modules of that file
             if isinstance(known_path, str):
                 if '.py' in known_path:
