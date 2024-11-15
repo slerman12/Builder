@@ -345,14 +345,16 @@ def get_module_v2(_target_, paths=None, modules=None):
 
             for dot in dots[1:]:
                 module = getattr(module, dot)
-
-            # Return retrieved module
-            return module
         else:
-            # Otehrwise, see if belongs as sub-module of any modules
+            # Otherwise, see if belongs as sub-module of any modules
             for module in modules.values():
                 for dot in dots:
                     module = getattr(module, dot)  # TODO Try-catch-continue
+
+        assert module is not None, ''  # TODO Error message
+
+        # Return retrieved module
+        return module
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
