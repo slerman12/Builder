@@ -237,9 +237,7 @@ class Poo:
 """
 1. Convert paths to '/' and include current working directory at start. Each end with '/'
     $ path.replace(os.sep, '/') 
-    or 
-    $ os.path.normpath(path) will normalize to '/' for Mac, backslash for Windows
-2. Go through target and pull out known_path and dot_paths. Convert former to '/'. Known path ends with '/'
+2. Go through target and pull out known_path and dot_paths. Convert former to '/'. Known path ends with '/' if no '.py'
 3. If known path starts with '/', then treat paths as empty
 4. Iterate through paths, and go through each dot path one by one
     - Except for last dot path, which should always be a module or sub-module, add as folder path and do:
@@ -250,6 +248,63 @@ class Poo:
 5. Iterate through named modules/added_modules 
     - Requires first dots or no dots of target be key in modules, then getattr
 """
+
+
+def get_module_v2(_target_, paths=None, modules=None):
+    if callable(_target_):
+        # If target is a function or module already, just return target
+        return _target_
+
+    # 1. Convert paths to base search paths in '/' format and include current working directory at start.
+    #    Each end with '/'
+
+    # Base search paths (formatted with '/' separated directories)
+    base_search_paths = set(list(paths or []) + [path.replace(os.sep, '/') if '/' in path.replace(os.sep, '/')
+                                          else path.replace('.', '/') for path in module_paths])
+
+    # Make the paths absolute, include current working directory at start
+    base_search_paths = set([os.path.abspath('')] + [os.path.abspath(base) for base in base_search_paths])
+
+    # Each end with '/'
+    base_search_paths = set([path + '/' if path[-1] != '/' else path for path in base_search_paths])
+
+    # 2. Go through target and pull out known_path and dot_paths. Convert former to '/'.
+    #    Known path ends with '/' if no '.py' extension
+
+    _target_ = _target_.replace(os.sep, '/')
+
+    # File path fully known if '.py' extension specified
+    if '.py' in _target_:
+        known_path, dot_path = _target_.rsplit('.py', 1)
+        known_path += '.py'
+    elif '/' in _target_:
+        # Known path might be followed by the first part of dot path as the python file name,
+        # or as a module in __init__.py in the known path directory
+        known_path, dot_path = _target_.rsplit('/', 1)
+        known_path += '/'  # Can be followed by __init__.py or first part of dot path + '.py'
+
+        # __init__.py is known if dot path doesn't have any further dots that can be the module
+        if '.' not in dot_path:
+            known_path += '__init__.py'
+    else:
+        # Dot path here is ambiguous which parts are a file path and which parts are modules/sub-modules
+        known_path, dot_path = None, _target_
+
+    # 3. If known path starts with '/', then treat base search paths as empty
+
+    if isinstance(known_path, str) and known_path[0] == '/':
+        base_search_paths = {''}  # known path already includes the absolute path. No need to search base paths
+
+    # 4. Iterate through base search paths, and go through each dot path one by one
+    #     - Except for last dot path, which should always be a module or sub-module, add as folder path and do:
+    #        - Check 1: If python file, followed by module, followed by sub-modules if any further dots
+    #          - This can be known if '.py' extension, and no iteration needed from the beginning
+    #        - Check 2: If folder with __init__.py file followed by module, followed by sub-modules if any further dots
+    #     - If any check throws an error, continue to trying the next check, proceeding with the iteration from 4
+
+    # Iterate base paths
+    for base in base_search_paths:
+        dots = dot_path.split('.')
 
 
 def rebuild(_target_, paths=None, modules=None, recurse=False, try_again=False):
