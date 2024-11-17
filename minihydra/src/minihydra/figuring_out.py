@@ -278,7 +278,7 @@ def get_module_v2(_target_, paths=None, modules=None):
         known_path, dot_path = _target_.rsplit('.py', 1)
         known_path += '.py'
     elif '/' in _target_:
-        # Known path might be followed by the first part of dot path as the python file name,
+        # Known path might be followed by the first part of dot path (first part after '/') as the python file name,
         # or as a module in __init__.py in the known path directory
         known_path, dot_path = _target_.rsplit('/', 1)
         known_path += '/'  # Can be followed by __init__.py or first part of dot path + '.py'
